@@ -130,11 +130,13 @@
         }
         .modal-content {
             background-color: #2a2a2a;
-            margin: 10% auto;
+            margin: 5% auto;
             padding: 2rem;
             border-radius: 8px;
             width: 90%;
             max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
             animation: slideIn 0.3s;
         }
         @keyframes fadeIn {
@@ -548,14 +550,36 @@
 
             .modal-content {
                 width: 98%;
-                margin: 2% auto;
+                max-width: 98vw;
+                margin: 1% auto;
                 padding: 1rem;
+                max-height: 95vh;
+                overflow-y: auto;
+            }
+
+            .form-group {
+                margin-bottom: 1rem;
             }
 
             .form-group input,
             .form-group textarea,
             .form-group select {
                 font-size: 16px; /* Prevents zoom on iOS */
+                padding: 0.75rem;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .form-group textarea {
+                min-height: 60px;
+                resize: vertical;
+            }
+
+            .submit-btn {
+                font-size: 16px;
+                padding: 0.875rem;
+                width: 100%;
+                box-sizing: border-box;
             }
 
             .chat-modal-content {
@@ -604,6 +628,27 @@
             .gallery-thumbnail {
                 width: 50px;
                 height: 35px;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 360px) {
+            .modal-content {
+                width: 99%;
+                margin: 0.5% auto;
+                padding: 0.75rem;
+            }
+
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                font-size: 16px;
+                padding: 0.625rem;
+            }
+
+            .submit-btn {
+                font-size: 16px;
+                padding: 0.75rem;
             }
         }
 
