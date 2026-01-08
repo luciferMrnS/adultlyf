@@ -710,6 +710,7 @@
 
         document.addEventListener("DOMContentLoaded", function() {
             loadEscorts();
+            checkForExistingChat();
 
             // Modal functionality
             const modal = document.getElementById('meetModal');
@@ -1174,8 +1175,8 @@
                             // Store initial message count for monitoring
                             lastMessageCount = data.messages.length;
 
-                            // Show the continue chat button
-                            document.getElementById('continueChatContainer').style.display = 'block';
+                            // Automatically reopen the chat modal for active conversations
+                            showChatModal(savedRequestId, savedClientName);
 
                             // Start background monitoring for new admin messages
                             startBackgroundChatMonitoring(savedRequestId);
