@@ -133,9 +133,12 @@
                                 <p><strong>Details:</strong> {{ req['meetingDetails'] or 'None' }}</p>
                                 <p><strong>Time:</strong> {{ req['timestamp'] }}</p>
                                 <p><strong>Status:</strong> {{ req['status'] }}</p>
-                                {% if req['status'] == 'pending' %}
-                                    <button onclick="updateStatus('{{ req['id'] }}', 'completed')">Mark Completed</button>
-                                {% endif %}
+                                <div style="margin-top: 1rem;">
+                                    <button onclick="openChat('{{ req['id'] }}', '{{ req['clientName'] }}')" style="background: #2196F3; color: white; border: none; padding: 0.5rem; cursor: pointer; margin-right: 0.5rem;">💬 Chat</button>
+                                    {% if req['status'] == 'pending' %}
+                                        <button onclick="updateStatus('{{ req['id'] }}', 'completed')" style="background: #4CAF50; color: white; border: none; padding: 0.5rem; cursor: pointer;">Mark Completed</button>
+                                    {% endif %}
+                                </div>
                             </div>
                         {% endfor %}
                     </div>
@@ -175,6 +178,19 @@
                             <button type="submit">Save Changes</button>
                             <button type="button" onclick="closeModal()">Cancel</button>
                         </form>
+                    </div>
+                </div>
+
+                <!-- Chat Modal -->
+                <div id="chatModal" class="modal">
+                    <div class="modal-content" style="max-width: 600px; height: 80vh; display: flex; flex-direction: column;">
+                        <span class="close-button" onclick="closeChatModal()">&times;</span>
+                        <h2 id="chatTitle">Chat Support</h2>
+                        <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 1rem; background: #1a1a1a; border-radius: 8px; margin-bottom: 1rem; max-height: 400px;"></div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="adminMessageInput" placeholder="Type your message..." onkeypress="if(event.key === 'Enter') sendAdminMessage()" style="flex: 1; padding: 0.75rem; border: 1px solid #555; border-radius: 4px; background: #333; color: #fff;">
+                            <button onclick="sendAdminMessage()" style="background: #4CAF50; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer;">Send</button>
+                        </div>
                     </div>
                 </div>
 
@@ -302,6 +318,126 @@
                             item.style.display = isVisible ? 'block' : 'none';
                         });
                     });
+
+                    // Chat functionality
+                    let currentChatRequestId = null;
+                    let chatPollingInterval = null;
+
+                    function openChat(requestId, clientName) {
+                        currentChatRequestId = requestId;
+                        document.getElementById('chatTitle').textContent = `Chat with ${clientName} (Request #${requestId})`;
+
+                        // Clear previous messages
+                        document.getElementById('chatMessages').innerHTML = '';
+
+                        // Show modal
+                        document.getElementById('chatModal').style.display = 'block';
+
+                        // Load existing messages
+                        loadChatMessages(requestId);
+
+                        // Start polling for new messages
+                        startAdminChatPolling(requestId);
+                    }
+
+                    function closeChatModal() {
+                        document.getElementById('chatModal').style.display = 'none';
+                        if (chatPollingInterval) {
+                            clearInterval(chatPollingInterval);
+                            chatPollingInterval = null;
+                        }
+                        currentChatRequestId = null;
+                    }
+
+                    async function loadChatMessages(requestId) {
+                        try {
+                            const response = await fetch(`/chat/${requestId}`);
+                            const data = await response.json();
+
+                            const chatMessages = document.getElementById('chatMessages');
+                            chatMessages.innerHTML = '';
+
+                            data.messages.forEach(msg => {
+                                addAdminChatMessage(msg.sender, msg.message, msg.timestamp);
+                            });
+                        } catch (error) {
+                            console.error('Error loading chat messages:', error);
+                        }
+                    }
+
+                    function startAdminChatPolling(requestId) {
+                        if (chatPollingInterval) {
+                            clearInterval(chatPollingInterval);
+                        }
+
+                        chatPollingInterval = setInterval(() => {
+                            loadChatMessages(requestId);
+                        }, 3000);
+                    }
+
+                    function addAdminChatMessage(sender, message, timestamp) {
+                        const chatMessages = document.getElementById('chatMessages');
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = `chat-message ${sender}`;
+                        messageDiv.style.cssText = `
+                            margin-bottom: 1rem;
+                            padding: 0.75rem;
+                            border-radius: 8px;
+                            max-width: 80%;
+                            ${sender === 'admin' ?
+                                'background-color: #4CAF50; margin-left: auto; text-align: right;' :
+                                'background-color: #2196F3; margin-right: auto;'
+                            }
+                        `;
+
+                        const time = new Date(timestamp).toLocaleTimeString();
+                        messageDiv.innerHTML = `
+                            <div style="word-wrap: break-word;">${message}</div>
+                            <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.25rem;">${time}</div>
+                        `;
+
+                        chatMessages.appendChild(messageDiv);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+
+                    async function sendAdminMessage() {
+                        const messageInput = document.getElementById('adminMessageInput');
+                        const message = messageInput.value.trim();
+
+                        if (!message || !currentChatRequestId) return;
+
+                        try {
+                            const response = await fetch(`/chat/${currentChatRequestId}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    sender: 'admin',
+                                    message: message
+                                })
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                addAdminChatMessage('admin', message, new Date().toISOString());
+                                messageInput.value = '';
+                            }
+                        } catch (error) {
+                            console.error('Error sending message:', error);
+                        }
+                    }
+
+                    // Close chat modal if clicked outside
+                    window.onclick = function(event) {
+                        if (event.target == document.getElementById('chatModal')) {
+                            closeChatModal();
+                        }
+                        if (event.target == editEscortModal) {
+                            editEscortModal.style.display = 'none';
+                        }
+                    }
                 </script>
             </body>
             </html>

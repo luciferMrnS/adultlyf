@@ -335,6 +335,76 @@
         .gallery-back-btn:hover {
             background: #45a049;
         }
+        /* Chat Modal Styles */
+        .chat-modal-content {
+            max-width: 600px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            max-height: 400px;
+        }
+        .chat-message {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .chat-message.client {
+            background-color: #4CAF50;
+            margin-left: auto;
+            text-align: right;
+        }
+        .chat-message.admin {
+            background-color: #2196F3;
+            margin-right: auto;
+        }
+        .chat-message.system {
+            background-color: #FF9800;
+            text-align: center;
+            font-weight: bold;
+        }
+        .message-content {
+            word-wrap: break-word;
+        }
+        .message-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+        .chat-input-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chat-input-container input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background-color: #333;
+            color: white;
+            font-size: 1rem;
+        }
+        .chat-send-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        .chat-send-btn:hover {
+            background: linear-gradient(135deg, #45a049, #4CAF50);
+        }
     </style>
 </head>
 <body>
@@ -407,6 +477,19 @@
             <div class="gallery-thumbnails" id="galleryThumbnails"></div>
             <div class="gallery-counter" id="galleryCounter">1 / 1</div>
             <button class="gallery-back-btn" id="galleryBackBtn">← Back to Escorts</button>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chatModal" class="modal">
+        <div class="modal-content chat-modal-content">
+            <span class="close" onclick="closeChatModal()">&times;</span>
+            <h2>Chat Support</h2>
+            <div id="chatMessages" class="chat-messages"></div>
+            <div class="chat-input-container">
+                <input type="text" id="chatMessageInput" placeholder="Type your message..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                <button onclick="sendChatMessage()" class="chat-send-btn">Send</button>
+            </div>
         </div>
     </div>
 
@@ -616,6 +699,9 @@
             document.getElementById('meetForm').reset();
         }
 
+        let currentRequestId = null;
+        let chatPollingInterval = null;
+
         async function submitMeetRequest() {
             const formData = new FormData(document.getElementById('meetForm'));
             const ageVerification = formData.get('ageVerification');
@@ -647,10 +733,13 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Show success message
-                    alert(result.message);
-                    // Close modal
+                    currentRequestId = result.request_id;
+
+                    // Close meet modal
                     document.getElementById('meetModal').style.display = 'none';
+
+                    // Show chat modal with initial messages
+                    showChatModal(result.request_id, data.clientName);
                 } else {
                     alert('Error: ' + result.error);
                 }
@@ -658,6 +747,120 @@
                 console.error('Error submitting meet request:', error);
                 alert('Error submitting request. Please try again.');
             }
+        }
+
+        function showChatModal(requestId, clientName) {
+            const chatModal = document.getElementById('chatModal');
+            const chatMessages = document.getElementById('chatMessages');
+
+            // Clear previous messages
+            chatMessages.innerHTML = '';
+
+            // Add initial system messages
+            addChatMessage('system', `Request #${requestId} - ${clientName}`);
+            addChatMessage('admin', 'Our scheduler, Natasha will be with you shortly 😉');
+
+            // Show modal
+            chatModal.style.display = 'block';
+
+            // Start polling for messages
+            startChatPolling(requestId);
+        }
+
+        function addChatMessage(sender, message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+
+            const timestamp = new Date().toLocaleTimeString();
+            messageDiv.innerHTML = `
+                <div class="message-content">${message}</div>
+                <div class="message-time">${timestamp}</div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function startChatPolling(requestId) {
+            // Clear any existing interval
+            if (chatPollingInterval) {
+                clearInterval(chatPollingInterval);
+            }
+
+            // Poll every 3 seconds
+            chatPollingInterval = setInterval(() => {
+                fetchChatMessages(requestId);
+            }, 3000);
+        }
+
+        async function fetchChatMessages(requestId) {
+            try {
+                const response = await fetch(`/chat/${requestId}`);
+                const data = await response.json();
+
+                const chatMessages = document.getElementById('chatMessages');
+                const existingMessageIds = new Set(Array.from(chatMessages.children).map(child =>
+                    child.dataset.messageId).filter(id => id));
+
+                data.messages.forEach(msg => {
+                    if (!existingMessageIds.has(msg.id)) {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = `chat-message ${msg.sender}`;
+                        messageDiv.dataset.messageId = msg.id;
+
+                        const timestamp = new Date(msg.timestamp).toLocaleTimeString();
+                        messageDiv.innerHTML = `
+                            <div class="message-content">${msg.message}</div>
+                            <div class="message-time">${timestamp}</div>
+                        `;
+
+                        chatMessages.appendChild(messageDiv);
+                    }
+                });
+
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (error) {
+                console.error('Error fetching chat messages:', error);
+            }
+        }
+
+        async function sendChatMessage() {
+            const messageInput = document.getElementById('chatMessageInput');
+            const message = messageInput.value.trim();
+
+            if (!message || !currentRequestId) return;
+
+            try {
+                const response = await fetch(`/chat/${currentRequestId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sender: 'client',
+                        message: message
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    addChatMessage('client', message);
+                    messageInput.value = '';
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
+        }
+
+        function closeChatModal() {
+            document.getElementById('chatModal').style.display = 'none';
+            if (chatPollingInterval) {
+                clearInterval(chatPollingInterval);
+                chatPollingInterval = null;
+            }
+            currentRequestId = null;
         }
 
         function openGallery(escortId) {

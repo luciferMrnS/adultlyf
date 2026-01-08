@@ -241,7 +241,8 @@ def meet():
         'success': True,
         'message': response_message,
         'request_id': meet_request['id'],
-        'safety_warnings': safety_warnings
+        'safety_warnings': safety_warnings,
+        'chat_enabled': True
     })
 
 @app.route('/meet/<request_id>/checkin', methods=['POST'])
@@ -323,6 +324,58 @@ def end_meeting(request_id):
             })
 
     return jsonify({'error': 'Meeting request not found'}), 404
+
+# Chat system endpoints
+@app.route('/chat/<request_id>', methods=['GET'])
+def get_chat_messages(request_id):
+    """Get all chat messages for a request"""
+    try:
+        with open('chat_messages.json', 'r') as f:
+            all_messages = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        all_messages = {}
+
+    messages = all_messages.get(request_id, [])
+    return jsonify({'messages': messages})
+
+@app.route('/chat/<request_id>', methods=['POST'])
+def send_chat_message(request_id):
+    """Send a chat message"""
+    data = request.get_json()
+    sender = data.get('sender', 'unknown')  # 'client' or 'admin'
+    message = data.get('message', '').strip()
+
+    if not message:
+        return jsonify({'error': 'Message cannot be empty'}), 400
+
+    # Load existing messages
+    try:
+        with open('chat_messages.json', 'r') as f:
+            all_messages = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        all_messages = {}
+
+    if request_id not in all_messages:
+        all_messages[request_id] = []
+
+    # Add new message
+    chat_message = {
+        'id': datetime.now().strftime('%Y%m%d%H%M%S%f'),
+        'sender': sender,
+        'message': message,
+        'timestamp': datetime.now().isoformat()
+    }
+
+    all_messages[request_id].append(chat_message)
+
+    # Save messages
+    with open('chat_messages.json', 'w') as f:
+        json.dump(all_messages, f, indent=4)
+
+    return jsonify({
+        'success': True,
+        'message': chat_message
+    })
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
