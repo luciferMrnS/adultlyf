@@ -182,10 +182,14 @@ def manage_escort(escort_id):
 def meet():
     data = request.get_json()
 
-    required_fields = ['escortId', 'clientName', 'clientLocation', 'clientContact']
+    required_fields = ['escortId', 'clientName', 'clientLocation', 'clientContact', 'ageVerification']
     for field in required_fields:
         if not data.get(field):
             return jsonify({'error': f'{field} is required'}), 400
+
+    # Validate age verification
+    if data.get('ageVerification') != 'yes':
+        return jsonify({'error': 'You must be 18 or older to submit a meeting request'}), 400
 
     # Enhanced safety validation
     safety_fields = ['emergencyContact', 'meetingDuration', 'safeWord']
