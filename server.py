@@ -13,13 +13,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import uuid
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # python-dotenv not installed, will use system environment variables
+
 # Import shuffle functionality
 try:
-    from scraper import start_shuffle_scheduler, shuffle_videos
+    from scraper import start_shuffle_scheduler, shuffle_videos, start_autonomous_scraper
     SHUFFLE_AVAILABLE = True
+    AUTONOMOUS_SCRAPER_AVAILABLE = True
 except ImportError:
     SHUFFLE_AVAILABLE = False
-    print("Warning: Shuffle functionality not available (scraper.py not found)")
+    AUTONOMOUS_SCRAPER_AVAILABLE = False
+    print("Warning: Scraper functionality not available (scraper.py not found)")
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_here_change_in_production')
@@ -80,6 +89,10 @@ def videos():
 @app.route('/adverts.json')
 def adverts():
     return send_from_directory('.', 'adverts.json')
+
+@app.route('/keywords.json')
+def keywords():
+    return send_from_directory('.', 'keywords.json')
 
 @app.route('/scrape', methods=['POST'])
 @limiter.limit("10 per hour", methods=["POST"])
@@ -615,5 +628,21 @@ if __name__ == '__main__':
     else:
         print("Video shuffling not available - scraper.py not found")
 
+    # Start the autonomous scraper
+    if AUTONOMOUS_SCRAPER_AVAILABLE:
+        start_autonomous_scraper()
+    else:
+        print("Autonomous scraper not available - scraper.py not found")
+
+    # Production-ready configuration
     port = int(os.environ.get('PORT', 8000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+
+    # Only run development server if explicitly requested
+    if os.environ.get('FLASK_ENV') == 'development':
+        print("🚀 Starting Flask development server...")
+        print(f"⚠️  WARNING: This is a development server. Do not use in production!")
+        app.run(host='0.0.0.0', port=port, debug=True)
+    else:
+        print("✅ Production mode: Use Gunicorn or another WSGI server")
+        print("   Example: gunicorn --bind 0.0.0.0:8000 --workers 4 server:app")
+        print("   Railway will automatically use production server")
