@@ -98,7 +98,8 @@ def escorts_json():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory('uploads', filename)
+    upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
+    return send_from_directory(upload_dir, filename)
 
 @app.route('/admin/escorts/<int:escort_id>', methods=['PUT', 'DELETE'])
 def manage_escort(escort_id):
@@ -138,7 +139,10 @@ def manage_escort(escort_id):
                 for file in uploaded_files:
                     if file and file.filename:
                         filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
-                        file_path = os.path.join('uploads', filename)
+                        # Use Railway volume path if available, otherwise local uploads
+                        upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
+                        os.makedirs(upload_dir, exist_ok=True)
+                        file_path = os.path.join(upload_dir, filename)
                         file.save(file_path)
                         photo_paths.append(f"/uploads/{filename}")
         else:
@@ -261,8 +265,12 @@ def admin_escorts():
             if file and file.filename:
                 # Generate unique filename
                 filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
-                file_path = os.path.join('uploads', filename)
+                # Use Railway volume path if available, otherwise local uploads
+                upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
+                os.makedirs(upload_dir, exist_ok=True)
+                file_path = os.path.join(upload_dir, filename)
                 file.save(file_path)
+                # Serve from the correct path
                 photo_paths.append(f"/uploads/{filename}")
 
         # Load existing escorts

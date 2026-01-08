@@ -1,4 +1,4 @@
-uploads/
+# uploads/ - Temporarily allowed for Railway volumes
 firebase-debug.log
 __pycache__/
 *.pyc
