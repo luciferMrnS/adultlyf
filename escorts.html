@@ -405,6 +405,204 @@
         .chat-send-btn:hover {
             background: linear-gradient(135deg, #45a049, #4CAF50);
         }
+
+        /* Enhanced Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                padding: 0.5rem;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .container {
+                padding: 0 0.5rem;
+            }
+
+            .escort-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1rem;
+            }
+
+            .escort-card {
+                max-width: 100%;
+            }
+
+            .escort-name {
+                font-size: 1.2rem;
+            }
+
+            .escort-details p {
+                font-size: 0.9rem;
+            }
+
+            .meet-btn {
+                font-size: 0.9rem;
+                padding: 0.5rem 1rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                max-width: 95%;
+                margin: 5% auto;
+                padding: 1.5rem;
+            }
+
+            .form-group {
+                margin-bottom: 0.75rem;
+            }
+
+            .form-group label {
+                font-size: 0.9rem;
+            }
+
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                font-size: 0.9rem;
+            }
+
+            .chat-modal-content {
+                height: 70vh;
+                padding: 1rem;
+            }
+
+            .chat-messages {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            .chat-input-container input {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+
+            .chat-send-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .gallery-modal .gallery-container {
+                max-width: 95vw;
+                max-height: 60vh;
+            }
+
+            #galleryImage {
+                max-width: 95vw;
+                max-height: 50vh;
+            }
+
+            .gallery-thumbnails {
+                gap: 0.25rem;
+                padding: 0.25rem;
+            }
+
+            .gallery-thumbnail {
+                width: 60px;
+                height: 45px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .escort-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .escort-card {
+                margin: 0 auto;
+            }
+
+            .photo-album {
+                height: 200px;
+            }
+
+            .escort-name {
+                font-size: 1.1rem;
+            }
+
+            .modal-content {
+                width: 98%;
+                margin: 2% auto;
+                padding: 1rem;
+            }
+
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            .chat-modal-content {
+                height: 80vh;
+                padding: 0.75rem;
+            }
+
+            .chat-messages {
+                padding: 0.5rem;
+                font-size: 0.85rem;
+            }
+
+            .chat-message {
+                padding: 0.5rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .chat-input-container {
+                gap: 0.25rem;
+            }
+
+            .chat-input-container input {
+                padding: 0.5rem;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            .chat-send-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.85rem;
+            }
+
+            .gallery-container {
+                max-width: 98vw;
+                max-height: 50vh;
+            }
+
+            #galleryImage {
+                max-width: 98vw;
+                max-height: 40vh;
+            }
+
+            .gallery-thumbnails {
+                gap: 0.25rem;
+            }
+
+            .gallery-thumbnail {
+                width: 50px;
+                height: 35px;
+            }
+        }
+
+        /* Touch-friendly buttons */
+        @media (hover: none) and (pointer: coarse) {
+            .meet-btn,
+            .submit-btn,
+            .chat-send-btn,
+            .gallery-back-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            .photo-nav,
+            .gallery-nav {
+                min-width: 50px;
+                min-height: 50px;
+            }
+        }
     </style>
 </head>
 <body>

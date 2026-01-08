@@ -73,6 +73,93 @@
             font-weight: bold;
             color: #fff;
         }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .player-container {
+                padding: 0.5rem;
+            }
+
+            .video-title {
+                font-size: 1.2rem;
+                margin: 0.75rem 0;
+            }
+
+            .search-form input {
+                width: 70% !important;
+                max-width: 250px;
+            }
+
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 0.75rem;
+            }
+
+            .video-item-title {
+                font-size: 0.8rem;
+                padding: 0.5rem;
+            }
+
+            .site-logo img {
+                height: 50px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .player-container {
+                padding: 0.25rem;
+            }
+
+            .video-title {
+                font-size: 1rem;
+                margin: 0.5rem 0;
+            }
+
+            .search-form {
+                margin: 0.5rem 0;
+            }
+
+            .search-form input {
+                width: 80% !important;
+                max-width: 200px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 0.5rem;
+            }
+
+            .video-item-title {
+                font-size: 0.75rem;
+                padding: 0.25rem;
+            }
+
+            .site-logo {
+                left: 0.5rem !important;
+            }
+
+            .site-logo img {
+                height: 40px !important;
+                margin-right: 10px;
+            }
+
+            .back-button a {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Touch-friendly buttons */
+        @media (hover: none) and (pointer: coarse) {
+            .video-item {
+                min-height: 120px;
+            }
+
+            button {
+                min-height: 44px;
+                padding: 0.75rem;
+            }
+        }
     </style>
 </head>
 <body>
