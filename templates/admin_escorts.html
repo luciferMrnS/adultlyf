@@ -246,6 +246,22 @@
                             </div>
                         {% endfor %}
                     </div>
+
+                    <div class="section">
+                        <h2>Model Applications</h2>
+                        <div id="modelApplicationsContainer">
+                            <!-- Model applications will be loaded here -->
+                        </div>
+                        <button onclick="loadModelApplications()" style="background: #FF6B6B; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer;">Load Model Applications</button>
+                    </div>
+
+                    <div class="section">
+                        <h2>Client Meeting History</h2>
+                        <div id="clientHistoryContainer">
+                            <!-- Client history will be loaded here -->
+                        </div>
+                        <button onclick="loadClientHistory()" style="background: #9C27B0; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer;">Load Client History</button>
+                    </div>
                 </div>
 
                 <!-- Edit Escort Modal -->
@@ -577,6 +593,135 @@
                         }
                         if (event.target == editEscortModal) {
                             editEscortModal.style.display = 'none';
+                        }
+                    }
+
+                    // Model Applications functionality
+                    async function loadModelApplications() {
+                        try {
+                            const response = await fetch('/model_applications.json');
+                            const applications = await response.json();
+
+                            const container = document.getElementById('modelApplicationsContainer');
+                            container.innerHTML = '';
+
+                            if (applications.length === 0) {
+                                container.innerHTML = '<p>No model applications found.</p>';
+                                return;
+                            }
+
+                            applications.forEach(app => {
+                                const appDiv = document.createElement('div');
+                                appDiv.className = 'request';
+                                appDiv.style.borderLeft = app.status === 'pending' ? '4px solid #ff9800' : '4px solid #4CAF50';
+
+                                appDiv.innerHTML = `
+                                    <h3>Application #${app.id} - ${app.name}</h3>
+                                    <p><strong>Age:</strong> ${app.age} | <strong>Location:</strong> ${app.location}</p>
+                                    <p><strong>Height:</strong> ${app.height} | <strong>Body Type:</strong> ${app.body_type}</p>
+                                    <p><strong>Address:</strong> ${app.town}, ${app.city}, ${app.country}</p>
+                                    <p><strong>Preference:</strong> ${app.sexual_preference} | <strong>Occupation:</strong> ${app.occupation || 'N/A'}</p>
+                                    <p><strong>Phone:</strong> ${app.phone} | <strong>Email:</strong> ${app.email}</p>
+                                    <p><strong>Skin Color:</strong> ${app.skin_color} | <strong>Allergies:</strong> ${app.allergy || 'None'}</p>
+                                    <p><strong>Submitted:</strong> ${new Date(app.submitted_at).toLocaleString()}</p>
+                                    <p><strong>Status:</strong> ${app.status}</p>
+                                    <div style="margin-top: 1rem;">
+                                        <button onclick="updateModelStatus(${app.id}, 'approved')" style="background: #4CAF50; color: white; border: none; padding: 0.5rem; cursor: pointer; margin-right: 0.5rem;">Approve</button>
+                                        <button onclick="updateModelStatus(${app.id}, 'rejected')" style="background: #f44336; color: white; border: none; padding: 0.5rem; cursor: pointer;">Reject</button>
+                                    </div>
+                                `;
+
+                                container.appendChild(appDiv);
+                            });
+                        } catch (error) {
+                            console.error('Error loading model applications:', error);
+                            document.getElementById('modelApplicationsContainer').innerHTML = '<p>Error loading applications.</p>';
+                        }
+                    }
+
+                    // Client Meeting History functionality
+                    async function loadClientHistory() {
+                        try {
+                            const response = await fetch('/meet_requests.json');
+                            const requests = await response.json();
+
+                            const container = document.getElementById('clientHistoryContainer');
+                            container.innerHTML = '';
+
+                            if (requests.length === 0) {
+                                container.innerHTML = '<p>No client meeting history found.</p>';
+                                return;
+                            }
+
+                            // Load escorts data for names
+                            let escortNames = {};
+                            try {
+                                const escortsResponse = await fetch('/escorts.json');
+                                const escorts = await escortsResponse.json();
+                                escortNames = escorts.reduce((acc, escort) => {
+                                    acc[escort.id] = escort.name;
+                                    return acc;
+                                }, {});
+                            } catch (e) {
+                                console.error('Error loading escorts data:', e);
+                            }
+
+                            requests.reverse().forEach(req => {
+                                const reqDiv = document.createElement('div');
+                                reqDiv.className = 'request';
+                                reqDiv.style.borderLeft = req.status === 'pending' ? '4px solid #ff9800' :
+                                                         req.status === 'completed' ? '4px solid #4CAF50' : '4px solid #2196F3';
+
+                                reqDiv.innerHTML = `
+                                    <h3>Request #${req.id} - ${escortNames[req.escortId] || 'Unknown Escort'}</h3>
+                                    <p><strong>Client:</strong> ${req.clientName}</p>
+                                    <p><strong>Location:</strong> ${req.clientLocation}</p>
+                                    <p><strong>Contact:</strong> ${req.clientContact}</p>
+                                    <p><strong>Details:</strong> ${req.meetingDetails || 'None'}</p>
+                                    <p><strong>Time:</strong> ${new Date(req.timestamp).toLocaleString()}</p>
+                                    <p><strong>Status:</strong> ${req.status}</p>
+                                    <p><strong>Emergency Contact:</strong> ${req.emergencyContact || 'N/A'}</p>
+                                    <p><strong>Duration:</strong> ${req.meetingDuration || 60} minutes</p>
+                                    <p><strong>Safe Word:</strong> ${req.safeWord || 'pineapple'}</p>
+                                    ${req.endTime ? `<p><strong>Ended:</strong> ${new Date(req.endTime).toLocaleString()}</p>` : ''}
+                                    <div style="margin-top: 1rem;">
+                                        <button onclick="openChat('${req.id}', '${req.clientName}')" style="background: #2196F3; color: white; border: none; padding: 0.5rem; cursor: pointer;">💬 Chat History</button>
+                                    </div>
+                                `;
+
+                                container.appendChild(reqDiv);
+                            });
+                        } catch (error) {
+                            console.error('Error loading client history:', error);
+                            document.getElementById('clientHistoryContainer').innerHTML = '<p>Error loading client history.</p>';
+                        }
+                    }
+
+                    async function updateModelStatus(applicationId, status) {
+                        if (!confirm(`Are you sure you want to ${status} this application?`)) {
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch(`/update-model-status/${applicationId}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ status: status })
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                alert(`Application ${status} successfully!`);
+                                loadModelApplications(); // Reload the applications
+                            } else {
+                                alert('Error: ' + result.error);
+                            }
+                        } catch (error) {
+                            console.error('Error updating model status:', error);
+                            alert('Error updating status. Please try again.');
                         }
                     }
                 </script>

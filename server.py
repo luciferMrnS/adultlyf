@@ -94,6 +94,119 @@ def adverts():
 def keywords():
     return send_from_directory('.', 'keywords.json')
 
+@app.route('/apply-model', methods=['POST'])
+@limiter.limit("5 per hour", methods=["POST"])  # Limit model applications
+def apply_model():
+    data = request.get_json()
+
+    # Validate required fields
+    required_fields = ['name', 'location', 'age', 'height', 'body_type', 'town', 'city', 'country', 'sexual_preference', 'phone', 'email', 'skin_color']
+    for field in required_fields:
+        if not data.get(field):
+            return jsonify({'error': f'{field} is required'}), 400
+
+    # Validate age
+    age = data.get('age')
+    if not isinstance(age, int) or age < 18 or age > 99:
+        return jsonify({'error': 'Age must be between 18 and 99'}), 400
+
+    # Validate email format
+    import re
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, data.get('email', '')):
+        return jsonify({'error': 'Invalid email format'}), 400
+
+    # Load existing model applications
+    try:
+        with open('model_applications.json', 'r') as f:
+            model_applications = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        model_applications = []
+
+    # Generate new ID
+    new_id = max([app.get('id', 0) for app in model_applications], default=0) + 1
+
+    # Create application
+    application = {
+        'id': new_id,
+        'name': data['name'],
+        'location': data['location'],
+        'age': age,
+        'height': data['height'],
+        'body_type': data['body_type'],
+        'town': data['town'],
+        'city': data['city'],
+        'country': data['country'],
+        'sexual_preference': data['sexual_preference'],
+        'occupation': data.get('occupation', ''),
+        'phone': data['phone'],
+        'email': data['email'],
+        'allergy': data.get('allergy', ''),
+        'skin_color': data['skin_color'],
+        'submitted_at': data.get('submitted_at', datetime.now().isoformat()),
+        'status': 'pending'  # pending, approved, rejected
+    }
+
+    model_applications.append(application)
+
+    # Save to file
+    with open('model_applications.json', 'w') as f:
+        json.dump(model_applications, f, indent=4)
+
+    return jsonify({
+        'success': True,
+        'message': 'Model application submitted successfully',
+        'application_id': new_id
+    })
+
+@app.route('/update-model-status/<int:application_id>', methods=['POST'])
+def update_model_status(application_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    data = request.get_json()
+    new_status = data.get('status')
+
+    if new_status not in ['pending', 'approved', 'rejected']:
+        return jsonify({'error': 'Invalid status'}), 400
+
+    # Load existing applications
+    try:
+        with open('model_applications.json', 'r') as f:
+            applications = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return jsonify({'error': 'Applications file not found'}), 404
+
+    # Find and update the application
+    for i, app in enumerate(applications):
+        if app['id'] == application_id:
+            applications[i]['status'] = new_status
+            applications[i]['reviewed_at'] = datetime.now().isoformat()
+
+            # Save back to file
+            with open('model_applications.json', 'w') as f:
+                json.dump(applications, f, indent=4)
+
+            return jsonify({
+                'success': True,
+                'message': f'Application status updated to {new_status}',
+                'application': applications[i]
+            })
+
+    return jsonify({'error': 'Application not found'}), 404
+
+@app.route('/model_applications.json')
+def model_applications_json():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    return send_from_directory('.', 'model_applications.json')
+
+@app.route('/meet_requests.json')
+def meet_requests_json():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    return send_from_directory('.', 'meet_requests.json')
+
 @app.route('/scrape', methods=['POST'])
 @limiter.limit("10 per hour", methods=["POST"])
 def scrape():

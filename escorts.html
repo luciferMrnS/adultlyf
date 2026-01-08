@@ -16,10 +16,30 @@
             background-color: #333;
             padding: 1rem;
             text-align: center;
+            position: relative;
         }
         header h1 {
             margin: 0;
             font-size: 2rem;
+        }
+        .become-model-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, #FF6B6B, #EE5A24);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        .become-model-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
         }
         .container {
             max-width: 1200px;
@@ -608,6 +628,7 @@
 <body>
     <header>
         <h1>Escorts - Adultlyf</h1>
+        <button id="becomeModelBtn" class="become-model-btn">Become a Model</button>
     </header>
     <div class="container">
         <a href="index.html" class="back-link">&larr; Back to Home</a>
@@ -700,6 +721,105 @@
         </div>
     </div>
 
+    <!-- Model Registration Modal -->
+    <div id="modelModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModelModal()">&times;</span>
+            <h2>Welcome! We're Pleased to Have You Show Interest</h2>
+            <p style="color: #4CAF50; margin-bottom: 1rem;">Join our exclusive model community and showcase your beauty to our discerning clientele.</p>
+            <form id="modelForm">
+                <div class="form-group">
+                    <label for="modelName">Full Name *</label>
+                    <input type="text" id="modelName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="modelLocation">Location *</label>
+                    <input type="text" id="modelLocation" name="location" required>
+                </div>
+                <div class="form-group">
+                    <label for="modelAge">Age *</label>
+                    <input type="number" id="modelAge" name="age" min="18" max="99" required>
+                </div>
+                <div class="form-group">
+                    <label for="modelHeight">Height *</label>
+                    <select id="modelHeight" name="height" required>
+                        <option value="">Select height...</option>
+                        <option value="4'8\"-5'0\"">4'8" - 5'0" (142-152 cm)</option>
+                        <option value="5'1\"-5'4\"">5'1" - 5'4" (155-163 cm)</option>
+                        <option value="5'5\"-5'8\"">5'5" - 5'8" (165-173 cm)</option>
+                        <option value="5'9\"-6'0\"">5'9" - 6'0" (175-183 cm)</option>
+                        <option value="6'1\"+">6'1"+ (185+ cm)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modelBodyType">Body Type *</label>
+                    <select id="modelBodyType" name="body_type" required>
+                        <option value="">Select body type...</option>
+                        <option value="slim">Slim</option>
+                        <option value="athletic">Athletic</option>
+                        <option value="average">Average</option>
+                        <option value="thick">Thick</option>
+                        <option value="curvy">Curvy</option>
+                        <option value="chubby">Chubby</option>
+                        <option value="plus_size">Plus Size</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modelTown">Town *</label>
+                    <input type="text" id="modelTown" name="town" required>
+                </div>
+                <div class="form-group">
+                    <label for="modelCity">City *</label>
+                    <input type="text" id="modelCity" name="city" required>
+                </div>
+                <div class="form-group">
+                    <label for="modelCountry">Country *</label>
+                    <input type="text" id="modelCountry" name="country" required>
+                </div>
+                <div class="form-group">
+                    <label for="modelPreference">Sexual Preference *</label>
+                    <select id="modelPreference" name="sexual_preference" required>
+                        <option value="">Select preference...</option>
+                        <option value="straight">Straight</option>
+                        <option value="bisexual">Bisexual</option>
+                        <option value="gay">Gay</option>
+                        <option value="lesbian">Lesbian</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modelOccupation">Occupation</label>
+                    <input type="text" id="modelOccupation" name="occupation">
+                </div>
+                <div class="form-group">
+                    <label for="modelPhone">Phone Number (WhatsApp preferred) *</label>
+                    <input type="tel" id="modelPhone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="modelEmail">Email Address *</label>
+                    <input type="email" id="modelEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="modelAllergy">Allergies (if any)</label>
+                    <textarea id="modelAllergy" name="allergy" placeholder="List any allergies..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="modelSkinColor">Skin Color *</label>
+                    <select id="modelSkinColor" name="skin_color" required>
+                        <option value="">Select skin color...</option>
+                        <option value="very_fair">Very Fair</option>
+                        <option value="fair">Fair</option>
+                        <option value="light_brown">Light Brown</option>
+                        <option value="medium_brown">Medium Brown</option>
+                        <option value="dark_brown">Dark Brown</option>
+                        <option value="ebony">Ebony</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-btn">Submit Application</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         let escorts = [];
         let currentPhotoIndices = {};
@@ -762,10 +882,21 @@
                 }
             });
 
+            // Become a Model button
+            document.getElementById('becomeModelBtn').addEventListener('click', function() {
+                document.getElementById('modelModal').style.display = 'block';
+            });
+
             // Form submission
             document.getElementById('meetForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 submitMeetRequest();
+            });
+
+            // Model form submission
+            document.getElementById('modelForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitModelApplication();
             });
         });
 
@@ -1300,6 +1431,63 @@
                 document.getElementById('continueChatContainer').style.display = 'none';
                 showChatModal(savedRequestId, savedClientName);
             }
+        }
+
+        async function submitModelApplication() {
+            const formData = new FormData(document.getElementById('modelForm'));
+            const age = parseInt(formData.get('age'));
+
+            // Check age requirement
+            if (age < 18) {
+                alert('You must be 18 years or older to apply as a model.');
+                return;
+            }
+
+            const data = {
+                name: formData.get('name'),
+                location: formData.get('location'),
+                age: age,
+                height: formData.get('height'),
+                body_type: formData.get('body_type'),
+                town: formData.get('town'),
+                city: formData.get('city'),
+                country: formData.get('country'),
+                sexual_preference: formData.get('sexual_preference'),
+                occupation: formData.get('occupation'),
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                allergy: formData.get('allergy'),
+                skin_color: formData.get('skin_color'),
+                submitted_at: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch('/apply-model', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Thank you for your application! We will review it and get back to you soon.');
+                    document.getElementById('modelModal').style.display = 'none';
+                    document.getElementById('modelForm').reset();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error submitting model application:', error);
+                alert('Error submitting application. Please try again.');
+            }
+        }
+
+        function closeModelModal() {
+            document.getElementById('modelModal').style.display = 'none';
+            document.getElementById('modelForm').reset();
         }
     </script>
 </body>
