@@ -187,16 +187,32 @@ def meet():
         if not data.get(field):
             return jsonify({'error': f'{field} is required'}), 400
 
-    # Create meet request
+    # Enhanced safety validation
+    safety_fields = ['emergencyContact', 'meetingDuration', 'safeWord']
+    safety_warnings = []
+
+    for field in safety_fields:
+        if not data.get(field):
+            safety_warnings.append(f"Warning: {field.replace('_', ' ')} not provided")
+
+    # Create meet request with safety features
     meet_request = {
         'id': datetime.now().strftime('%Y%m%d%H%M%S'),
         'escortId': data['escortId'],
         'clientName': data['clientName'],
         'clientLocation': data['clientLocation'],
         'clientContact': data['clientContact'],
+        'emergencyContact': data.get('emergencyContact', ''),
+        'meetingDuration': data.get('meetingDuration', 60),  # minutes
+        'safeWord': data.get('safeWord', 'pineapple'),  # default safe word
         'meetingDetails': data.get('meetingDetails', ''),
         'timestamp': datetime.now().isoformat(),
-        'status': 'pending'
+        'scheduledTime': data.get('scheduledTime', ''),
+        'status': 'pending',
+        'safetyCheckIns': [],
+        'lastCheckIn': None,
+        'adminApproval': False,
+        'safetyWarnings': safety_warnings
     }
 
     # Load existing meet requests
@@ -213,11 +229,96 @@ def meet():
     with open('meet_requests.json', 'w') as f:
         json.dump(meet_requests, f, indent=4)
 
+    response_message = 'Meeting request submitted successfully. Admin will review for safety before approval.'
+    if safety_warnings:
+        response_message += f" Safety concerns: {', '.join(safety_warnings)}"
+
     return jsonify({
         'success': True,
-        'message': 'Meeting request submitted successfully. Admin will contact you soon.',
-        'request_id': meet_request['id']
+        'message': response_message,
+        'request_id': meet_request['id'],
+        'safety_warnings': safety_warnings
     })
+
+@app.route('/meet/<request_id>/checkin', methods=['POST'])
+def safety_checkin(request_id):
+    """Safety check-in endpoint for ongoing meetings"""
+    data = request.get_json()
+    checkin_type = data.get('type', 'status')  # 'status', 'emergency', 'end'
+
+    # Load meet requests
+    try:
+        with open('meet_requests.json', 'r') as f:
+            meet_requests = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return jsonify({'error': 'Meeting request not found'}), 404
+
+    # Find the request
+    request_found = None
+    for req in meet_requests:
+        if req['id'] == request_id:
+            request_found = req
+            break
+
+    if not request_found:
+        return jsonify({'error': 'Meeting request not found'}), 404
+
+    # Record check-in
+    checkin_record = {
+        'timestamp': datetime.now().isoformat(),
+        'type': checkin_type,
+        'message': data.get('message', ''),
+        'location': data.get('location', '')
+    }
+
+    if 'safetyCheckIns' not in request_found:
+        request_found['safetyCheckIns'] = []
+
+    request_found['safetyCheckIns'].append(checkin_record)
+    request_found['lastCheckIn'] = checkin_record['timestamp']
+
+    # Handle emergency
+    if checkin_type == 'emergency':
+        request_found['status'] = 'emergency'
+        # In production, this should trigger notifications to admin and emergency contacts
+
+    # Save updated requests
+    with open('meet_requests.json', 'w') as f:
+        json.dump(meet_requests, f, indent=4)
+
+    return jsonify({
+        'success': True,
+        'message': f'Check-in recorded: {checkin_type}',
+        'checkin': checkin_record
+    })
+
+@app.route('/meet/<request_id>/end', methods=['POST'])
+def end_meeting(request_id):
+    """End a meeting safely"""
+    # Load meet requests
+    try:
+        with open('meet_requests.json', 'r') as f:
+            meet_requests = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return jsonify({'error': 'Meeting request not found'}), 404
+
+    # Find and update the request
+    for req in meet_requests:
+        if req['id'] == request_id:
+            req['status'] = 'completed'
+            req['endTime'] = datetime.now().isoformat()
+
+            # Save updated requests
+            with open('meet_requests.json', 'w') as f:
+                json.dump(meet_requests, f, indent=4)
+
+            return jsonify({
+                'success': True,
+                'message': 'Meeting ended safely. Thank you for the safe check-in.',
+                'end_time': req['endTime']
+            })
+
+    return jsonify({'error': 'Meeting request not found'}), 404
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
