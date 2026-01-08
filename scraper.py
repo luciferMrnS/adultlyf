@@ -627,6 +627,47 @@ def start_shuffle_scheduler():
     shuffle_thread.start()
     print("Video shuffle scheduler started - will shuffle every 10 hours")
 
+def start_autonomous_scraper():
+    """
+    Start a background thread that autonomously scrapes videos using random keywords from keywords.json every 24 hours.
+    """
+    def scraper_worker():
+        while True:
+            try:
+                # Load keywords from keywords.json
+                with open("keywords.json", "r", encoding='utf-8') as f:
+                    keywords = json.load(f)
+
+                if not keywords:
+                    print("No keywords found in keywords.json - autonomous scraper sleeping...")
+                    time.sleep(24 * 60 * 60)  # Sleep for 24 hours
+                    continue
+
+                # Pick a random keyword
+                import random
+                selected_keyword = random.choice(keywords)
+                print(f"🤖 Autonomous scraper: Selected keyword '{selected_keyword}'")
+
+                # Scrape with the selected keyword
+                new_videos = scrape_with_keyword(selected_keyword, limit_per_site=15)
+
+                if new_videos:
+                    print(f"🤖 Autonomous scraper: Added {len(new_videos)} new videos for '{selected_keyword}'")
+                else:
+                    print(f"🤖 Autonomous scraper: No new videos found for '{selected_keyword}'")
+
+            except Exception as e:
+                print(f"🤖 Autonomous scraper error: {e}")
+
+            # Sleep for 24 hours before next scrape
+            print("🤖 Autonomous scraper: Sleeping for 24 hours...")
+            time.sleep(24 * 60 * 60)  # 24 hours
+
+    # Start the autonomous scraper thread
+    scraper_thread = threading.Thread(target=scraper_worker, daemon=True)
+    scraper_thread.start()
+    print("🤖 Autonomous scraper started - will scrape every 24 hours with random keywords")
+
 def cleanup_invalid_videos(filename: str = "videos.json") -> int:
     """
     Remove videos that don't have valid embed URLs (would redirect to source site).
