@@ -1044,7 +1044,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    addChatMessage('client', message);
+                    // Don't add message locally - let polling handle it to avoid duplicates
                     messageInput.value = '';
                 }
             } catch (error) {
