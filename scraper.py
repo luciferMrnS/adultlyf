@@ -613,19 +613,19 @@ def shuffle_videos(filename: str = "videos.json") -> bool:
 
 def start_shuffle_scheduler():
     """
-    Start a background thread that shuffles videos every 23 hours.
+    Start a background thread that shuffles videos every 10 hours.
     """
     def shuffle_worker():
         while True:
-            # Sleep for 23 hours (23 * 60 * 60 seconds)
-            time.sleep(23 * 60 * 60)
-            print("23 hours elapsed - shuffling videos...")
+            # Sleep for 10 hours (10 * 60 * 60 seconds)
+            time.sleep(10 * 60 * 60)
+            print("10 hours elapsed - shuffling videos...")
             shuffle_videos()
 
     # Start the shuffle thread
     shuffle_thread = threading.Thread(target=shuffle_worker, daemon=True)
     shuffle_thread.start()
-    print("Video shuffle scheduler started - will shuffle every 23 hours")
+    print("Video shuffle scheduler started - will shuffle every 10 hours")
 
 def cleanup_invalid_videos(filename: str = "videos.json") -> int:
     """
