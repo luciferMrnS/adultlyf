@@ -622,6 +622,15 @@
             </div>
         </div>
 
+        <!-- Continue Chat Button (hidden by default) -->
+        <div id="continueChatContainer" style="display: none; background: #2a2a2a; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
+            <h3 style="margin: 0 0 0.5rem 0; color: #4CAF50;">Active Conversation</h3>
+            <p style="margin: 0 0 1rem 0; color: #ccc;">You have an ongoing chat with our scheduler</p>
+            <button onclick="continueExistingChat()" style="background: #2196F3; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; font-size: 1rem;">
+                💬 Continue Chat
+            </button>
+        </div>
+
         <div id="escorts-container">
             <div class="loading">Loading escorts...</div>
         </div>
@@ -933,6 +942,10 @@
                 if (result.success) {
                     currentRequestId = result.request_id;
 
+                    // Save to localStorage for persistence
+                    localStorage.setItem('activeChatRequestId', result.request_id);
+                    localStorage.setItem('activeChatClientName', data.clientName);
+
                     // Close meet modal
                     document.getElementById('meetModal').style.display = 'none';
 
@@ -1114,6 +1127,44 @@
 
             currentGalleryIndex = index;
             updateGallery();
+        }
+
+        function checkForExistingChat() {
+            const savedRequestId = localStorage.getItem('activeChatRequestId');
+            const savedClientName = localStorage.getItem('activeChatClientName');
+
+            if (savedRequestId && savedClientName) {
+                // Check if the chat still exists on the server
+                fetch(`/chat/${savedRequestId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.messages && data.messages.length > 0) {
+                            // Show the continue chat button
+                            document.getElementById('continueChatContainer').style.display = 'block';
+                        } else {
+                            // Clear localStorage if chat no longer exists
+                            localStorage.removeItem('activeChatRequestId');
+                            localStorage.removeItem('activeChatClientName');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking existing chat:', error);
+                        // Clear localStorage on error
+                        localStorage.removeItem('activeChatRequestId');
+                        localStorage.removeItem('activeChatClientName');
+                    });
+            }
+        }
+
+        function continueExistingChat() {
+            const savedRequestId = localStorage.getItem('activeChatRequestId');
+            const savedClientName = localStorage.getItem('activeChatClientName');
+
+            if (savedRequestId && savedClientName) {
+                // Hide the continue button and show chat modal
+                document.getElementById('continueChatContainer').style.display = 'none';
+                showChatModal(savedRequestId, savedClientName);
+            }
         }
     </script>
 </body>
