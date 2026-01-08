@@ -537,6 +537,36 @@
                         }
                     }
 
+                    async function endAdminChat() {
+                        if (!currentChatRequestId) return;
+
+                        if (!confirm('Are you sure you want to end this chat session? This will remove the active chat status for the client.')) {
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch(`/chat/${currentChatRequestId}/end`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                }
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                alert('Chat session ended successfully. The client will no longer see active chat notifications.');
+                                closeChatModal();
+                                location.reload(); // Refresh to update the UI
+                            } else {
+                                alert('Error ending chat session: ' + (result.error || 'Unknown error'));
+                            }
+                        } catch (error) {
+                            console.error('Error ending chat:', error);
+                            alert('Error ending chat session. Please try again.');
+                        }
+                    }
+
                     // Close chat modal if clicked outside
                     window.onclick = function(event) {
                         if (event.target == document.getElementById('chatModal')) {
