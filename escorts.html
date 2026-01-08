@@ -965,6 +965,9 @@
             const chatModal = document.getElementById('chatModal');
             const chatMessages = document.getElementById('chatMessages');
 
+            // Set current request ID for sending messages
+            currentRequestId = requestId;
+
             // Clear previous messages
             chatMessages.innerHTML = '';
 
