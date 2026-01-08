@@ -293,7 +293,13 @@
                                 <textarea id="editDescription" name="description"></textarea>
                             </div>
                             <div class="form-group">
-                                <label for="editPhotos">Upload New Photos (optional - will replace existing photos):</label>
+                                <label>Current Photos:</label>
+                                <div id="currentPhotos" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                                    <!-- Current photos will be loaded here -->
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="editPhotos">Add New Photos (optional - will be added to existing photos):</label>
                                 <input type="file" id="editPhotos" name="photos" accept="image/*" multiple>
                             </div>
                             <button type="submit">Save Changes</button>
@@ -362,9 +368,80 @@
                         editLocationInput.value = current.location;
                         editSexualPreferenceInput.value = current.sexual_preference;
                         editDescriptionInput.value = current.description || '';
+
+                        // Load current photos
+                        loadCurrentPhotos(current.photos);
+
                         // Clear file input - user can choose new photos if needed
                         editPhotosInput.value = '';
                         editEscortModal.style.display = 'block';
+                    }
+
+                    function loadCurrentPhotos(photos) {
+                        const currentPhotosDiv = document.getElementById('currentPhotos');
+                        currentPhotosDiv.innerHTML = '';
+
+                        if (!photos || photos.length === 0) {
+                            currentPhotosDiv.innerHTML = '<p style="color: #ccc; font-style: italic;">No photos uploaded</p>';
+                            return;
+                        }
+
+                        photos.forEach((photo, index) => {
+                            const photoContainer = document.createElement('div');
+                            photoContainer.style.cssText = 'position: relative; display: inline-block; margin: 5px;';
+
+                            const img = document.createElement('img');
+                            img.src = photo;
+                            img.style.cssText = 'width: 80px; height: 80px; object-fit: cover; border-radius: 4px; border: 2px solid #555;';
+
+                            const deleteBtn = document.createElement('button');
+                            deleteBtn.textContent = '×';
+                            deleteBtn.style.cssText = 'position: absolute; top: -5px; right: -5px; background: #f44336; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1;';
+                            deleteBtn.title = 'Delete this photo';
+                            deleteBtn.onclick = () => deletePhoto(index);
+
+                            photoContainer.appendChild(img);
+                            photoContainer.appendChild(deleteBtn);
+                            currentPhotosDiv.appendChild(photoContainer);
+                        });
+
+                        // Add "Delete All" button
+                        const deleteAllBtn = document.createElement('button');
+                        deleteAllBtn.textContent = 'Delete All Photos';
+                        deleteAllBtn.style.cssText = 'background: #f44336; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer; margin-top: 10px;';
+                        deleteAllBtn.onclick = () => {
+                            if (confirm('Are you sure you want to delete all photos?')) {
+                                deleteAllPhotos();
+                            }
+                        };
+                        currentPhotosDiv.appendChild(deleteAllBtn);
+                    }
+
+                    let photosToDelete = [];
+
+                    function deletePhoto(index) {
+                        if (confirm('Are you sure you want to delete this photo?')) {
+                            photosToDelete.push(index);
+                            // Update UI to show photo as marked for deletion
+                            const currentPhotosDiv = document.getElementById('currentPhotos');
+                            const photoContainers = currentPhotosDiv.querySelectorAll('div[style*="position: relative"]');
+                            if (photoContainers[index]) {
+                                photoContainers[index].style.opacity = '0.5';
+                                photoContainers[index].querySelector('img').style.filter = 'grayscale(100%)';
+                            }
+                        }
+                    }
+
+                    function deleteAllPhotos() {
+                        const currentPhotosDiv = document.getElementById('currentPhotos');
+                        const photoContainers = currentPhotosDiv.querySelectorAll('div[style*="position: relative"]');
+                        photosToDelete = Array.from({length: photoContainers.length}, (_, i) => i);
+
+                        // Mark all photos for deletion visually
+                        photoContainers.forEach(container => {
+                            container.style.opacity = '0.5';
+                            container.querySelector('img').style.filter = 'grayscale(100%)';
+                        });
                     }
 
                     function closeModal() {
@@ -376,6 +453,11 @@
                         const escortId = editEscortIdInput.value;
                         const formData = new FormData(this);
 
+                        // Add photos to delete to the form data
+                        if (photosToDelete.length > 0) {
+                            formData.append('photosToDelete', photosToDelete.join(','));
+                        }
+
                         fetch(`/admin/escorts/${escortId}`, {
                             method: 'PUT',
                             body: formData
@@ -384,6 +466,8 @@
                         .then(result => {
                             if (result.success) {
                                 alert('Profile updated successfully!');
+                                // Reset photos to delete
+                                photosToDelete = [];
                                 closeModal();
                                 location.reload();
                             } else {

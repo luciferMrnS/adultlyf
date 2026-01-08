@@ -310,9 +310,14 @@ def manage_escort(escort_id):
             data = request.form
             uploaded_files = request.files.getlist('photos')
             photo_paths = []
+            photos_to_delete = []
 
+            # Handle photos to delete
+            if 'photosToDelete' in data:
+                photos_to_delete = [int(idx.strip()) for idx in data['photosToDelete'].split(',') if idx.strip()]
+
+            # Handle new photos uploaded
             if uploaded_files and any(f.filename for f in uploaded_files):
-                # New photos uploaded, replace existing ones
                 for file in uploaded_files:
                     if file and file.filename:
                         filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
@@ -325,11 +330,12 @@ def manage_escort(escort_id):
         else:
             # JSON data (for non-file updates)
             data = request.get_json()
-            photo_paths = None
+            photo_paths = []
+            photos_to_delete = data.get('photosToDelete', []) if data else []
 
         for i, escort in enumerate(escorts):
             if escort['id'] == escort_id:
-                # Update fields
+                # Update basic fields
                 if 'name' in data:
                     escorts[i]['name'] = data['name']
                 if 'age' in data:
@@ -340,12 +346,50 @@ def manage_escort(escort_id):
                     escorts[i]['sexual_preference'] = data['sexual_preference']
                 if 'description' in data:
                     escorts[i]['description'] = data['description']
-                if photo_paths is not None:
-                    escorts[i]['photos'] = photo_paths
+
+                # Handle photo updates
+                current_photos = escorts[i]['photos'] if escorts[i]['photos'] else []
+
+                # Remove photos marked for deletion
+                if photos_to_delete:
+                    # Sort in descending order to avoid index shifting issues
+                    photos_to_delete.sort(reverse=True)
+                    for idx in photos_to_delete:
+                        if 0 <= idx < len(current_photos):
+                            # Optionally delete the file from filesystem
+                            photo_path = current_photos[idx]
+                            if photo_path.startswith('/uploads/'):
+                                file_path = photo_path[1:]  # Remove leading slash
+                                try:
+                                    if os.path.exists(file_path):
+                                        os.remove(file_path)
+                                        print(f"Deleted photo file: {file_path}")
+                                except Exception as e:
+                                    print(f"Error deleting photo file {file_path}: {e}")
+
+                            # Remove from array
+                            current_photos.pop(idx)
+
+                # Add new photos to existing ones
+                if photo_paths:
+                    current_photos.extend(photo_paths)
+
+                escorts[i]['photos'] = current_photos
 
                 # Save back to file
                 with open('escorts.json', 'w') as f:
                     json.dump(escorts, f, indent=4)
+
+                # Commit the change to git
+                try:
+                    subprocess.run(['git', 'add', 'escorts.json'], check=True, capture_output=True)
+                    commit_message = f"Update escort profile: {escorts[i]['name']} (ID: {escorts[i]['id']})"
+                    subprocess.run(['git', 'commit', '-m', commit_message], check=True, capture_output=True)
+                    print(f"✅ Committed escort profile update: {escorts[i]['name']}")
+                except subprocess.CalledProcessError as e:
+                    print(f"⚠️  Warning: Could not commit escort update to git: {e}")
+                except Exception as e:
+                    print(f"⚠️  Warning: Git commit failed: {e}")
 
                 return jsonify({
                     'success': True,
