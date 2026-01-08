@@ -77,6 +77,10 @@ def search():
 def videos():
     return send_from_directory('.', 'videos.json')
 
+@app.route('/adverts.json')
+def adverts():
+    return send_from_directory('.', 'adverts.json')
+
 @app.route('/scrape', methods=['POST'])
 @limiter.limit("10 per hour", methods=["POST"])
 def scrape():

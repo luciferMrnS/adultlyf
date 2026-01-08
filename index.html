@@ -142,6 +142,30 @@
             100% { opacity: 0.7; }
         }
 
+        .advert-container {
+            overflow: hidden;
+            position: relative;
+            height: 40px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .advert-text {
+            position: absolute;
+            width: 100%;
+            font-size: 1.5rem;
+            color: #ff6b6b;
+            font-weight: bold;
+            text-shadow: 0 0 5px #ff6b6b;
+            animation: slideAcross 15s linear forwards;
+            white-space: nowrap;
+        }
+
+        @keyframes slideAcross {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             header {
@@ -234,6 +258,7 @@
             <img src="/static/logo.svg" alt="Adultlyf Logo" style="height: 80px; width: auto; vertical-align: middle; margin-right: 15px;">
         </a>
         <h1>Adultlyf</h1>
+        <div id="advert-container" class="advert-container"></div>
         <nav style="position: absolute; top: 1rem; right: 1rem; text-align: center;">
             <a href="escorts.html" class="escort-button">🚀 ESCORTS</a>
             <div style="color: #ff6b6b; font-size: 1.2rem; font-weight: bold; margin-top: 0.5rem; text-shadow: 0 0 5px #ff6b6b;">schedule an escort under 5minutes</div>
@@ -320,6 +345,41 @@
             });
 
             searchInput.addEventListener("keyup", filterVideos);
+
+            // Advert cycling
+            let adverts = [];
+            let currentIndex = 0;
+            const advertContainer = document.getElementById('advert-container');
+
+            function showNextAdvert() {
+                if (currentIndex >= adverts.length) {
+                    advertContainer.innerHTML = '';
+                    setTimeout(() => {
+                        currentIndex = 0;
+                        showNextAdvert();
+                    }, 60000); // pause 1 minute after all adverts
+                    return;
+                }
+
+                const advertDiv = document.createElement('div');
+                advertDiv.classList.add('advert-text');
+                advertDiv.textContent = adverts[currentIndex];
+                advertContainer.innerHTML = '';
+                advertContainer.appendChild(advertDiv);
+
+                currentIndex++;
+                setTimeout(showNextAdvert, 15000); // 15s for each advert (speed x1.5)
+            }
+
+            fetch('adverts.json')
+                .then(response => response.json())
+                .then(data => {
+                    adverts = data;
+                    showNextAdvert();
+                })
+                .catch(error => {
+                    console.error('Error fetching adverts.json:', error);
+                });
 
         });
     </script>
