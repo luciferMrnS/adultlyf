@@ -700,6 +700,17 @@ def admin_escorts():
         with open('escorts.json', 'w') as f:
             json.dump(escorts, f, indent=4)
 
+        # Commit the change to git for permanent storage
+        try:
+            subprocess.run(['git', 'add', 'escorts.json'], check=True, capture_output=True)
+            commit_message = f"Add new escort profile: {escort['name']} (ID: {escort['id']})"
+            subprocess.run(['git', 'commit', '-m', commit_message], check=True, capture_output=True)
+            print(f"✅ Committed new escort profile: {escort['name']}")
+        except subprocess.CalledProcessError as e:
+            print(f"⚠️  Warning: Could not commit escort profile to git: {e}")
+        except Exception as e:
+            print(f"⚠️  Warning: Git commit failed: {e}")
+
         return jsonify({
             'success': True,
             'message': f'Escort profile for {escort["name"]} created successfully',
