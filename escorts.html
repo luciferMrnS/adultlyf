@@ -1216,8 +1216,20 @@
                 const data = await response.json();
 
                 if (data.messages && data.messages.length > lastMessageCount) {
-                    // New messages detected
+                    // Check for chat termination message
                     const newMessages = data.messages.slice(lastMessageCount);
+                    const terminationMessage = newMessages.find(msg =>
+                        msg.sender === 'system' && msg.message.includes('ended by administrator')
+                    );
+
+                    if (terminationMessage) {
+                        // Chat has been ended by admin - clean up
+                        console.log('Chat ended by administrator');
+                        cleanupEndedChat();
+                        return;
+                    }
+
+                    // New messages detected
                     const hasNewAdminMessage = newMessages.some(msg => msg.sender === 'admin');
 
                     if (hasNewAdminMessage && document.getElementById('chatModal').style.display !== 'block') {
@@ -1243,6 +1255,40 @@
             } catch (error) {
                 console.error('Error monitoring chat:', error);
             }
+        }
+
+        function cleanupEndedChat() {
+            // Clear all monitoring intervals
+            if (backgroundChatMonitor) {
+                clearInterval(backgroundChatMonitor);
+                backgroundChatMonitor = null;
+            }
+            if (chatPollingInterval) {
+                clearInterval(chatPollingInterval);
+                chatPollingInterval = null;
+            }
+
+            // Close any open chat modal
+            const chatModal = document.getElementById('chatModal');
+            if (chatModal.style.display === 'block') {
+                closeChatModal();
+            }
+
+            // Clear localStorage
+            localStorage.removeItem('activeChatRequestId');
+            localStorage.removeItem('activeChatClientName');
+
+            // Hide continue chat button
+            document.getElementById('continueChatContainer').style.display = 'none';
+
+            // Show notification
+            setTimeout(() => {
+                alert('This chat session has been ended by the administrator.');
+            }, 500);
+
+            // Reset variables
+            currentRequestId = null;
+            lastMessageCount = 0;
         }
 
         function continueExistingChat() {
