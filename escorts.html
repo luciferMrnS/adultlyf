@@ -1072,6 +1072,35 @@
                 chatPollingInterval = null;
             }
             currentRequestId = null;
+
+            // Show continue chat button again when manually closed
+            const savedRequestId = localStorage.getItem('activeChatRequestId');
+            if (savedRequestId) {
+                document.getElementById('continueChatContainer').style.display = 'block';
+            }
+        }
+
+        function endChatSession() {
+            // Clear all chat-related data and intervals
+            if (chatPollingInterval) {
+                clearInterval(chatPollingInterval);
+                chatPollingInterval = null;
+            }
+            if (backgroundChatMonitor) {
+                clearInterval(backgroundChatMonitor);
+                backgroundChatMonitor = null;
+            }
+
+            // Clear localStorage
+            localStorage.removeItem('activeChatRequestId');
+            localStorage.removeItem('activeChatClientName');
+
+            // Hide chat elements
+            document.getElementById('chatModal').style.display = 'none';
+            document.getElementById('continueChatContainer').style.display = 'none';
+
+            currentRequestId = null;
+            lastMessageCount = 0;
         }
 
         function openGallery(escortId) {
@@ -1129,6 +1158,9 @@
             updateGallery();
         }
 
+        let backgroundChatMonitor = null;
+        let lastMessageCount = 0;
+
         function checkForExistingChat() {
             const savedRequestId = localStorage.getItem('activeChatRequestId');
             const savedClientName = localStorage.getItem('activeChatClientName');
@@ -1139,8 +1171,14 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.messages && data.messages.length > 0) {
+                            // Store initial message count for monitoring
+                            lastMessageCount = data.messages.length;
+
                             // Show the continue chat button
                             document.getElementById('continueChatContainer').style.display = 'block';
+
+                            // Start background monitoring for new admin messages
+                            startBackgroundChatMonitoring(savedRequestId);
                         } else {
                             // Clear localStorage if chat no longer exists
                             localStorage.removeItem('activeChatRequestId');
@@ -1153,6 +1191,53 @@
                         localStorage.removeItem('activeChatRequestId');
                         localStorage.removeItem('activeChatClientName');
                     });
+            }
+        }
+
+        function startBackgroundChatMonitoring(requestId) {
+            // Clear any existing monitor
+            if (backgroundChatMonitor) {
+                clearInterval(backgroundChatMonitor);
+            }
+
+            // Monitor every 5 seconds for new admin messages
+            backgroundChatMonitor = setInterval(() => {
+                monitorForNewAdminMessages(requestId);
+            }, 5000);
+        }
+
+        async function monitorForNewAdminMessages(requestId) {
+            try {
+                const response = await fetch(`/chat/${requestId}`);
+                const data = await response.json();
+
+                if (data.messages && data.messages.length > lastMessageCount) {
+                    // New messages detected
+                    const newMessages = data.messages.slice(lastMessageCount);
+                    const hasNewAdminMessage = newMessages.some(msg => msg.sender === 'admin');
+
+                    if (hasNewAdminMessage && document.getElementById('chatModal').style.display !== 'block') {
+                        // Admin sent new message and chat is closed - auto-reopen
+                        const savedClientName = localStorage.getItem('activeChatClientName') || 'Client';
+
+                        // Update last message count
+                        lastMessageCount = data.messages.length;
+
+                        // Hide continue button and auto-open chat
+                        document.getElementById('continueChatContainer').style.display = 'none';
+                        showChatModal(requestId, savedClientName);
+
+                        // Optional: Add a notification that chat was auto-opened
+                        setTimeout(() => {
+                            addChatMessage('system', '💬 New message from scheduler - chat reopened automatically');
+                        }, 1000);
+                    } else {
+                        // Just update the count for future checks
+                        lastMessageCount = data.messages.length;
+                    }
+                }
+            } catch (error) {
+                console.error('Error monitoring chat:', error);
             }
         }
 
