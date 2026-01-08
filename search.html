@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results - Adultlyf</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            padding: 1rem;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        .search-info {
+            text-align: center;
+            padding: 1rem;
+            background-color: #2a2a2a;
+            margin-bottom: 1rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .video-item {
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .video-item:hover {
+            transform: scale(1.05);
+        }
+        .video-item img {
+            width: 100%;
+            height: auto;
+        }
+        .video-item-title {
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .loading {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #fff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            margin: 2rem 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .loading h2 {
+            margin: 0 0 1rem 0;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        .loading p {
+            margin: 0 0 1.5rem 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .countdown {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: #ccc;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="site-logo" style="position: absolute; left: 1rem; top: 10px;">
+            <img src="/static/logo.svg" alt="Adultlyf Logo" style="height: 80px; width: auto; vertical-align: middle; margin-right: 15px;">
+        </a>
+        <h1>Adultlyf - Search Results</h1>
+    </header>
+    <div class="container">
+        <a href="index.html" class="back-link">&larr; Back to Home</a>
+        <div id="search-info" class="search-info"></div>
+        <div id="results-container">
+            <div class="loading">Searching for videos...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('q');
+
+            if (!query) {
+                document.getElementById('results-container').innerHTML = '<div class="no-results">No search query provided.</div>';
+                return;
+            }
+
+            document.getElementById('search-info').textContent = `Search results for: "${decodeURIComponent(query)}"`;
+
+            // First, show local results immediately
+            fetch("videos.json")
+                .then(response => response.json())
+                .then(data => {
+                    const localResults = data.filter(video =>
+                        video.title.toLowerCase().includes(query.toLowerCase())
+                    );
+
+                    if (localResults.length > 0) {
+                        displayResults(localResults, `Found ${localResults.length} local results`);
+                    }
+
+                    // Then scrape for more results
+                    return performSearch(query);
+                })
+                .catch(error => {
+                    console.error("Error loading videos:", error);
+                    return performSearch(query);
+                });
+        });
+
+        async function performSearch(searchTerm) {
+            // Show enhanced loading screen with countdown
+            showLoadingScreen(searchTerm);
+
+            try {
+                const response = await fetch('/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ keyword: searchTerm })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.videos && result.videos.length > 0) {
+                    // Reload videos and show all matching results
+                    const updatedResponse = await fetch('videos.json');
+                    const updatedVideos = await updatedResponse.json();
+
+                    const allMatchingVideos = updatedVideos.filter(video =>
+                        video.title.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
+
+                    displayResults(allMatchingVideos, `Found ${allMatchingVideos.length} total results (including newly scraped)`);
+                } else {
+                    // No new videos found, just show local results if any
+                    fetch("videos.json")
+                        .then(response => response.json())
+                        .then(data => {
+                            const localResults = data.filter(video =>
+                                video.title.toLowerCase().includes(searchTerm.toLowerCase())
+                            );
+
+                            if (localResults.length > 0) {
+                                displayResults(localResults, `Found ${localResults.length} results (no new videos found)`);
+                            } else {
+                                document.getElementById('results-container').innerHTML =
+                                    '<div class="no-results">No videos found for this search term.</div>';
+                            }
+                        });
+                }
+            } catch (error) {
+                console.error('Error during scraping:', error);
+                document.getElementById('results-container').innerHTML =
+                    '<div class="no-results">Error occurred while searching. Please try again later.</div>';
+            }
+        }
+
+        function showLoadingScreen(searchTerm) {
+            const container = document.getElementById('results-container');
+            let countdown = 15; // 15 second countdown
+
+            const loadingHtml = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <h2>🎥 Getting you the best categories for "${searchTerm}"</h2>
+                    <p>Please wait while we search across multiple adult sites...</p>
+                    <div class="countdown">${countdown}</div>
+                </div>
+            `;
+
+            container.innerHTML = loadingHtml;
+
+            // Update countdown every second
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                const countdownElement = document.querySelector('.countdown');
+                if (countdownElement) {
+                    countdownElement.textContent = countdown;
+
+                    // Add some visual effects as countdown gets lower
+                    if (countdown <= 5) {
+                        countdownElement.style.color = '#ff6b6b';
+                        countdownElement.style.animation = 'pulse 0.5s infinite';
+                    }
+                }
+
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+
+            // Add pulse animation for low countdown
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                    100% { transform: scale(1); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        function displayResults(videos, infoText = '') {
+            const container = document.getElementById('results-container');
+
+            let html = '';
+            if (infoText) {
+                html += `<div class="search-info" style="margin-bottom: 1rem;">${infoText}</div>`;
+            }
+
+            if (videos.length === 0) {
+                html += '<div class="no-results">No videos found.</div>';
+            } else {
+                html += '<div class="video-grid">';
+
+                videos.forEach(video => {
+                    const params = new URLSearchParams({
+                        embed_url: encodeURIComponent(video.embed_url),
+                        video_url: encodeURIComponent(video.video_url),
+                        title: encodeURIComponent(video.title)
+                    });
+
+                    html += `
+                        <div class="video-item" onclick="window.open('player.html?${params.toString()}', '_blank')">
+                            <img src="${video.thumbnail}" alt="${video.title}" loading="lazy">
+                            <div class="video-item-title">${video.title}</div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

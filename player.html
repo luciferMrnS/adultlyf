@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        .player-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .video-title {
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 1rem 0;
+            color: #fff;
+        }
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            background: #000;
+            margin-bottom: 2rem;
+        }
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        .related-videos {
+            margin-top: 2rem;
+        }
+        .related-videos h3 {
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        .video-item {
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .video-item:hover {
+            transform: scale(1.05);
+        }
+        .video-item img {
+            width: 100%;
+            height: auto;
+        }
+        .video-item-title {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="site-logo" style="position: absolute; left: 1rem; top: 10px;">
+        <img src="/static/logo.svg" alt="Adultlyf Logo" style="height: 80px; width: auto; vertical-align: middle; margin-right: 15px;">
+    </a>
+    <div class="player-container">
+        <div class="back-button">
+            <a href="index.html">&larr; Back to Videos</a>
+        </div>
+        <div class="search-form" style="margin: 1rem 0; text-align: center;">
+            <input type="text" id="search-input" placeholder="Search for videos..." style="padding: 0.5rem; width: 300px; border: 1px solid #555; border-radius: 4px; background-color: #2a2a2a; color: #fff;">
+            <button type="button" id="search-button" style="padding: 0.5rem 1rem; border: 1px solid #555; border-radius: 4px; background-color: #4CAF50; color: white; cursor: pointer;">Search</button>
+        </div>
+        <div id="video-title" class="video-title"></div>
+        <div class="video-wrapper">
+            <iframe id="video-player" src="" allowfullscreen></iframe>
+        </div>
+        <div class="related-videos">
+            <h3>Related Videos</h3>
+            <div id="related-videos" class="video-grid">
+                <!-- Related videos will be loaded here -->
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const embedUrl = urlParams.get('embed_url');
+            const videoUrl = urlParams.get('video_url');
+            const title = urlParams.get('title');
+
+            // Set video title
+            if (title) {
+                document.getElementById('video-title').textContent = decodeURIComponent(title);
+            }
+
+            if (embedUrl && embedUrl.trim() !== '') {
+                // Use embed URL if available
+                document.getElementById('video-player').src = decodeURIComponent(embedUrl);
+            } else if (videoUrl && videoUrl.trim() !== '') {
+                // Fallback: redirect to the actual video page
+                // Adult sites often have complex players that can't be easily embedded
+                const decodedVideoUrl = decodeURIComponent(videoUrl);
+                const message = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 2rem;">
+                        <h2 style="color: #fff; margin-bottom: 1rem;">Video Player</h2>
+                        <p style="color: #ccc; margin-bottom: 2rem;">Click the button below to watch the video on the original site</p>
+                        <a href="${decodedVideoUrl}" target="_blank" style="background: #ff4444; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 8px; font-size: 1.2rem; transition: background 0.3s;">
+                            Watch Video
+                        </a>
+                        <p style="color: #888; margin-top: 2rem; font-size: 0.9rem;">Opens in new tab for best viewing experience</p>
+                    </div>
+                `;
+                document.querySelector('.video-wrapper').innerHTML = message;
+            } else {
+                // Handle case where neither URL is provided
+                document.querySelector('.video-wrapper').innerHTML = '<p style="color: #fff; text-align: center; padding-top: 2rem;">Error: No video URL provided.</p>';
+            }
+
+            let allVideos = [];
+            let currentVideoUrl = decodeURIComponent(videoUrl || '');
+
+            // Load all videos
+            fetch("videos.json")
+                .then(response => response.json())
+                .then(data => {
+                    allVideos = data;
+                    displayRelatedVideos(allVideos.filter(video => video.video_url !== currentVideoUrl).slice(0, 12));
+                })
+                .catch(error => {
+                    console.error("Error loading videos:", error);
+                    document.getElementById('related-videos').innerHTML = '<p>Could not load videos.</p>';
+                });
+
+            function displayRelatedVideos(videoData) {
+                const relatedContainer = document.getElementById('related-videos');
+                relatedContainer.innerHTML = '';
+
+                videoData.forEach(video => {
+                    const videoItem = document.createElement('div');
+                    videoItem.classList.add('video-item');
+
+                    const thumbnail = document.createElement('img');
+                    thumbnail.src = video.thumbnail;
+                    thumbnail.alt = video.title;
+
+                    const videoTitle = document.createElement('div');
+                    videoTitle.classList.add('video-item-title');
+                    videoTitle.textContent = video.title;
+
+                    videoItem.appendChild(thumbnail);
+                    videoItem.appendChild(videoTitle);
+                    relatedContainer.appendChild(videoItem);
+
+                    // Add click listener to open this video in new tab
+                    videoItem.addEventListener('click', () => {
+                        const params = new URLSearchParams({
+                            embed_url: encodeURIComponent(video.embed_url),
+                            video_url: encodeURIComponent(video.video_url),
+                            title: encodeURIComponent(video.title)
+                        });
+                        window.open(`player.html?${params.toString()}`, '_blank');
+                    });
+                });
+            }
+
+            // Search functionality - opens search results in new tab
+            const searchInput = document.getElementById('search-input');
+            const searchButton = document.getElementById('search-button');
+
+            function performSearch() {
+                const searchTerm = searchInput.value.trim();
+                if (searchTerm !== '') {
+                    // Create a temporary link and click it to open in new tab
+                    const params = new URLSearchParams({
+                        q: encodeURIComponent(searchTerm)
+                    });
+                    const url = `search.html?${params.toString()}`;
+
+                    // Try window.open first
+                    const newWindow = window.open(url, '_blank');
+
+                    // If popup blocked, try alternative method
+                    if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                        // Fallback: create a temporary link and click it
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.target = '_blank';
+                        link.style.display = 'none';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }
+            }
+
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            // Add visual feedback
+            searchButton.addEventListener('click', function() {
+                this.style.backgroundColor = '#45a049';
+                setTimeout(() => {
+                    this.style.backgroundColor = '#4CAF50';
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>

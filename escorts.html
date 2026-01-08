@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escorts - Adultlyf</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            padding: 1rem;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .escort-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .escort-card {
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .photo-album {
+            position: relative;
+            height: 250px;
+            overflow: hidden;
+        }
+        .photo-album img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s;
+        }
+        .photo-album img:not(.active) {
+            display: none;
+        }
+        .photo-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        .photo-nav.prev {
+            left: 0;
+        }
+        .photo-nav.next {
+            right: 0;
+        }
+        .escort-info {
+            padding: 1rem;
+        }
+        .escort-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .escort-details {
+            margin-bottom: 1rem;
+        }
+        .escort-details p {
+            margin: 0.25rem 0;
+        }
+        .meet-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        .meet-btn:hover {
+            background: linear-gradient(135deg, #ee5a24, #ff6b6b);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            background-color: #2a2a2a;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            animation: slideIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background-color: #333;
+            color: white;
+            font-size: 1rem;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .submit-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #45a049, #4CAF50);
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .photo-indicators {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.25rem;
+        }
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+        }
+        .indicator.active {
+            background: white;
+        }
+        .filter-btn {
+            background: #555;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .filter-btn:hover {
+            background: #777;
+        }
+        .filter-btn.active {
+            background: #4CAF50;
+            color: white;
+        }
+        .location-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        /* Gallery Modal Styles */
+        .gallery-modal {
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+        .gallery-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .gallery-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+        }
+        .gallery-close:hover {
+            color: #ccc;
+        }
+        .gallery-container {
+            position: relative;
+            max-width: 80vw;
+            max-height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #galleryImage {
+            width: 2048px;
+            height: 2048px;
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 2rem;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        .gallery-nav:hover {
+            background: rgba(0,0,0,0.9);
+        }
+        .gallery-prev {
+            left: -80px;
+        }
+        .gallery-next {
+            right: -80px;
+        }
+        .gallery-thumbnails {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            max-width: 80vw;
+            overflow-x: auto;
+            padding: 0.5rem;
+        }
+        .gallery-thumbnail {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: border-color 0.3s;
+        }
+        .gallery-thumbnail.active {
+            border-color: #4CAF50;
+        }
+        .gallery-counter {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 1rem;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .photo-album {
+            cursor: pointer;
+        }
+        .gallery-back-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+            transition: background 0.3s;
+        }
+        .gallery-back-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Escorts - Adultlyf</h1>
+    </header>
+    <div class="container">
+        <a href="index.html" class="back-link">&larr; Back to Home</a>
+        <a href="admin/escorts" style="display: none;">Admin</a>
+
+        <!-- Location Filter -->
+        <div class="filter-section" style="background: #2a2a2a; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+            <h3 style="margin: 0 0 1rem 0; color: #4CAF50;">Filter by Location</h3>
+            <div class="location-filters" id="location-filters">
+                <button class="filter-btn active" data-location="all">All Locations</button>
+                <!-- Location buttons will be dynamically generated -->
+            </div>
+        </div>
+
+        <div id="escorts-container">
+            <div class="loading">Loading escorts...</div>
+        </div>
+    </div>
+
+    <!-- Meet Modal -->
+    <div id="meetModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Arrange Meeting</h2>
+            <form id="meetForm">
+                <div class="form-group">
+                    <label for="clientName">Your Name *</label>
+                    <input type="text" id="clientName" name="clientName" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientLocation">Your Location *</label>
+                    <input type="text" id="clientLocation" name="clientLocation" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientContact">Your Contact Info *</label>
+                    <input type="text" id="clientContact" name="clientContact" placeholder="Phone, email, or preferred contact method" required>
+                </div>
+                <div class="form-group">
+                    <label for="meetingDetails">Meeting Preferences</label>
+                    <textarea id="meetingDetails" name="meetingDetails" placeholder="Any specific preferences or details..."></textarea>
+                </div>
+                <input type="hidden" id="escortId" name="escortId">
+                <button type="submit" class="submit-btn">Submit Request</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Image Gallery Modal -->
+    <div id="galleryModal" class="modal gallery-modal">
+        <div class="gallery-content">
+            <span class="gallery-close">&times;</span>
+            <div class="gallery-container">
+                <img id="galleryImage" src="" alt="">
+                <button class="gallery-nav gallery-prev" id="galleryPrev">&#10094;</button>
+                <button class="gallery-nav gallery-next" id="galleryNext">&#10095;</button>
+            </div>
+            <div class="gallery-thumbnails" id="galleryThumbnails"></div>
+            <div class="gallery-counter" id="galleryCounter">1 / 1</div>
+            <button class="gallery-back-btn" id="galleryBackBtn">← Back to Escorts</button>
+        </div>
+    </div>
+
+    <script>
+        let escorts = [];
+        let currentPhotoIndices = {};
+        let currentFilter = 'all';
+
+        let currentGalleryEscort = null;
+        let currentGalleryIndex = 0;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            loadEscorts();
+
+            // Modal functionality
+            const modal = document.getElementById('meetModal');
+            const closeBtn = document.querySelector('.close');
+
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+
+            // Gallery modal functionality
+            const galleryModal = document.getElementById('galleryModal');
+            const galleryCloseBtn = document.querySelector('.gallery-close');
+
+            galleryCloseBtn.onclick = function() {
+                galleryModal.style.display = 'none';
+            }
+
+            window.onclick = function(event) {
+                if (event.target == galleryModal) {
+                    galleryModal.style.display = 'none';
+                }
+            }
+
+            // Gallery navigation
+            document.getElementById('galleryPrev').addEventListener('click', () => changeGalleryImage(-1));
+            document.getElementById('galleryNext').addEventListener('click', () => changeGalleryImage(1));
+
+            // Gallery back button
+            document.getElementById('galleryBackBtn').addEventListener('click', () => {
+                document.getElementById('galleryModal').style.display = 'none';
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(event) {
+                if (galleryModal.style.display === 'block') {
+                    if (event.key === 'ArrowLeft') {
+                        changeGalleryImage(-1);
+                    } else if (event.key === 'ArrowRight') {
+                        changeGalleryImage(1);
+                    } else if (event.key === 'Escape') {
+                        galleryModal.style.display = 'none';
+                    }
+                }
+            });
+
+            // Form submission
+            document.getElementById('meetForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitMeetRequest();
+            });
+        });
+
+        function loadEscorts() {
+            fetch("escorts.json")
+                .then(response => response.json())
+                .then(data => {
+                    escorts = data;
+                    generateLocationFilters();
+                    displayEscorts();
+                })
+                .catch(error => {
+                    console.error("Error loading escorts:", error);
+                    document.getElementById('escorts-container').innerHTML =
+                        '<div style="text-align: center; padding: 2rem; color: #ccc;">Error loading escorts. Please try again later.</div>';
+                });
+        }
+
+        function generateLocationFilters() {
+            const locationFilters = document.getElementById('location-filters');
+            const locations = [...new Set(escorts.map(escort => escort.location))].sort();
+
+            locations.forEach(location => {
+                const button = document.createElement('button');
+                button.className = 'filter-btn';
+                button.setAttribute('data-location', location);
+                button.textContent = location;
+                button.addEventListener('click', () => filterEscorts(location));
+                locationFilters.appendChild(button);
+            });
+        }
+
+        function filterEscorts(location) {
+            currentFilter = location;
+
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-location="${location}"]`).classList.add('active');
+
+            displayEscorts();
+        }
+
+        function displayEscorts() {
+            const container = document.getElementById('escorts-container');
+
+            // Filter escorts based on current filter
+            const filteredEscorts = currentFilter === 'all'
+                ? escorts
+                : escorts.filter(escort => escort.location === currentFilter);
+
+            if (filteredEscorts.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #ccc;">No escorts available for the selected location.</div>';
+                return;
+            }
+
+            let html = '<div class="escort-grid">';
+
+            filteredEscorts.forEach(escort => {
+                currentPhotoIndices[escort.id] = 0;
+                html += `
+                    <div class="escort-card">
+                        <div class="photo-album" data-escort-id="${escort.id}">
+                            ${escort.photos.map((photo, index) =>
+                                `<img src="${photo}" alt="${escort.name}" class="${index === 0 ? 'active' : ''}">`
+                            ).join('')}
+                            <button class="photo-nav prev" onclick="changePhoto(${escort.id}, -1)">&#10094;</button>
+                            <button class="photo-nav next" onclick="changePhoto(${escort.id}, 1)">&#10095;</button>
+                            <div class="photo-indicators">
+                                ${escort.photos.map((_, index) =>
+                                    `<div class="indicator ${index === 0 ? 'active' : ''}" onclick="setPhoto(${escort.id}, ${index})"></div>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        <div class="escort-info">
+                            <div class="escort-name">${escort.name}</div>
+                            <div class="escort-details">
+                                <p><strong>Age:</strong> ${escort.age}</p>
+                                <p><strong>Location:</strong> ${escort.location}</p>
+                                <p><strong>Preference:</strong> ${escort.sexual_preference}</p>
+                                <p>${escort.description}</p>
+                            </div>
+                            <button class="meet-btn" onclick="openMeetModal(${escort.id})">Meet</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+
+            // Add click event listeners to photo albums for gallery
+            document.querySelectorAll('.photo-album').forEach(album => {
+                album.addEventListener('click', function() {
+                    const escortId = parseInt(this.getAttribute('data-escort-id'));
+                    openGallery(escortId);
+                });
+            });
+        }
+
+        function changePhoto(escortId, direction) {
+            event.stopPropagation();
+            const escort = escorts.find(e => e.id === escortId);
+            if (!escort) return;
+
+            const currentIndex = currentPhotoIndices[escortId];
+            let newIndex = currentIndex + direction;
+
+            if (newIndex < 0) newIndex = escort.photos.length - 1;
+            if (newIndex >= escort.photos.length) newIndex = 0;
+
+            setPhoto(escortId, newIndex);
+        }
+
+        function setPhoto(escortId, index) {
+            event.stopPropagation();
+            const album = document.querySelector(`.photo-album[data-escort-id="${escortId}"]`);
+            const images = album.querySelectorAll('img');
+            const indicators = album.querySelectorAll('.indicator');
+
+            images.forEach(img => img.classList.remove('active'));
+            indicators.forEach(ind => ind.classList.remove('active'));
+
+            images[index].classList.add('active');
+            indicators[index].classList.add('active');
+
+            currentPhotoIndices[escortId] = index;
+        }
+
+        function openMeetModal(escortId) {
+            const escort = escorts.find(e => e.id === escortId);
+            if (!escort) return;
+
+            document.getElementById('escortId').value = escortId;
+            document.getElementById('meetModal').style.display = 'block';
+
+            // Reset form
+            document.getElementById('meetForm').reset();
+        }
+
+        async function submitMeetRequest() {
+            const formData = new FormData(document.getElementById('meetForm'));
+            const data = {
+                escortId: formData.get('escortId'),
+                clientName: formData.get('clientName'),
+                clientLocation: formData.get('clientLocation'),
+                clientContact: formData.get('clientContact'),
+                meetingDetails: formData.get('meetingDetails')
+            };
+
+            try {
+                const response = await fetch('/meet', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Show success message
+                    alert(result.message);
+                    // Close modal
+                    document.getElementById('meetModal').style.display = 'none';
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error submitting meet request:', error);
+                alert('Error submitting request. Please try again.');
+            }
+        }
+
+        function openGallery(escortId) {
+            const escort = escorts.find(e => e.id === escortId);
+            if (!escort || !escort.photos || escort.photos.length === 0) return;
+
+            currentGalleryEscort = escort;
+            currentGalleryIndex = currentPhotoIndices[escortId] || 0;
+
+            updateGallery();
+            document.getElementById('galleryModal').style.display = 'block';
+        }
+
+        function updateGallery() {
+            if (!currentGalleryEscort) return;
+
+            const galleryImage = document.getElementById('galleryImage');
+            const galleryThumbnails = document.getElementById('galleryThumbnails');
+            const galleryCounter = document.getElementById('galleryCounter');
+
+            // Update main image
+            galleryImage.src = currentGalleryEscort.photos[currentGalleryIndex];
+            galleryImage.alt = currentGalleryEscort.name;
+
+            // Update counter
+            galleryCounter.textContent = `${currentGalleryIndex + 1} / ${currentGalleryEscort.photos.length}`;
+
+            // Update thumbnails
+            galleryThumbnails.innerHTML = '';
+            currentGalleryEscort.photos.forEach((photo, index) => {
+                const thumbnail = document.createElement('img');
+                thumbnail.src = photo;
+                thumbnail.alt = `${currentGalleryEscort.name} ${index + 1}`;
+                thumbnail.className = `gallery-thumbnail ${index === currentGalleryIndex ? 'active' : ''}`;
+                thumbnail.addEventListener('click', () => setGalleryImage(index));
+                galleryThumbnails.appendChild(thumbnail);
+            });
+        }
+
+        function changeGalleryImage(direction) {
+            if (!currentGalleryEscort) return;
+
+            let newIndex = currentGalleryIndex + direction;
+
+            if (newIndex < 0) newIndex = currentGalleryEscort.photos.length - 1;
+            if (newIndex >= currentGalleryEscort.photos.length) newIndex = 0;
+
+            setGalleryImage(newIndex);
+        }
+
+        function setGalleryImage(index) {
+            if (!currentGalleryEscort || index < 0 || index >= currentGalleryEscort.photos.length) return;
+
+            currentGalleryIndex = index;
+            updateGallery();
+        }
+    </script>
+</body>
+</html>

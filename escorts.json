@@ -1,0 +1,28 @@
+[
+    {
+        "id": 1,
+        "name": "Sarah",
+        "age": 25,
+        "location": "Lagos, Nigeria",
+        "sexual_preference": "Bisexual",
+        "photos": [
+            "/uploads/94f20605-5dac-46ed-9276-edcdd852f802_OIP_3.jpg",
+            "/uploads/3e7658af-cff9-488d-8d2b-b311b52e5562_OIP_4.jpg",
+            "/uploads/a692e2ae-dfbf-4a16-923a-9524dc4ffb7c_OIP_5.jpg"
+        ],
+        "description": "Passionate and adventurous companion"
+    },
+    {
+        "id": 2,
+        "name": "Maria",
+        "age": 28,
+        "location": "Abuja, Nigeria",
+        "sexual_preference": "Straight",
+        "photos": [
+            "/uploads/518f97bf-75c2-4532-8a6e-7582eb090693_OIP_1.jpg",
+            "/uploads/9cf4e971-ad12-4ed7-9c35-5096aeb42391_OIP_2.jpg",
+            "/uploads/085a50cd-776e-4574-bcf5-1eb0299d65e8_OIP.jpg"
+        ],
+        "description": "Elegant and sophisticated lady"
+    }
+]
