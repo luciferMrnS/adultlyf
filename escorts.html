@@ -1218,15 +1218,13 @@
                 if (data.messages && data.messages.length > lastMessageCount) {
                     // Check for chat termination message
                     const newMessages = data.messages.slice(lastMessageCount);
-                    console.log('New messages detected:', newMessages);
-
                     const terminationMessage = newMessages.find(msg =>
                         msg.sender === 'system' && msg.message.includes('ended by administrator')
                     );
 
                     if (terminationMessage) {
-                        // Chat has been ended by admin - clean up immediately
-                        console.log('Chat ended by administrator - cleaning up');
+                        // Chat has been ended by admin - clean up
+                        console.log('Chat ended by administrator');
                         cleanupEndedChat();
                         return;
                     }

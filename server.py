@@ -1,4 +1,9 @@
 from flask import Flask, request, jsonify, send_from_directory, render_template, session, redirect
+from flask_wtf import FlaskForm, CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from wtforms import StringField, PasswordField, TextAreaField, IntegerField, FileField, MultipleFileField
+from wtforms.validators import DataRequired, Length, NumberRange
 import subprocess
 import sys
 import os
@@ -17,10 +22,40 @@ except ImportError:
     print("Warning: Shuffle functionality not available (scraper.py not found)")
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here_change_in_production'
+app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_here_change_in_production')
+
+# Initialize CSRF protection
+csrf = CSRFProtect(app)
+
+# Initialize rate limiting
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://",
+)
+
+# Enforce HTTPS in production
+@app.before_request
+def enforce_https():
+    if request.headers.get('X-Forwarded-Proto') == 'http':
+        url = request.url.replace('http://', 'https://', 1)
+        return redirect(url, code=301)
 
 # Hashed admin password - in production, use proper authentication
-ADMIN_PASSWORD_HASH = generate_password_hash("passhavok")
+ADMIN_PASSWORD_HASH = generate_password_hash(os.environ.get('ADMIN_PASSWORD', 'passhavok'))
+
+# Form classes for CSRF protection
+class AdminLoginForm(FlaskForm):
+    password = PasswordField('Password', validators=[DataRequired()])
+
+class EscortForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired(), Length(min=2, max=100)])
+    age = IntegerField('Age', validators=[DataRequired(), NumberRange(min=18, max=99)])
+    location = StringField('Location', validators=[DataRequired(), Length(min=2, max=200)])
+    sexual_preference = StringField('Sexual Preference', validators=[DataRequired(), Length(min=2, max=50)])
+    description = TextAreaField('Description', validators=[Length(max=1000)])
+    photos = MultipleFileField('Photos')
 
 @app.route('/')
 def index():
@@ -43,6 +78,7 @@ def videos():
     return send_from_directory('.', 'videos.json')
 
 @app.route('/scrape', methods=['POST'])
+@limiter.limit("10 per hour", methods=["POST"])
 def scrape():
     data = request.get_json()
     keyword = data.get('keyword', '').strip()
@@ -50,10 +86,19 @@ def scrape():
     if not keyword:
         return jsonify({'error': 'Keyword is required'}), 400
 
+    # Validate keyword - only allow alphanumeric characters, spaces, and basic punctuation
+    import re
+    if not re.match(r'^[a-zA-Z0-9\s\-_\.]+$', keyword):
+        return jsonify({'error': 'Keyword contains invalid characters'}), 400
+
+    # Limit keyword length
+    if len(keyword) > 50:
+        return jsonify({'error': 'Keyword too long'}), 400
+
     try:
-        # Run the scraper with the keyword
+        # Run the scraper with the keyword - use shell=False to prevent injection
         result = subprocess.run([sys.executable, 'scraper.py', keyword],
-                              capture_output=True, text=True, cwd=os.getcwd())
+                              capture_output=True, text=True, cwd=os.getcwd(), shell=False)
 
         if result.returncode == 0:
             # Try to read the updated videos.json to return the new videos
@@ -94,6 +139,8 @@ def escorts():
 
 @app.route('/escorts.json')
 def escorts_json():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
     return send_from_directory('.', 'escorts.json')
 
 @app.route('/uploads/<filename>')
@@ -179,6 +226,7 @@ def manage_escort(escort_id):
         return jsonify({'error': 'Escort not found'}), 404
 
 @app.route('/meet', methods=['POST'])
+@limiter.limit("20 per hour", methods=["POST"])  # Limit meeting requests
 def meet():
     data = request.get_json()
 
@@ -190,6 +238,33 @@ def meet():
     # Validate age verification
     if data.get('ageVerification') != 'yes':
         return jsonify({'error': 'You must be 18 or older to submit a meeting request'}), 400
+
+    # Input validation and sanitization
+    client_name = data.get('clientName', '').strip()
+    client_location = data.get('clientLocation', '').strip()
+    client_contact = data.get('clientContact', '').strip()
+    meeting_details = data.get('meetingDetails', '').strip()
+
+    # Validate lengths
+    if len(client_name) > 100 or len(client_name) < 2:
+        return jsonify({'error': 'Client name must be between 2 and 100 characters'}), 400
+    if len(client_location) > 200:
+        return jsonify({'error': 'Location too long'}), 400
+    if len(client_contact) > 200:
+        return jsonify({'error': 'Contact information too long'}), 400
+    if len(meeting_details) > 1000:
+        return jsonify({'error': 'Meeting details too long'}), 400
+
+    # Basic sanitization - remove potentially harmful characters
+    import re
+    if re.search(r'[<>]', client_name + client_location + client_contact):
+        return jsonify({'error': 'Input contains invalid characters'}), 400
+
+    # Update data with sanitized values
+    data['clientName'] = client_name
+    data['clientLocation'] = client_location
+    data['clientContact'] = client_contact
+    data['meetingDetails'] = meeting_details
 
     # Enhanced safety validation
     safety_fields = ['emergencyContact', 'meetingDuration', 'safeWord']
@@ -339,6 +414,7 @@ def get_chat_messages(request_id):
     return jsonify({'messages': messages})
 
 @app.route('/chat/<request_id>', methods=['POST'])
+@limiter.limit("100 per hour", methods=["POST"])  # Chat message limits
 def send_chat_message(request_id):
     """Send a chat message"""
     data = request.get_json()
@@ -411,15 +487,17 @@ def end_chat_session(request_id):
         }), 404
 
 @app.route('/admin/login', methods=['GET', 'POST'])
+@limiter.limit("5 per hour", methods=["POST"])  # Strict limit for admin login
 def admin_login():
-    if request.method == 'POST':
-        password = request.form.get('password')
+    form = AdminLoginForm()
+    if form.validate_on_submit():
+        password = form.password.data
         if check_password_hash(ADMIN_PASSWORD_HASH, password):
             session['admin_logged_in'] = True
             return redirect('/admin/escorts')
         else:
-            return render_template('admin_login.html', error='Invalid password')
-    return render_template('admin_login.html')
+            return render_template('admin_login.html', form=form, error='Invalid password')
+    return render_template('admin_login.html', form=form)
 
 @app.route('/admin/logout')
 def admin_logout():
@@ -431,6 +509,7 @@ def require_admin_login():
         return render_template('admin_login.html')
 
 @app.route('/admin/escorts', methods=['GET', 'POST'])
+@limiter.limit("30 per hour", methods=["POST"])  # Admin operations limits
 def admin_escorts():
     login_check = require_admin_login()
     if login_check:

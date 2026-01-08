@@ -171,6 +171,7 @@
                     <div class="section">
                         <h2>Create New Escort Profile</h2>
                         <form id="createForm">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <div class="form-group">
                                 <label>Name:</label>
                                 <input type="text" name="name" required>
@@ -253,6 +254,7 @@
                         <span class="close-button" onclick="closeModal()">&times;</span>
                         <h2>Edit Escort Profile</h2>
                         <form id="editForm">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <input type="hidden" id="editEscortId" name="id">
                             <div class="form-group">
                                 <label for="editName">Name:</label>
@@ -487,20 +489,21 @@
                         const chatMessages = document.getElementById('chatMessages');
                         const messageDiv = document.createElement('div');
                         messageDiv.className = `chat-message ${sender}`;
-                        messageDiv.style.cssText = `
-                            margin-bottom: 1rem;
-                            padding: 0.75rem;
-                            border-radius: 8px;
-                            max-width: 80%;
-                            ${sender === 'admin' ?
+                        messageDiv.style.cssText = 'margin-bottom: 1rem; padding: 0.75rem; border-radius: 8px; max-width: 80%;' +
+                            (sender === 'admin' ?
                                 'background-color: #4CAF50; margin-left: auto; text-align: right;' :
-                                'background-color: #2196F3; margin-right: auto;'
-                            }
-                        `;
+                                'background-color: #2196F3; margin-right: auto;');
 
                         const time = new Date(timestamp).toLocaleTimeString();
+                        // Escape HTML to prevent XSS
+                        const escapeHtml = (text) => {
+                            const div = document.createElement('div');
+                            div.textContent = text;
+                            return div.innerHTML;
+                        };
+
                         messageDiv.innerHTML = `
-                            <div style="word-wrap: break-word;">${message}</div>
+                            <div style="word-wrap: break-word;">${escapeHtml(message)}</div>
                             <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.25rem;">${time}</div>
                         `;
 
@@ -579,3 +582,4 @@
                 </script>
             </body>
             </html>
+                        }
