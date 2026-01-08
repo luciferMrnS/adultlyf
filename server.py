@@ -377,6 +377,39 @@ def send_chat_message(request_id):
         'message': chat_message
     })
 
+@app.route('/chat/<request_id>/end', methods=['POST'])
+def end_chat_session(request_id):
+    """End a chat session - removes it from active status"""
+    # Load existing messages
+    try:
+        with open('chat_messages.json', 'r') as f:
+            all_messages = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        all_messages = {}
+
+    if request_id in all_messages:
+        # Add an end message to the chat
+        end_message = {
+            'id': datetime.now().strftime('%Y%m%d%H%M%S%f'),
+            'sender': 'system',
+            'message': 'Chat session ended by administrator',
+            'timestamp': datetime.now().isoformat()
+        }
+        all_messages[request_id].append(end_message)
+
+        # Save the final messages
+        with open('chat_messages.json', 'w') as f:
+            json.dump(all_messages, f, indent=4)
+
+        return jsonify({
+            'success': True,
+            'message': 'Chat session ended successfully'
+        })
+    else:
+        return jsonify({
+            'error': 'Chat session not found'
+        }), 404
+
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
