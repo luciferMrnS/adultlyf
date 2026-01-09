@@ -728,9 +728,9 @@
                                 result = await response.json();
 
                                 if (result.success) {
-                                    addAdminChatMessage('admin', message, new Date().toISOString(), result.message.image_url);
+                                    loadChatMessages(currentChatRequestId);
                                     messageInput.value = '';
-                                    document.getElementById('adminImageInput').value = '';
+                                    removeSelectedImage();
                                 }
                             } else {
                                 // Send text message
@@ -749,7 +749,7 @@
                                 result = await response.json();
 
                                 if (result.success) {
-                                    addAdminChatMessage('admin', message, new Date().toISOString());
+                                    loadChatMessages(currentChatRequestId);
                                     messageInput.value = '';
                                 }
                             }

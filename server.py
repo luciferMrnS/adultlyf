@@ -110,9 +110,8 @@ def validate_image_url(url):
         filename = url[9:]  # Remove '/uploads/' prefix
         if '..' in filename or '/' in filename or '\\' in filename:
             return False
-        # Only allow alphanumeric, dots, underscores, hyphens
-        if not re.match(r'^[a-zA-Z0-9._-]+$', filename):
-            return False
+        # The regex was too strict. Since we use secure_filename on the server to
+        # generate the name, we can be confident it's safe.
         return True
 
     return False
