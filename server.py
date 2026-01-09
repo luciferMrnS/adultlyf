@@ -940,9 +940,9 @@ def send_chat_message(request_id):
             file_path = os.path.join(upload_dir, filename)
             uploaded_file.save(file_path)
             image_url = f"/uploads/{filename}"
-            message_text = request.form.get('message', '').strip()
-            # Embed the image directly in the message for the client to render.
-            message = f'<img src="{image_url}" alt="{message_text}" style="max-width: 200px; height: auto; border-radius: 8px;">'
+            # The client-side JS will handle creating the image element.
+            # The message is just the text caption.
+            message = request.form.get('message', '').strip()
         else:
             return jsonify({'error': 'No image file provided'}), 400
     else:
@@ -983,16 +983,6 @@ def send_chat_message(request_id):
         json.dump(all_messages, f, indent=4)
 
     print(f"DEBUG: Saved message for request_id {request_id}: {chat_message}")
-
-    # For admin image sends, return a modified message object so the admin UI doesn't show raw HTML.
-    # The client will receive the correct message with the <img> tag on their next fetch.
-    if sender == 'admin' and image_url:
-        response_message = chat_message.copy()
-        response_message['message'] = request.form.get('message', '').strip()  # Return the caption text to admin
-        return jsonify({
-            'success': True,
-            'message': response_message
-        })
 
     return jsonify({
         'success': True,
