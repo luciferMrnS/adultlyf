@@ -320,15 +320,23 @@
                 const timeString = new Date(msg.timestamp).toLocaleString();
 
                 let content = '';
-                if (msg.image_url) {
+
+                // Check if message contains embedded HTML (like images from admin)
+                if (msg.message && msg.message.includes('<img')) {
+                    // Render as HTML for embedded images
+                    content = `<div>${msg.message}</div>`;
+                    console.log('DEBUG: Rendering embedded HTML image:', msg.message);
+                } else if (msg.image_url) {
+                    // Fallback for old format
                     console.log('DEBUG: Found image_url:', msg.image_url);
                     content = `<img src="${msg.image_url}" alt="Sent image" class="message-image" onclick="openImageModal('${msg.image_url}')" onerror="console.error('Image failed to load:', '${msg.image_url}')">`;
-                } else {
-                    console.log('DEBUG: No image_url in message:', msg);
-                }
-
-                if (msg.message) {
-                    content += `<div>${msg.message}</div>`;
+                    if (msg.message) {
+                        content += `<div>${msg.message}</div>`;
+                    }
+                } else if (msg.message) {
+                    // Regular text message
+                    content = `<div>${msg.message.replace(/\n/g, '<br>')}</div>`;
+                    console.log('DEBUG: Regular text message:', msg);
                 }
 
                 return `
