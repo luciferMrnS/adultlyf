@@ -596,16 +596,55 @@ def shuffle_videos(filename: str = "videos.json") -> bool:
         print(f"Error saving shuffled videos: {e}")
         return False
 
+def check_and_shuffle_if_needed():
+    """
+    Check if 10 hours have passed since last shuffle and shuffle if needed.
+    This ensures shuffling works even after app restarts on platforms like Railway.
+    """
+    timestamp_file = "last_shuffle_timestamp.txt"
+
+    try:
+        with open(timestamp_file, "r") as f:
+            last_shuffle_str = f.read().strip()
+            last_shuffle_time = float(last_shuffle_str)
+    except (FileNotFoundError, ValueError):
+        # No timestamp file or invalid, assume we need to shuffle
+        last_shuffle_time = 0
+
+    current_time = time.time()
+    hours_since_last_shuffle = (current_time - last_shuffle_time) / 3600
+
+    if hours_since_last_shuffle >= 10:
+        print(f"{hours_since_last_shuffle:.1f} hours since last shuffle - shuffling videos now...")
+        if shuffle_videos():
+            # Update timestamp
+            with open(timestamp_file, "w") as f:
+                f.write(str(current_time))
+            print("Shuffle timestamp updated")
+        else:
+            print("Shuffle failed")
+    else:
+        print(f"Only {hours_since_last_shuffle:.1f} hours since last shuffle - no shuffle needed yet")
+
 def start_shuffle_scheduler():
     """
     Start a background thread that shuffles videos every 10 hours.
+    Also checks for missed shuffles on startup.
     """
+    # First, check if we need to shuffle immediately (handles app restarts)
+    check_and_shuffle_if_needed()
+
     def shuffle_worker():
         while True:
             # Sleep for 10 hours (10 * 60 * 60 seconds)
             time.sleep(10 * 60 * 60)
             print("10 hours elapsed - shuffling videos...")
-            shuffle_videos()
+            if shuffle_videos():
+                # Update timestamp
+                timestamp_file = "last_shuffle_timestamp.txt"
+                with open(timestamp_file, "w") as f:
+                    f.write(str(time.time()))
+                print("Shuffle timestamp updated")
 
     # Start the shuffle thread
     shuffle_thread = threading.Thread(target=shuffle_worker, daemon=True)
