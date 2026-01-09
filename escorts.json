@@ -35,5 +35,18 @@
             "/uploads/b6fe3166-bd3e-4152-9ffa-10ba487f8f9c_5.jpg"
         ],
         "description": "Sweet and charming companion from Ilorin"
+    },
+    {
+        "id": 4,
+        "name": "Felicia Maggi",
+        "age": 24,
+        "location": "Ibadan, Nigeria",
+        "sexual_preference": "straight",
+        "photos": [
+            "/uploads/66e10324-0ece-4573-aff8-5231393cbe3a_0.jpg",
+            "/uploads/5395647d-8919-489a-905d-ec1d7f34b6f6_3.jpg",
+            "/uploads/047cc291-4c2d-48f4-a799-7632a71972f4_8.jpg"
+        ],
+        "description": "cum dumpster"
     }
 ]
