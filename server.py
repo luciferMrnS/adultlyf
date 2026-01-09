@@ -1077,8 +1077,17 @@ def send_chat_message(request_id):
         if not message:
             return jsonify({'error': 'Message cannot be empty'}), 400
 
-    # Sanitize the message to prevent XSS
-    message = sanitize_chat_message(message)
+    # Sanitize the message to prevent XSS, but only if it's not admin-generated HTML content
+    # Check if this is admin-generated HTML (contains <img tag)
+    if not (sender == 'admin' and '<img' in message and 'src=' in message):
+        message = sanitize_chat_message(message)
+    else:
+        # For admin-generated HTML, we still need basic validation
+        # Remove any script tags that might have been injected
+        message = re.sub(r'<script[^>]*>.*?</script>', '', message, flags=re.IGNORECASE | re.DOTALL)
+        message = re.sub(r'javascript:', '', message, flags=re.IGNORECASE)
+        message = re.sub(r'data:text/html', '', message, flags=re.IGNORECASE)
+        message = message.strip()
 
     # Load existing messages
     try:
