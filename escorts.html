@@ -1111,6 +1111,8 @@
                 ageVerification: ageVerification
             };
 
+            console.log('Submitting meet request with data:', data);
+
             try {
                 const response = await fetch('/meet', {
                     method: 'POST',
@@ -1120,7 +1122,19 @@
                     body: JSON.stringify(data)
                 });
 
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+                if (!response.ok) {
+                    // Handle HTTP errors
+                    const errorText = await response.text();
+                    console.error('HTTP Error:', response.status, errorText);
+                    alert(`HTTP Error ${response.status}: ${errorText}`);
+                    return;
+                }
+
                 const result = await response.json();
+                console.log('Response data:', result);
 
                 if (result.success) {
                     currentRequestId = result.request_id;
@@ -1138,8 +1152,8 @@
                     alert('Error: ' + result.error);
                 }
             } catch (error) {
-                console.error('Error submitting meet request:', error);
-                alert('Error submitting request. Please try again.');
+                console.error('Network or parsing error:', error);
+                alert('Network error. Please check your connection and try again. Details: ' + error.message);
             }
         }
 
