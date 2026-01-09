@@ -76,7 +76,7 @@ def sanitize_chat_message(message):
     - Remove potentially dangerous scripts
     - Limit message length
     """
-    if no   t message:
+    if not message:
         return ""
 
     # Limit message length (reasonable chat message size)
@@ -1063,8 +1063,9 @@ def send_chat_message(request_id):
             file_path = os.path.join(upload_dir, filename)
             uploaded_file.save(file_path)
             image_url = f"/uploads/{filename}"
-            # Store the caption message separately - don't embed in HTML
-            message = request.form.get('message', '').strip()
+            message_text = request.form.get('message', '').strip()
+            # Embed the image directly in the message for the client to render.
+            message = f'<img src="{image_url}" alt="{message_text}" style="max-width: 200px; height: auto; border-radius: 8px;">'
         else:
             return jsonify({'error': 'No image file provided'}), 400
     else:
