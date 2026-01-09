@@ -2,5 +2,4 @@
 firebase-debug.log
 __pycache__/
 *.pyc
-meet_requests.json
 .env
