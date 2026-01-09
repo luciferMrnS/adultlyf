@@ -812,7 +812,7 @@ def send_chat_message(request_id):
             file_path = os.path.join(upload_dir, filename)
             uploaded_file.save(file_path)
             image_url = f"/uploads/{filename}"
-            message = request.form.get('message', '').strip() or 'Sent an image'
+            message = request.form.get('message', '').strip()
         else:
             return jsonify({'error': 'No image file provided'}), 400
     else:
