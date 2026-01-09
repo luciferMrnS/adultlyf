@@ -568,6 +568,7 @@ def manage_escort(escort_id):
         return jsonify({'error': 'Escort not found'}), 404
 
 @app.route('/meet', methods=['POST'])
+@csrf.exempt
 @limiter.limit("20 per hour", methods=["POST"])  # Limit meeting requests
 def meet():
     data = request.get_json()
