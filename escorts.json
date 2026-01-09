@@ -5,7 +5,11 @@
         "age": 25,
         "location": "Lagos, Nigeria",
         "sexual_preference": "Bisexual",
-        "photos": [],
+        "photos": [
+            "/uploads/ca8d586e-eaf7-42a2-b4de-57bc5922ab30_OIP_3.jpg",
+            "/uploads/53d84f23-aed0-4f15-bd66-c6245254b78a_OIP_4.jpg",
+            "/uploads/5de5ae4a-f3e9-48c3-b623-e5d12ff37378_OIP_5.jpg"
+        ],
         "description": "Passionate and adventurous companion"
     },
     {
