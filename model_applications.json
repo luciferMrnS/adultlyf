@@ -44,5 +44,30 @@
         "submitted_at": "2026-01-09T02:28:15.190374",
         "status": "rejected",
         "reviewed_at": "2026-01-09T02:51:36.711235"
+    },
+    {
+        "id": 3,
+        "name": "Jacki G",
+        "location": "Imo",
+        "age": 25,
+        "height": "5'5\\",
+        "body_type": "slim",
+        "town": "Danyiki",
+        "city": "Imo",
+        "country": "Nigeria",
+        "sexual_preference": "straight",
+        "occupation": "Student",
+        "phone": "3456789987654",
+        "email": "ademolagold86@gmail.com",
+        "allergy": "none",
+        "skin_color": "fair",
+        "photos": [
+            "/uploads/042c5d52-b9e0-49a5-bac4-e4e44ead9521_10.jpg",
+            "/uploads/0243c624-f1c8-47a4-84d3-f3f7116cedb1_11.jpg",
+            "/uploads/b363c204-fc00-483d-b3f9-e5135250f59d_12.jpg"
+        ],
+        "submitted_at": "2026-01-09T02:53:40.620085",
+        "status": "approved",
+        "reviewed_at": "2026-01-09T02:54:21.141261"
     }
 ]
