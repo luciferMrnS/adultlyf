@@ -1,4 +1,4 @@
-, from flask import Flask, request, jsonify, send_from_directory, render_template, session, redirect
+from flask import Flask, request, jsonify, send_from_directory, render_template, session, redirect
 from flask_wtf import FlaskForm, CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -215,21 +215,17 @@ def apply_model():
     if not uploaded_files or all(f.filename == '' for f in uploaded_files):
         return jsonify({'error': 'At least one photo is required'}), 400
 
-        for file in uploaded_files:
-            if file and file.filename:
-                # Get file extension
-                _, ext = os.path.splitext(file.filename)
-                if not ext:
-                    ext = '.jpg'  # default extension
-                # Generate unique filename
-                filename = f"{uuid.uuid4()}{ext}"
-                # Use Railway volume path if available, otherwise local uploads
-                upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
-                os.makedirs(upload_dir, exist_ok=True)
-                file_path = os.path.join(upload_dir, filename)
-                file.save(file_path)
-                # Serve from the correct path
-                photo_paths.append(f"/uploads/{filename}")
+    for file in uploaded_files:
+        if file and file.filename:
+            # Generate unique filename
+            filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+            # Use Railway volume path if available, otherwise local uploads
+            upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            file_path = os.path.join(upload_dir, filename)
+            file.save(file_path)
+            # Serve from the correct path
+            photo_paths.append(f"/uploads/{filename}")
 
     # Load existing model applications
     try:
@@ -809,12 +805,8 @@ def send_chat_message(request_id):
         uploaded_file = request.files.get('image')
 
         if uploaded_file and uploaded_file.filename:
-            # Get file extension
-            _, ext = os.path.splitext(uploaded_file.filename)
-            if not ext:
-                ext = '.jpg'  # default extension
             # Generate unique filename
-            filename = f"{uuid.uuid4()}{ext}"
+            filename = secure_filename(f"{uuid.uuid4()}_{uploaded_file.filename}")
             upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
             os.makedirs(upload_dir, exist_ok=True)
             file_path = os.path.join(upload_dir, filename)
