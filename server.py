@@ -428,7 +428,12 @@ def escorts_json():
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
-    return send_from_directory(upload_dir, filename)
+    response = send_from_directory(upload_dir, filename)
+    # Add CORS headers for image access
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    response.headers['Access-Control-Allow-Methods'] = 'GET'
+    return response
 
 @app.route('/chat.html')
 def chat_page():

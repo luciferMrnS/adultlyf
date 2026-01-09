@@ -308,6 +308,8 @@
         function displayMessages(messages) {
             const container = document.getElementById('chatMessages');
 
+            console.log('DEBUG: Displaying messages:', messages);
+
             if (messages.length === 0) {
                 container.innerHTML = '<div class="message system">No messages yet. Start the conversation!</div>';
                 return;
@@ -319,13 +321,19 @@
 
                 let content = '';
                 if (msg.image_url) {
-                    content = `<img src="${msg.image_url}" alt="Sent image" class="message-image" onclick="openImageModal('${msg.image_url}')">`;
+                    console.log('DEBUG: Found image_url:', msg.image_url);
+                    content = `<img src="${msg.image_url}" alt="Sent image" class="message-image" onclick="openImageModal('${msg.image_url}')" onerror="console.error('Image failed to load:', '${msg.image_url}')">`;
+                } else {
+                    console.log('DEBUG: No image_url in message:', msg);
+                }
+
+                if (msg.message) {
+                    content += `<div>${msg.message}</div>`;
                 }
 
                 return `
                     <div class="message ${messageClass}">
                         ${content}
-                        ${msg.message}
                         <div class="message-time">${timeString}</div>
                     </div>
                 `;
