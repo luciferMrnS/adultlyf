@@ -152,7 +152,7 @@
             color: white;
             border-radius: 50%;
             cursor: pointer;
-            display: flex;
+            display: flex !important;
             align-items: center;
             justify-content: center;
             width: 45px;
@@ -243,7 +243,7 @@
 
         <div class="chat-input">
             <input type="file" id="imageUpload" class="image-upload" accept="image/*">
-            <label for="imageUpload" class="image-upload-label" id="imageUploadLabel" style="display: none;" title="Send Image">
+            <label for="imageUpload" class="image-upload-label" id="imageUploadLabel" title="Send Image">
                 📷
             </label>
             <input type="text" id="messageInput" class="message-input" placeholder="Type your message..." maxlength="500">
@@ -293,7 +293,11 @@
             })
             .finally(() => {
                 // Show image upload for all users
-                document.getElementById('imageUploadLabel').style.display = 'flex';
+                const imageLabel = document.getElementById('imageUploadLabel');
+                imageLabel.style.display = 'flex';
+                imageLabel.style.visibility = 'visible';
+                imageLabel.style.opacity = '1';
+                console.log('Image upload button should now be visible');
                 loadMessages();
                 startPolling();
             });
@@ -334,12 +338,7 @@
 
                 let content = '';
 
-                // Check if message contains embedded HTML (like images from admin)
-                if (msg.message && msg.message.includes('<img')) {
-                    // Render as HTML for embedded images
-                    content = `<div>${msg.message}</div>`;
-                    console.log('DEBUG: Rendering embedded HTML image:', msg.message);
-                } else if (msg.image_url) {
+                if (msg.image_url) {
                     // Fallback for old format
                     console.log('DEBUG: Found image_url:', msg.image_url);
                     content = `<img src="${msg.image_url}" alt="Sent image" class="message-image" onclick="openImageModal('${msg.image_url}')" onerror="console.error('Image failed to load:', '${msg.image_url}')">`;

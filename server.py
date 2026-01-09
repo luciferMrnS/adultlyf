@@ -9,6 +9,8 @@ import subprocess
 import sys
 import os
 import json
+import re
+import html
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -66,6 +68,54 @@ except ImportError:
     SHUFFLE_AVAILABLE = False
     AUTONOMOUS_SCRAPER_AVAILABLE = False
     print("Warning: Scraper functionality not available (scraper.py not found)")
+
+def sanitize_chat_message(message):
+    """
+    Sanitize chat messages to prevent XSS attacks.
+    - Escape HTML entities
+    - Remove potentially dangerous scripts
+    - Limit message length
+    """
+    if not message:
+        return ""
+
+    # Limit message length (reasonable chat message size)
+    if len(message) > 2000:
+        message = message[:2000] + "..."
+
+    # Escape HTML entities to prevent XSS
+    message = html.escape(message, quote=True)
+
+    # Additional safety: remove script tags and other dangerous patterns
+    # Remove <script> tags and their contents
+    message = re.sub(r'<script[^>]*>.*?</script>', '', message, flags=re.IGNORECASE | re.DOTALL)
+    # Remove javascript: URLs
+    message = re.sub(r'javascript:', '', message, flags=re.IGNORECASE)
+    # Remove data: URLs that might contain scripts
+    message = re.sub(r'data:text/html', '', message, flags=re.IGNORECASE)
+
+    return message.strip()
+
+def validate_image_url(url):
+    """
+    Validate image URLs to prevent XSS through malicious URLs.
+    Only allow local upload URLs or safe external URLs.
+    """
+    if not url:
+        return False
+
+    # Only allow local upload URLs
+    if url.startswith('/uploads/'):
+        # Basic filename validation - no path traversal
+        filename = url[9:]  # Remove '/uploads/' prefix
+        if '..' in filename or '/' in filename or '\\' in filename:
+            return False
+        # Only allow alphanumeric, dots, underscores, hyphens
+        if not re.match(r'^[a-zA-Z0-9._-]+$', filename):
+            return False
+        return True
+
+    return False
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_here_change_in_production')
@@ -988,6 +1038,11 @@ def get_chat_messages(request_id):
 @limiter.limit("100 per hour", methods=["POST"])  # Chat message limits
 def send_chat_message(request_id):
     """Send a chat message"""
+
+    # Validate request_id format to prevent injection
+    if not re.match(r'^[a-zA-Z0-9]+$', request_id):
+        return jsonify({'error': 'Invalid request ID format'}), 400
+
     sender = None
     message = ""
     image_url = None
@@ -1006,9 +1061,7 @@ def send_chat_message(request_id):
             file_path = os.path.join(upload_dir, filename)
             uploaded_file.save(file_path)
             image_url = f"/uploads/{filename}"
-            message_text = request.form.get('message', '').strip()
-            # Embed the image directly in the message for the client to render.
-            message = f'<img src="{image_url}" alt="{message_text}" style="max-width: 200px; height: auto; border-radius: 8px;">'
+            message = request.form.get('message', '').strip()
         else:
             return jsonify({'error': 'No image file provided'}), 400
     else:
@@ -1019,6 +1072,9 @@ def send_chat_message(request_id):
 
         if not message:
             return jsonify({'error': 'Message cannot be empty'}), 400
+
+    # Sanitize the message to prevent XSS
+    message = sanitize_chat_message(message)
 
     # Load existing messages
     try:
@@ -1038,9 +1094,11 @@ def send_chat_message(request_id):
         'timestamp': datetime.now().isoformat()
     }
 
-    # Add image URL if present
-    if image_url:
+    # Add image URL if present and valid
+    if image_url and validate_image_url(image_url):
         chat_message['image_url'] = image_url
+    elif image_url and not validate_image_url(image_url):
+        print(f"WARNING: Invalid image URL rejected: {image_url}")
 
     all_messages[request_id].append(chat_message)
 
@@ -1048,17 +1106,7 @@ def send_chat_message(request_id):
     with open('chat_messages.json', 'w') as f:
         json.dump(all_messages, f, indent=4)
 
-    print(f"DEBUG: Saved message for request_id {request_id}: {chat_message}")
-
-    # For admin image sends, return a modified message object so the admin UI doesn't show raw HTML.
-    # The client will receive the correct message with the <img> tag on their next fetch.
-    if sender == 'admin' and image_url:
-        response_message = chat_message.copy()
-        response_message['message'] = request.form.get('message', '').strip()  # Return the caption text to admin
-        return jsonify({
-            'success': True,
-            'message': response_message
-        })
+    print(f"DEBUG: Saved sanitized message for request_id {request_id}")
 
     return jsonify({
         'success': True,
