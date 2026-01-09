@@ -434,6 +434,29 @@ def uploaded_file(filename):
 def chat_page():
     return send_from_directory('.', 'chat.html')
 
+@app.route('/debug/chat')
+def debug_chat():
+    """Debug endpoint to check chat system status"""
+    try:
+        with open('chat_messages.json', 'r') as f:
+            all_messages = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        all_messages = {}
+
+    upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
+    upload_exists = os.path.exists(upload_dir)
+    upload_contents = os.listdir(upload_dir) if upload_exists else []
+
+    return jsonify({
+        'chat_messages_file_exists': os.path.exists('chat_messages.json'),
+        'total_chat_sessions': len(all_messages),
+        'chat_session_keys': list(all_messages.keys()),
+        'upload_dir': upload_dir,
+        'upload_dir_exists': upload_exists,
+        'upload_file_count': len(upload_contents),
+        'sample_upload_files': upload_contents[:5] if upload_contents else []
+    })
+
 @app.route('/admin/escorts/<int:escort_id>', methods=['PUT', 'DELETE'])
 def manage_escort(escort_id):
     if not session.get('admin_logged_in'):
@@ -777,13 +800,19 @@ def end_meeting(request_id):
 @app.route('/chat/<request_id>', methods=['GET'])
 def get_chat_messages(request_id):
     """Get all chat messages for a request"""
+    print(f"DEBUG: Getting chat messages for request_id: {request_id}")
     try:
         with open('chat_messages.json', 'r') as f:
             all_messages = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
+        print(f"DEBUG: Loaded chat_messages.json with keys: {list(all_messages.keys())}")
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"DEBUG: No chat_messages.json found or invalid JSON: {e}")
         all_messages = {}
 
     messages = all_messages.get(request_id, [])
+    print(f"DEBUG: Returning {len(messages)} messages for request_id {request_id}")
+    if messages:
+        print(f"DEBUG: Sample message: {messages[-1]}")  # Show last message
     return jsonify({'messages': messages})
 
 @app.route('/chat/<request_id>', methods=['POST'])
@@ -851,6 +880,8 @@ def send_chat_message(request_id):
     # Save messages
     with open('chat_messages.json', 'w') as f:
         json.dump(all_messages, f, indent=4)
+
+    print(f"DEBUG: Saved message for request_id {request_id}: {chat_message}")
 
     return jsonify({
         'success': True,
