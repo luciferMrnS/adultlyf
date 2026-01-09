@@ -269,6 +269,18 @@
         let isAdmin = false;
         let pollInterval;
 
+        // Store current chat in localStorage for persistence
+        if (requestId) {
+            localStorage.setItem('currentChatRequestId', requestId);
+        } else {
+            // Try to restore from localStorage
+            const storedRequestId = localStorage.getItem('currentChatRequestId');
+            if (storedRequestId) {
+                window.location.href = `?request_id=${storedRequestId}`;
+                return; // Redirect to restore chat
+            }
+        }
+
         // Check if user is admin (has admin session)
         fetch('/admin/escorts', { credentials: 'same-origin' })
             .then(response => {

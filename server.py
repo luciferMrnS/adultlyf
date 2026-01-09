@@ -752,15 +752,19 @@ def manage_escort(escort_id):
 @csrf.exempt
 @limiter.limit("20 per hour", methods=["POST"])  # Limit meeting requests
 def meet():
+    print("DEBUG: Meet request received")
     data = request.get_json()
+    print(f"DEBUG: Meet request data: {data}")
 
     required_fields = ['escortId', 'clientName', 'clientLocation', 'clientContact', 'ageVerification']
     for field in required_fields:
         if not data.get(field):
+            print(f"DEBUG: Missing required field: {field}")
             return jsonify({'error': f'{field} is required'}), 400
 
     # Validate age verification
     if data.get('ageVerification') != 'yes':
+        print("DEBUG: Age verification failed")
         return jsonify({'error': 'You must be 18 or older to submit a meeting request'}), 400
 
     # Input validation and sanitization
@@ -818,32 +822,45 @@ def meet():
         'safetyWarnings': safety_warnings
     }
 
+    print(f"DEBUG: Created meet request: {meet_request}")
+
     # Load existing meet requests
     try:
         with open('meet_requests.json', 'r') as f:
             meet_requests = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
+        print(f"DEBUG: Loaded {len(meet_requests)} existing requests")
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"DEBUG: No existing meet_requests.json or error: {e}")
         meet_requests = []
 
     # Add new request
     meet_requests.append(meet_request)
+    print(f"DEBUG: Added request, now {len(meet_requests)} total requests")
 
     # Save back to file
-    with open('meet_requests.json', 'w') as f:
-        json.dump(meet_requests, f, indent=4)
+    try:
+        with open('meet_requests.json', 'w') as f:
+            json.dump(meet_requests, f, indent=4)
+        print("DEBUG: Successfully saved meet_requests.json")
+    except Exception as e:
+        print(f"DEBUG: Error saving meet_requests.json: {e}")
+        return jsonify({'error': 'Failed to save meeting request'}), 500
 
     response_message = 'Meeting request submitted successfully. Admin will review for safety before approval.'
     if safety_warnings:
         response_message += f" Safety concerns: {', '.join(safety_warnings)}"
 
-    return jsonify({
+    response_data = {
         'success': True,
         'message': response_message,
         'request_id': meet_request['id'],
         'chat_url': f'/chat.html?request_id={meet_request["id"]}',
         'safety_warnings': safety_warnings,
         'chat_enabled': True
-    })
+    }
+
+    print(f"DEBUG: Returning response: {response_data}")
+    return jsonify(response_data)
 
 @app.route('/meet/<request_id>/checkin', methods=['POST'])
 def safety_checkin(request_id):
