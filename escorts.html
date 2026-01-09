@@ -17,17 +17,18 @@
         header {
             background-color: #333;
             padding: 1rem;
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             position: relative;
         }
         header h1 {
             margin: 0;
             font-size: 2rem;
+            flex: 1;
+            text-align: center;
         }
         .become-model-btn {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
             background: linear-gradient(135deg, #FF6B6B, #EE5A24);
             color: white;
             border: none;
@@ -38,6 +39,7 @@
             font-weight: bold;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            margin-left: auto;
         }
         .become-model-btn:hover {
             transform: translateY(-2px);
