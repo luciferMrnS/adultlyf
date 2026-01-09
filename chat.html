@@ -98,6 +98,30 @@
             transform: scale(1.05);
         }
 
+        .image-caption {
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #666;
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+
+        .image-caption {
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #666;
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+
+        .image-caption {
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #666;
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+
         .message-time {
             font-size: 0.8em;
             opacity: 0.7;
@@ -339,16 +363,31 @@
                 let content = '';
 
                 if (msg.image_url) {
-                    // Fallback for old format
+                    // Display the image using the image_url
                     console.log('DEBUG: Found image_url:', msg.image_url);
                     content = `<img src="${msg.image_url}" alt="Sent image" class="message-image" onclick="openImageModal('${msg.image_url}')" onerror="console.error('Image failed to load:', '${msg.image_url}')">`;
+
+                    // If there's also a message (caption), display it below the image
                     if (msg.message) {
-                        content += `<div>${msg.message}</div>`;
+                        // Check if message contains HTML (like admin-generated img tags)
+                        if (msg.message.startsWith('<img') && msg.message.includes('src=')) {
+                            // This is HTML content (admin-generated image with caption)
+                            content += `<div class="image-caption">${msg.message}</div>`;
+                        } else {
+                            // This is plain text caption
+                            content += `<div class="image-caption">${msg.message.replace(/\n/g, '<br>')}</div>`;
+                        }
                     }
                 } else if (msg.message) {
-                    // Regular text message
-                    content = `<div>${msg.message.replace(/\n/g, '<br>')}</div>`;
-                    console.log('DEBUG: Regular text message:', msg);
+                    // Regular text message - check if it contains HTML
+                    if (msg.message.startsWith('<img') && msg.message.includes('src=')) {
+                        // This is HTML content (admin-generated image)
+                        content = msg.message;
+                    } else {
+                        // Regular text message
+                        content = `<div>${msg.message.replace(/\n/g, '<br>')}</div>`;
+                        console.log('DEBUG: Regular text message:', msg);
+                    }
                 }
 
                 return `
