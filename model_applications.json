@@ -42,6 +42,7 @@
             "/uploads/bbf30728-072b-4554-bd6b-7ad2e0946bf3_OIP_5.jpg"
         ],
         "submitted_at": "2026-01-09T02:28:15.190374",
-        "status": "pending"
+        "status": "rejected",
+        "reviewed_at": "2026-01-09T02:51:36.711235"
     }
 ]
