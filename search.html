@@ -94,6 +94,36 @@
             animation: spin 1s ease-in-out infinite;
             margin-bottom: 1rem;
         }
+        .countdown-container {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .countdown-circle {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        .countdown-circle svg circle {
+            transition: stroke-dashoffset 0.1s linear;
+        }
+        .countdown-number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            font-family: 'Courier New', monospace;
+        }
+        .countdown-text {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -158,6 +188,15 @@
                 font-size: 2rem;
             }
 
+            .countdown-number {
+                font-size: 2rem !important;
+            }
+
+            .countdown-circle svg {
+                width: 100px !important;
+                height: 100px !important;
+            }
+
             .site-logo img {
                 height: 50px !important;
             }
@@ -206,6 +245,15 @@
 
             .countdown {
                 font-size: 1.5rem;
+            }
+
+            .countdown-number {
+                font-size: 1.5rem !important;
+            }
+
+            .countdown-circle svg {
+                width: 80px !important;
+                height: 80px !important;
             }
 
             .no-results {
@@ -284,32 +332,18 @@
         });
 
         async function performSearch(searchTerm) {
-            // Show enhanced loading screen with countdown
+            // Show loading screen
             showLoadingScreen(searchTerm);
 
             try {
-                const response = await fetch('/scrape', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ keyword: searchTerm })
-                });
+                const response = await fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`);
 
                 const result = await response.json();
 
                 if (result.success && result.videos && result.videos.length > 0) {
-                    // Reload videos and show all matching results
-                    const updatedResponse = await fetch('videos.json');
-                    const updatedVideos = await updatedResponse.json();
-
-                    const allMatchingVideos = updatedVideos.filter(video =>
-                        video.title.toLowerCase().includes(searchTerm.toLowerCase())
-                    );
-
-                    displayResults(allMatchingVideos, `Found ${allMatchingVideos.length} total results (including newly scraped)`);
+                    displayResults(result.videos, `Found ${result.total_results} total results`);
                 } else {
-                    // No new videos found, just show local results if any
+                    // No videos found, just show local results if any
                     fetch("videos.json")
                         .then(response => response.json())
                         .then(data => {
@@ -318,7 +352,7 @@
                             );
 
                             if (localResults.length > 0) {
-                                displayResults(localResults, `Found ${localResults.length} results (no new videos found)`);
+                                displayResults(localResults, `Found ${localResults.length} local results`);
                             } else {
                                 document.getElementById('results-container').innerHTML =
                                     '<div class="no-results">No videos found for this search term.</div>';
@@ -327,55 +361,80 @@
                 }
             } catch (error) {
                 console.error('Error during scraping:', error);
-                document.getElementById('results-container').innerHTML =
-                    '<div class="no-results">Error occurred while searching. Please try again later.</div>';
+                // On error, fall back to showing local results
+                fetch("videos.json")
+                    .then(response => response.json())
+                    .then(data => {
+                        const localResults = data.filter(video =>
+                            video.title.toLowerCase().includes(searchTerm.toLowerCase())
+                        );
+
+                        if (localResults.length > 0) {
+                            displayResults(localResults, `Found ${localResults.length} local results (scraping failed)`);
+                        } else {
+                            document.getElementById('results-container').innerHTML =
+                                '<div class="no-results">Error occurred while searching. Please try again later.</div>';
+                        }
+                    })
+                    .catch(localError => {
+                        console.error('Error loading local videos:', localError);
+                        document.getElementById('results-container').innerHTML =
+                            '<div class="no-results">Error occurred while searching. Please try again later.</div>';
+                    });
             }
         }
 
         function showLoadingScreen(searchTerm) {
             const container = document.getElementById('results-container');
-            let countdown = 15; // 15 second countdown
+            let countdown = 20; // 20 second countdown
 
             const loadingHtml = `
                 <div class="loading">
                     <div class="loading-spinner"></div>
-                    <h2>🎥 Getting you the best categories for "${searchTerm}"</h2>
+                    <h2>🎥 Searching for "${searchTerm}"</h2>
                     <p>Please wait while we search across multiple adult sites...</p>
-                    <div class="countdown">${countdown}</div>
+                    <div class="countdown-container">
+                        <div class="countdown-circle">
+                            <svg width="120" height="120" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="54" stroke="#333" stroke-width="6" fill="none"/>
+                                <circle cx="60" cy="60" r="54" stroke="#ff6b6b" stroke-width="6" fill="none"
+                                        stroke-dasharray="339.29" stroke-dashoffset="0"
+                                        transform="rotate(-90 60 60)" id="countdown-circle"/>
+                            </svg>
+                            <div class="countdown-number">${countdown}</div>
+                        </div>
+                        <div class="countdown-text">seconds remaining</div>
+                    </div>
                 </div>
             `;
 
             container.innerHTML = loadingHtml;
 
-            // Update countdown every second
-            const countdownInterval = setInterval(() => {
-                countdown--;
-                const countdownElement = document.querySelector('.countdown');
+            // Animate the countdown circle
+            const circle = document.getElementById('countdown-circle');
+            const circumference = 2 * Math.PI * 54; // radius = 54
+            const totalTime = countdown * 1000;
+            const updateInterval = 100; // Update every 100ms
+
+            let timeLeft = countdown;
+            const interval = setInterval(() => {
+                timeLeft -= updateInterval / 1000;
+                const progress = Math.max(0, timeLeft / countdown);
+                const offset = circumference * (1 - progress);
+
+                if (circle) {
+                    circle.style.strokeDashoffset = offset;
+                }
+
+                const countdownElement = document.querySelector('.countdown-number');
                 if (countdownElement) {
-                    countdownElement.textContent = countdown;
-
-                    // Add some visual effects as countdown gets lower
-                    if (countdown <= 5) {
-                        countdownElement.style.color = '#ff6b6b';
-                        countdownElement.style.animation = 'pulse 0.5s infinite';
-                    }
+                    countdownElement.textContent = Math.ceil(timeLeft);
                 }
 
-                if (countdown <= 0) {
-                    clearInterval(countdownInterval);
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
                 }
-            }, 1000);
-
-            // Add pulse animation for low countdown
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes pulse {
-                    0% { transform: scale(1); }
-                    50% { transform: scale(1.1); }
-                    100% { transform: scale(1); }
-                }
-            `;
-            document.head.appendChild(style);
+            }, updateInterval);
         }
 
         function displayResults(videos, infoText = '') {

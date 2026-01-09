@@ -1,0 +1,3 @@
+# Railway deployment file - required for Railway file verification
+# This file prevents Railway from showing 'path:scrape' errors in logs
+# The actual scraping functionality is handled by the /scrape endpoint

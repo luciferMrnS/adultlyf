@@ -161,27 +161,9 @@ class AdultScraper:
                 title_element = soup.find('h1', class_='page-title') or soup.find('title')
                 title = title_element.get_text(strip=True) if title_element else 'No Title'
 
-            # XNXX embed URLs follow the pattern: https://www.xnxx.com/embedframe/video_id
-            # First, check if this is a search result URL and convert to direct video URL
-            direct_video_url = video_url
-            if '/search/' in video_url and '/video-' in video_url:
-                # Extract video ID from search result URL
-                # Format: https://www.xnxx.com/search/keyword/video-VIDEOID/title
-                video_id_match = re.search(r'/video-([a-z0-9]+)/', video_url)
-                if video_id_match:
-                    video_id = video_id_match.group(1)
-                    # Construct direct video URL
-                    title_part = video_url.split('/video-' + video_id + '/')[1].split('&')[0] if '&' in video_url.split('/video-' + video_id + '/')[1] else video_url.split('/video-' + video_id + '/')[1]
-                    direct_video_url = f"https://www.xnxx.com/video{video_id}/{title_part}"
-
-            # If we converted to direct URL, fetch that page for embed info
-            if direct_video_url != video_url:
-                video_soup = self._fetch_page(direct_video_url)
-                if video_soup:
-                    soup = video_soup
-
             # Extract video ID and construct embed URL
-            video_id_match = re.search(r'/video([a-z0-9]+)/', direct_video_url)
+            # XNXX URLs have format /video-ID/title, so match the dash
+            video_id_match = re.search(r'/video-([a-z0-9]+)/', video_url)
             if video_id_match:
                 video_id = video_id_match.group(1)
                 embed_src = f"https://www.xnxx.com/embedframe/{video_id}"
@@ -360,6 +342,9 @@ class AdultScraper:
                 link = video_thumb_element.find('a')
                 if not link: continue
                 href = link['href']
+                print(f"DEBUG: XNXX href: {href}")
+
+                # XNXX search result URLs are already valid video URLs
                 video_url = href if href.startswith('http') else self.base_url + href
 
                 title_elem = video_thumb_element.find('p', class_='title') or link.get('title')
@@ -633,6 +618,10 @@ def start_autonomous_scraper():
     """
     def scraper_worker():
         while True:
+            # Sleep for 24 hours before first scrape (and between subsequent scrapes)
+            print("🤖 Autonomous scraper: Sleeping for 24 hours...")
+            time.sleep(24 * 60 * 60)  # 24 hours
+
             try:
                 # Load keywords from keywords.json
                 with open("keywords.json", "r", encoding='utf-8') as f:
@@ -640,7 +629,6 @@ def start_autonomous_scraper():
 
                 if not keywords:
                     print("No keywords found in keywords.json - autonomous scraper sleeping...")
-                    time.sleep(24 * 60 * 60)  # Sleep for 24 hours
                     continue
 
                 # Pick a random keyword
@@ -658,10 +646,6 @@ def start_autonomous_scraper():
 
             except Exception as e:
                 print(f"🤖 Autonomous scraper error: {e}")
-
-            # Sleep for 24 hours before next scrape
-            print("🤖 Autonomous scraper: Sleeping for 24 hours...")
-            time.sleep(24 * 60 * 60)  # 24 hours
 
     # Start the autonomous scraper thread
     scraper_thread = threading.Thread(target=scraper_worker, daemon=True)
@@ -723,15 +707,20 @@ def scrape_with_keyword(keyword: str, limit_per_site: int = 10) -> List[Dict[str
             existing_videos = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         existing_videos = []
+        print("No existing videos.json found, starting fresh")
 
     seen_urls = set(v['video_url'] for v in existing_videos)
+    print(f"Loaded {len(existing_videos)} existing videos, checking for duplicates")
 
     for site_name, search_url in sites:
-        print(f"Searching {site_name.upper()} for '{keyword}'...")
+        print(f"\n--- Searching {site_name.upper()} for '{keyword}' ---")
+        print(f"URL: {search_url}")
 
         try:
             scraper = AdultScraper(base_url=search_url)
             scraped_videos = scraper.scrape_front_page(limit=limit_per_site)
+
+            print(f"Scraper returned {len(scraped_videos) if scraped_videos else 0} videos from {site_name}")
 
             if scraped_videos:
                 # Filter out duplicates
@@ -740,6 +729,8 @@ def scrape_with_keyword(keyword: str, limit_per_site: int = 10) -> List[Dict[str
                     all_new_videos.extend(new_videos)
                     seen_urls.update(v['video_url'] for v in new_videos)
                     print(f"Found {len(new_videos)} new videos from {site_name}")
+                    for v in new_videos[:3]:  # Show first 3 titles
+                        print(f"  - {v.get('title', 'No title')[:50]}...")
                 else:
                     print(f"No new videos from {site_name} (all duplicates)")
             else:
@@ -747,12 +738,14 @@ def scrape_with_keyword(keyword: str, limit_per_site: int = 10) -> List[Dict[str
 
         except Exception as e:
             print(f"Error scraping {site_name}: {e}")
+            import traceback
+            traceback.print_exc()
 
     if all_new_videos:
         existing_videos.extend(all_new_videos)
         with open("videos.json", "w", encoding='utf-8') as f:
             json.dump(existing_videos, f, indent=4, ensure_ascii=False)
-        print(f"Total: Added {len(all_new_videos)} new videos for keyword '{keyword}' from all sites")
+        print(f"\nTotal: Added {len(all_new_videos)} new videos for keyword '{keyword}' from all sites")
 
         # Clean up invalid videos after adding new ones
         removed_count = cleanup_invalid_videos("videos.json")
@@ -761,81 +754,10 @@ def scrape_with_keyword(keyword: str, limit_per_site: int = 10) -> List[Dict[str
 
         return all_new_videos
     else:
-        print(f"No new videos found for keyword '{keyword}' on any site")
+        print(f"\nNo new videos found for keyword '{keyword}' on any site")
         return []
 
 if __name__ == "__main__":
-    import sys
-
-    # Check if keyword is provided as command line argument
-    if len(sys.argv) > 1:
-        keyword = ' '.join(sys.argv[1:])
-        limit_per_site = 20  # Increased to ensure minimum 20 total results
-        scrape_with_keyword(keyword, limit_per_site)
-        sys.exit(0)
-
-    # Allow user to specify different site via environment variable
-    custom_site = os.environ.get("ADULT_SITE_URL")
-    if custom_site:
-        print(f"Using custom site: {custom_site}")
-        base_url = custom_site
-    else:
-        base_url = "https://www.xvideos.com"
-
-    # Example of how to use a proxy
-    # You can get proxies from environment variables or define them directly
-    http_proxy = os.environ.get("HTTP_PROXY")
-    https_proxy = os.environ.get("HTTPS_PROXY")
-
-    proxy_dict = None
-    if http_proxy and https_proxy:
-        proxy_dict = {
-            "http": http_proxy,
-            "https": https_proxy,
-        }
-        print("Using proxies from environment variables.")
-    else:
-        # Check if user wants to skip proxy fetching
-        skip_proxy = os.environ.get("SKIP_PROXY_FETCH", "false").lower() == "true"
-        if not skip_proxy:
-            # Try to fetch and use free proxies if no environment proxies are set
-            print("No proxies set in environment variables. Attempting to fetch free proxies...")
-            scraper_temp = AdultScraper(base_url=base_url)
-            proxies = scraper_temp._get_free_proxies()
-            print(f"Found {len(proxies)} potential proxies. Testing...")
-
-            working_proxy = None
-            random.shuffle(proxies)  # Shuffle to try different ones
-            for proxy in proxies[:5]:  # Test first 5
-                print(f"Testing proxy: {proxy}")
-                if scraper_temp._test_proxy(proxy):
-                    working_proxy = proxy
-                    print(f"Found working proxy: {proxy}")
-                    break
-
-            if working_proxy:
-                proxy_dict = {
-                    "http": f"http://{working_proxy}",
-                    "https": f"https://{working_proxy}",
-                }
-                print("Using automatically found proxy.")
-            else:
-                print("No working free proxies found. The scraper may fail due to network restrictions.")
-        else:
-            print("Skipping proxy fetching as requested.")
-
-    # Check if user wants to scrape all sites
-    scrape_all = os.environ.get("SCRAPE_ALL_SITES", "false").lower() == "true"
-
-    if scrape_all:
-        print("Scraping all sites...")
-        scraper = AdultScraper()  # Create instance for all sites scraping
-        scraped_videos = scraper.scrape_all_sites(limit_per_site=50)
-        if scraped_videos:
-            scraper.save_to_json(scraped_videos)
-    else:
-        # Default: scrape single site
-        scraper = AdultScraper(base_url=base_url, proxies=proxy_dict)
-        scraped_videos = scraper.scrape_front_page()
-        if scraped_videos:
-            scraper.save_to_json(scraped_videos)
+    print("Adultlyf Scraper - Scraping only occurs via search endpoint or autonomous scheduler")
+    print("To prevent system overload, manual scraping is disabled.")
+    print("Use the web interface search or wait for autonomous scraping (every 24 hours).")

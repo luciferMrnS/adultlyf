@@ -772,10 +772,14 @@
             <span class="close" onclick="closeModelModal()">&times;</span>
             <h2>Welcome! We're Pleased to Have You Show Interest</h2>
             <p style="color: #4CAF50; margin-bottom: 1rem;">Join our exclusive model community and showcase your beauty to our discerning clientele.</p>
-            <form id="modelForm">
+            <form id="modelForm" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="modelName">Full Name *</label>
                     <input type="text" id="modelName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="modelPhotos">Upload Photos *</label>
+                    <input type="file" id="modelPhotos" name="photos" multiple required>
                 </div>
                 <div class="form-group">
                     <label for="modelLocation">Location *</label>
@@ -1479,7 +1483,8 @@
         }
 
         async function submitModelApplication() {
-            const formData = new FormData(document.getElementById('modelForm'));
+            const form = document.getElementById('modelForm');
+            const formData = new FormData(form);
             const age = parseInt(formData.get('age'));
 
             // Check age requirement
@@ -1488,41 +1493,21 @@
                 return;
             }
 
-            const data = {
-                name: formData.get('name'),
-                location: formData.get('location'),
-                age: age,
-                height: formData.get('height'),
-                body_type: formData.get('body_type'),
-                town: formData.get('town'),
-                city: formData.get('city'),
-                country: formData.get('country'),
-                sexual_preference: formData.get('sexual_preference'),
-                occupation: formData.get('occupation'),
-                phone: formData.get('phone'),
-                email: formData.get('email'),
-                allergy: formData.get('allergy'),
-                skin_color: formData.get('skin_color'),
-                submitted_at: new Date().toISOString()
-            };
-
             try {
                 const response = await fetch('/apply-model', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
+                    body: formData
                 });
 
                 const result = await response.json();
+                console.log(result);
 
-                if (result.success) {
+                if (response.ok && result.success) {
                     alert('Thank you for your application! We will review it and get back to you soon.');
                     document.getElementById('modelModal').style.display = 'none';
                     document.getElementById('modelForm').reset();
                 } else {
-                    alert('Error: ' + result.error);
+                    alert('Error: ' + (result.error || 'Unknown error occurred'));
                 }
             } catch (error) {
                 console.error('Error submitting model application:', error);

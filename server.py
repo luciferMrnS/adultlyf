@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory, render_template,
 from flask_wtf import FlaskForm, CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_cors import CORS
 from wtforms import StringField, PasswordField, TextAreaField, IntegerField, FileField, MultipleFileField
 from wtforms.validators import DataRequired, Length, NumberRange
 import subprocess
@@ -20,11 +21,47 @@ try:
 except ImportError:
     pass  # python-dotenv not installed, will use system environment variables
 
+def commit_to_git(file_path, commit_message):
+    """
+    Commit changes to git repository for permanent storage.
+    This ensures admin changes are never lost or reversed by default.
+    """
+    try:
+        # Add the file to git
+        result_add = subprocess.run(['git', 'add', file_path],
+                                   check=True, capture_output=True, text=True)
+        print(f"✅ Added {file_path} to git staging")
+
+        # Commit with the message
+        result_commit = subprocess.run(['git', 'commit', '-m', commit_message],
+                                      check=True, capture_output=True, text=True)
+        print(f"✅ Committed: {commit_message}")
+
+        # Get the commit hash for logging
+        result_hash = subprocess.run(['git', 'rev-parse', 'HEAD'],
+                                    capture_output=True, text=True)
+        commit_hash = result_hash.stdout.strip()[:8] if result_hash.returncode == 0 else 'unknown'
+
+        print(f"💾 Changes permanently saved - Commit: {commit_hash}")
+        return True
+
+    except subprocess.CalledProcessError as e:
+        error_msg = f"❌ CRITICAL: Failed to commit {file_path} to git: {e}"
+        print(error_msg)
+        print(f"Git stderr: {e.stderr}")
+        # Don't fail the operation, but log the error prominently
+        return False
+    except Exception as e:
+        error_msg = f"❌ CRITICAL: Unexpected error during git commit: {e}"
+        print(error_msg)
+        return False
+
 # Import shuffle functionality
 try:
     from scraper import start_shuffle_scheduler, shuffle_videos, start_autonomous_scraper
     SHUFFLE_AVAILABLE = True
-    AUTONOMOUS_SCRAPER_AVAILABLE = True
+    # Disable autonomous scraper on Railway due to network restrictions and deployment issues
+    AUTONOMOUS_SCRAPER_AVAILABLE = False if os.environ.get('RAILWAY_ENVIRONMENT') else True
 except ImportError:
     SHUFFLE_AVAILABLE = False
     AUTONOMOUS_SCRAPER_AVAILABLE = False
@@ -35,6 +72,9 @@ app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_here_change_in_pr
 
 # Initialize CSRF protection
 csrf = CSRFProtect(app)
+
+# Initialize CORS
+CORS(app)
 
 # Initialize rate limiting
 limiter = Limiter(
@@ -86,6 +126,54 @@ def search():
 def videos():
     return send_from_directory('.', 'videos.json')
 
+@app.route('/api/search')
+def search_videos():
+    query = request.args.get('q', '').strip().lower()
+    if not query:
+        return jsonify({'error': 'Query parameter q is required'}), 400
+
+    # Load existing videos first
+    try:
+        with open('videos.json', 'r', encoding='utf-8') as f:
+            all_videos = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        # If videos.json doesn't exist, create an empty one
+        all_videos = []
+        try:
+            with open('videos.json', 'w', encoding='utf-8') as f:
+                json.dump([], f, indent=4)
+        except Exception as e:
+            print(f"Error creating videos.json: {e}")
+
+    # Filter videos where title contains the query (case insensitive)
+    matching_videos = [v for v in all_videos if query in v.get('title', '').lower()]
+
+    # Try to trigger scraping for the search query (don't fail if scraper unavailable)
+    try:
+        from scraper import scrape_with_keyword
+        print(f"Search triggered scrape for: {query}")
+        # Scrape with a limit of 15 videos per site for better results
+        scrape_with_keyword(query, limit_per_site=15)
+        print("Scraping completed successfully")
+    except Exception as e:
+        print(f"Scraping unavailable or failed: {e}")
+        print("Continuing with existing videos only")
+
+    # Reload videos in case scraping added new ones
+    try:
+        with open('videos.json', 'r', encoding='utf-8') as f:
+            all_videos = json.load(f)
+        matching_videos = [v for v in all_videos if query in v.get('title', '').lower()]
+    except Exception as e:
+        print(f"Error reloading videos after scraping: {e}")
+
+    return jsonify({
+        'success': True,
+        'query': query,
+        'total_results': len(matching_videos),
+        'videos': matching_videos[:50]  # Limit to 50 results for performance
+    })
+
 @app.route('/adverts.json')
 def adverts():
     return send_from_directory('.', 'adverts.json')
@@ -95,9 +183,10 @@ def keywords():
     return send_from_directory('.', 'keywords.json')
 
 @app.route('/apply-model', methods=['POST'])
+@csrf.exempt
 @limiter.limit("5 per hour", methods=["POST"])  # Limit model applications
 def apply_model():
-    data = request.get_json()
+    data = request.form
 
     # Validate required fields
     required_fields = ['name', 'location', 'age', 'height', 'body_type', 'town', 'city', 'country', 'sexual_preference', 'phone', 'email', 'skin_color']
@@ -106,15 +195,37 @@ def apply_model():
             return jsonify({'error': f'{field} is required'}), 400
 
     # Validate age
-    age = data.get('age')
-    if not isinstance(age, int) or age < 18 or age > 99:
-        return jsonify({'error': 'Age must be between 18 and 99'}), 400
+    try:
+        age = int(data.get('age'))
+        if age < 18 or age > 99:
+            raise ValueError()
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Age must be a number between 18 and 99'}), 400
 
     # Validate email format
     import re
     email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     if not re.match(email_pattern, data.get('email', '')):
         return jsonify({'error': 'Invalid email format'}), 400
+
+    # Handle file uploads
+    uploaded_files = request.files.getlist('photos')
+    photo_paths = []
+
+    if not uploaded_files or all(f.filename == '' for f in uploaded_files):
+        return jsonify({'error': 'At least one photo is required'}), 400
+
+    for file in uploaded_files:
+        if file and file.filename:
+            # Generate unique filename
+            filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+            # Use Railway volume path if available, otherwise local uploads
+            upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            file_path = os.path.join(upload_dir, filename)
+            file.save(file_path)
+            # Serve from the correct path
+            photo_paths.append(f"/uploads/{filename}")
 
     # Load existing model applications
     try:
@@ -124,7 +235,7 @@ def apply_model():
         model_applications = []
 
     # Generate new ID
-    new_id = max([app.get('id', 0) for app in model_applications], default=0) + 1
+    new_id = max([application.get('id', 0) for application in model_applications], default=0) + 1
 
     # Create application
     application = {
@@ -143,7 +254,8 @@ def apply_model():
         'email': data['email'],
         'allergy': data.get('allergy', ''),
         'skin_color': data['skin_color'],
-        'submitted_at': data.get('submitted_at', datetime.now().isoformat()),
+        'photos': photo_paths,
+        'submitted_at': datetime.now().isoformat(),
         'status': 'pending'  # pending, approved, rejected
     }
 
@@ -160,6 +272,7 @@ def apply_model():
     })
 
 @app.route('/update-model-status/<int:application_id>', methods=['POST'])
+@csrf.exempt
 def update_model_status(application_id):
     if not session.get('admin_logged_in'):
         return jsonify({'error': 'Unauthorized'}), 401
@@ -186,6 +299,18 @@ def update_model_status(application_id):
             # Save back to file
             with open('model_applications.json', 'w') as f:
                 json.dump(applications, f, indent=4)
+
+            # PERMANENTLY commit the change to git - admin changes are NEVER reversed
+            commit_message = f"ADMIN: Update model application status - ID {application_id} to {new_status}"
+            commit_success = commit_to_git('model_applications.json', commit_message)
+
+            if not commit_success:
+                print("🚨 CRITICAL: Model application updated but NOT committed to git!")
+                print("🚨 This change may be lost on server restart!")
+                return jsonify({
+                    'error': 'Application updated but commit to git failed. Contact administrator.',
+                    'application': applications[i]
+                }), 500
 
             return jsonify({
                 'success': True,
@@ -226,40 +351,64 @@ def scrape():
         return jsonify({'error': 'Keyword too long'}), 400
 
     try:
-        # Run the scraper with the keyword - use shell=False to prevent injection
-        result = subprocess.run([sys.executable, 'scraper.py', keyword],
-                              capture_output=True, text=True, cwd=os.getcwd(), shell=False)
-
-        if result.returncode == 0:
-            # Try to read the updated videos.json to return the new videos
-            try:
-                import json
-                with open('videos.json', 'r', encoding='utf-8') as f:
-                    all_videos = json.load(f)
-
-                # Find videos that contain the keyword in title
-                matching_videos = [v for v in all_videos
-                                 if keyword.lower() in v.get('title', '').lower()]
-
-                return jsonify({
-                    'success': True,
-                    'message': f'Scraped {len(matching_videos)} videos for "{keyword}"',
-                    'videos': matching_videos[:20]  # Return up to 20 videos
-                })
-            except Exception as e:
-                return jsonify({
-                    'success': True,
-                    'message': f'Scraping completed for "{keyword}", but could not read results: {str(e)}'
-                })
-        else:
+        print(f"Starting scrape for keyword: {keyword}")
+        # Import and call the scraper function directly
+        try:
+            from scraper import scrape_with_keyword
+        except ImportError as e:
+            print(f"Scraper import failed: {e}")
             return jsonify({
-                'error': 'Scraping failed',
-                'details': result.stderr
+                'error': 'Scraper functionality unavailable',
+                'details': str(e)
             }), 500
 
-    except Exception as e:
+        new_videos = scrape_with_keyword(keyword, limit_per_site=15)  # Increase limit for more results
+        print(f"Scraper returned {len(new_videos)} new videos")
+
+        # Try to read the updated videos.json to return the new videos
+        all_videos = []
+        try:
+            if os.path.exists('videos.json'):
+                with open('videos.json', 'r', encoding='utf-8') as f:
+                    all_videos = json.load(f)
+            else:
+                all_videos = new_videos
+        except Exception as e:
+            print(f"Error reading videos.json: {e}")
+            # Fallback to just returning new videos if file read fails
+            all_videos = new_videos
+
+        # Find videos that contain the keyword in title
+        matching_videos = [v for v in all_videos
+                         if keyword.lower() in v.get('title', '').lower()]
+
+        print(f"Found {len(matching_videos)} matching videos in total")
         return jsonify({
-            'error': 'Server error during scraping',
+            'success': True,
+            'message': f'Scraped {len(new_videos)} new videos for "{keyword}"',
+            'videos': matching_videos[:20]  # Return up to 20 videos
+        })
+
+    except Exception as e:
+        print(f"Error during scraping: {e}")
+        import traceback
+        traceback.print_exc()
+        # On server error, still return local results if available
+        try:
+            if os.path.exists('videos.json'):
+                with open('videos.json', 'r', encoding='utf-8') as f:
+                    all_videos = json.load(f)
+                matching_videos = [v for v in all_videos
+                                 if keyword.lower() in v.get('title', '').lower()]
+                return jsonify({
+                    'success': True,
+                    'message': f'Scraping failed, showing {len(matching_videos)} local results',
+                    'videos': matching_videos[:20]
+                })
+        except Exception as local_e:
+            print(f"Error reading local videos: {local_e}")
+        return jsonify({
+            'error': 'Server error during scraping and no local results available',
             'details': str(e)
         }), 500
 
@@ -269,8 +418,7 @@ def escorts():
 
 @app.route('/escorts.json')
 def escorts_json():
-    if not session.get('admin_logged_in'):
-        return jsonify({'error': 'Unauthorized'}), 401
+    # Public endpoint - escorts should be viewable by everyone
     return send_from_directory('.', 'escorts.json')
 
 @app.route('/uploads/<filename>')
@@ -291,6 +439,12 @@ def manage_escort(escort_id):
         escorts = []
 
     if request.method == 'DELETE':
+        # Find the escort to be deleted for logging
+        escort_to_delete = next((e for e in escorts if e['id'] == escort_id), None)
+
+        if not escort_to_delete:
+            return jsonify({'error': 'Escort not found'}), 404
+
         # Delete escort
         escorts = [e for e in escorts if e['id'] != escort_id]
 
@@ -298,9 +452,22 @@ def manage_escort(escort_id):
         with open('escorts.json', 'w') as f:
             json.dump(escorts, f, indent=4)
 
+        # PERMANENTLY commit the deletion to git - admin changes are NEVER reversed
+        commit_message = f"ADMIN: Delete escort profile - {escort_to_delete['name']} (ID: {escort_to_delete['id']})"
+        commit_success = commit_to_git('escorts.json', commit_message)
+
+        if not commit_success:
+            print("🚨 CRITICAL: Escort profile deleted but NOT committed to git!")
+            print("🚨 This deletion may be reverted on server restart!")
+            return jsonify({
+                'error': 'Profile deleted but commit to git failed. Contact administrator.',
+                'deleted_escort': escort_to_delete
+            }), 500
+
         return jsonify({
             'success': True,
-            'message': f'Escort ID {escort_id} deleted successfully'
+            'message': f'Escort {escort_to_delete["name"]} permanently deleted',
+            'deleted_escort': escort_to_delete
         })
 
     elif request.method == 'PUT':
@@ -380,16 +547,17 @@ def manage_escort(escort_id):
                 with open('escorts.json', 'w') as f:
                     json.dump(escorts, f, indent=4)
 
-                # Commit the change to git
-                try:
-                    subprocess.run(['git', 'add', 'escorts.json'], check=True, capture_output=True)
-                    commit_message = f"Update escort profile: {escorts[i]['name']} (ID: {escorts[i]['id']})"
-                    subprocess.run(['git', 'commit', '-m', commit_message], check=True, capture_output=True)
-                    print(f"✅ Committed escort profile update: {escorts[i]['name']}")
-                except subprocess.CalledProcessError as e:
-                    print(f"⚠️  Warning: Could not commit escort update to git: {e}")
-                except Exception as e:
-                    print(f"⚠️  Warning: Git commit failed: {e}")
+                # PERMANENTLY commit the change to git - admin changes are NEVER reversed
+                commit_message = f"ADMIN: Update escort profile - {escorts[i]['name']} (ID: {escorts[i]['id']})"
+                commit_success = commit_to_git('escorts.json', commit_message)
+
+                if not commit_success:
+                    print("🚨 CRITICAL: Escort profile updated but NOT committed to git!")
+                    print("🚨 This change may be lost on server restart!")
+                    return jsonify({
+                        'error': 'Profile updated but commit to git failed. Contact administrator.',
+                        'escort': escorts[i]
+                    }), 500
 
                 return jsonify({
                     'success': True,
@@ -540,6 +708,17 @@ def safety_checkin(request_id):
     with open('meet_requests.json', 'w') as f:
         json.dump(meet_requests, f, indent=4)
 
+    # PERMANENTLY commit the safety check-in to git
+    commit_message = f"ADMIN: Safety check-in for meet request {request_id} - Type: {checkin_type}"
+    commit_success = commit_to_git('meet_requests.json', commit_message)
+
+    if not commit_success:
+        print("🚨 CRITICAL: Safety check-in recorded but NOT committed to git!")
+        return jsonify({
+            'error': 'Check-in recorded but commit to git failed. Contact administrator.',
+            'checkin': checkin_record
+        }), 500
+
     return jsonify({
         'success': True,
         'message': f'Check-in recorded: {checkin_type}',
@@ -565,6 +744,17 @@ def end_meeting(request_id):
             # Save updated requests
             with open('meet_requests.json', 'w') as f:
                 json.dump(meet_requests, f, indent=4)
+
+            # PERMANENTLY commit the meeting end to git
+            commit_message = f"ADMIN: Meeting ended for request {request_id} - Status: completed"
+            commit_success = commit_to_git('meet_requests.json', commit_message)
+
+            if not commit_success:
+                print("🚨 CRITICAL: Meeting end recorded but NOT committed to git!")
+                return jsonify({
+                    'error': 'Meeting ended but commit to git failed. Contact administrator.',
+                    'end_time': req['endTime']
+                }), 500
 
             return jsonify({
                 'success': True,
@@ -651,6 +841,16 @@ def end_chat_session(request_id):
         with open('chat_messages.json', 'w') as f:
             json.dump(all_messages, f, indent=4)
 
+        # PERMANENTLY commit the chat session end to git
+        commit_message = f"ADMIN: Chat session ended for request {request_id}"
+        commit_success = commit_to_git('chat_messages.json', commit_message)
+
+        if not commit_success:
+            print("🚨 CRITICAL: Chat session ended but NOT committed to git!")
+            return jsonify({
+                'error': 'Chat session ended but commit to git failed. Contact administrator.'
+            }), 500
+
         return jsonify({
             'success': True,
             'message': 'Chat session ended successfully'
@@ -661,7 +861,7 @@ def end_chat_session(request_id):
         }), 404
 
 @app.route('/admin/login', methods=['GET', 'POST'])
-@limiter.limit("5 per hour", methods=["POST"])  # Strict limit for admin login
+@limiter.limit("20 per hour", methods=["POST"])  # More lenient limit for admin login
 def admin_login():
     form = AdminLoginForm()
     if form.validate_on_submit():
@@ -680,7 +880,7 @@ def admin_logout():
 
 def require_admin_login():
     if not session.get('admin_logged_in'):
-        return render_template('admin_login.html')
+        return redirect('/admin/login')
 
 @app.route('/admin/escorts', methods=['GET', 'POST'])
 @limiter.limit("30 per hour", methods=["POST"])  # Admin operations limits
@@ -744,16 +944,17 @@ def admin_escorts():
         with open('escorts.json', 'w') as f:
             json.dump(escorts, f, indent=4)
 
-        # Commit the change to git for permanent storage
-        try:
-            subprocess.run(['git', 'add', 'escorts.json'], check=True, capture_output=True)
-            commit_message = f"Add new escort profile: {escort['name']} (ID: {escort['id']})"
-            subprocess.run(['git', 'commit', '-m', commit_message], check=True, capture_output=True)
-            print(f"✅ Committed new escort profile: {escort['name']}")
-        except subprocess.CalledProcessError as e:
-            print(f"⚠️  Warning: Could not commit escort profile to git: {e}")
-        except Exception as e:
-            print(f"⚠️  Warning: Git commit failed: {e}")
+        # PERMANENTLY commit the creation to git - admin changes are NEVER reversed
+        commit_message = f"ADMIN: Create new escort profile - {escort['name']} (ID: {escort['id']})"
+        commit_success = commit_to_git('escorts.json', commit_message)
+
+        if not commit_success:
+            print("🚨 CRITICAL: New escort profile created but NOT committed to git!")
+            print("🚨 This profile may be lost on server restart!")
+            return jsonify({
+                'error': 'Profile created but commit to git failed. Contact administrator.',
+                'escort': escort
+            }), 500
 
         return jsonify({
             'success': True,
@@ -814,3 +1015,4 @@ if __name__ == '__main__':
         print("✅ Production mode: Use Gunicorn or another WSGI server")
         print("   Example: gunicorn --bind 0.0.0.0:8000 --workers 4 server:app")
         print("   Railway will automatically use production server")
+        app.run(host='0.0.0.0', port=port, debug=True)

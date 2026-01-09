@@ -326,6 +326,14 @@
                     </div>
                 </div>
 
+                <!-- Image Modal -->
+                <div id="imageModal" class="modal">
+                    <div class="modal-content" style="max-width: 90vw; max-height: 90vh; text-align: center;">
+                        <span class="close-button" onclick="closeImageModal()">&times;</span>
+                        <img id="modalImage" src="" alt="Model photo" style="max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px;">
+                    </div>
+                </div>
+
                 <script>
                     const editEscortModal = document.getElementById('editEscortModal');
                     const editForm = document.getElementById('editForm');
@@ -699,21 +707,32 @@
                                 appDiv.className = 'request';
                                 appDiv.style.borderLeft = app.status === 'pending' ? '4px solid #ff9800' : '4px solid #4CAF50';
 
-                                appDiv.innerHTML = `
-                                    <h3>Application #${app.id} - ${app.name}</h3>
-                                    <p><strong>Age:</strong> ${app.age} | <strong>Location:</strong> ${app.location}</p>
-                                    <p><strong>Height:</strong> ${app.height} | <strong>Body Type:</strong> ${app.body_type}</p>
-                                    <p><strong>Address:</strong> ${app.town}, ${app.city}, ${app.country}</p>
-                                    <p><strong>Preference:</strong> ${app.sexual_preference} | <strong>Occupation:</strong> ${app.occupation || 'N/A'}</p>
-                                    <p><strong>Phone:</strong> ${app.phone} | <strong>Email:</strong> ${app.email}</p>
-                                    <p><strong>Skin Color:</strong> ${app.skin_color} | <strong>Allergies:</strong> ${app.allergy || 'None'}</p>
-                                    <p><strong>Submitted:</strong> ${new Date(app.submitted_at).toLocaleString()}</p>
-                                    <p><strong>Status:</strong> ${app.status}</p>
-                                    <div style="margin-top: 1rem;">
-                                        <button onclick="updateModelStatus(${app.id}, 'approved')" style="background: #4CAF50; color: white; border: none; padding: 0.5rem; cursor: pointer; margin-right: 0.5rem;">Approve</button>
-                                        <button onclick="updateModelStatus(${app.id}, 'rejected')" style="background: #f44336; color: white; border: none; padding: 0.5rem; cursor: pointer;">Reject</button>
-                                    </div>
-                                `;
+                                // Display photos
+                                let photosHtml = '';
+                                if (app.photos && app.photos.length > 0) {
+                                    photosHtml = '<div style="margin: 1rem 0;"><strong>Photos:</strong><div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 0.5rem;">';
+                                    app.photos.forEach(photo => {
+                                        photosHtml += '<img src="' + photo + '" style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid #555; cursor: pointer;" alt="Model photo" onclick="openImageModal(\'' + photo + '\')">';
+                                    });
+                                    photosHtml += '</div></div>';
+                                } else {
+                                    photosHtml = '<p><strong>Photos:</strong> No photos uploaded</p>';
+                                }
+
+                                appDiv.innerHTML = '<h3>Application #' + app.id + ' - ' + app.name + '</h3>' +
+                                    '<p><strong>Age:</strong> ' + app.age + ' | <strong>Location:</strong> ' + app.location + '</p>' +
+                                    '<p><strong>Height:</strong> ' + app.height + ' | <strong>Body Type:</strong> ' + app.body_type + '</p>' +
+                                    '<p><strong>Address:</strong> ' + app.town + ', ' + app.city + ', ' + app.country + '</p>' +
+                                    '<p><strong>Preference:</strong> ' + app.sexual_preference + ' | <strong>Occupation:</strong> ' + (app.occupation || 'N/A') + '</p>' +
+                                    '<p><strong>Phone:</strong> ' + app.phone + ' | <strong>Email:</strong> ' + app.email + '</p>' +
+                                    '<p><strong>Skin Color:</strong> ' + app.skin_color + ' | <strong>Allergies:</strong> ' + (app.allergy || 'None') + '</p>' +
+                                    photosHtml +
+                                    '<p><strong>Submitted:</strong> ' + new Date(app.submitted_at).toLocaleString() + '</p>' +
+                                    '<p><strong>Status:</strong> ' + app.status + '</p>' +
+                                    '<div style="margin-top: 1rem;">' +
+                                        '<button onclick="updateModelStatus(' + app.id + ', \'approved\')" style="background: #4CAF50; color: white; border: none; padding: 0.5rem; cursor: pointer; margin-right: 0.5rem;">Approve</button>' +
+                                        '<button onclick="updateModelStatus(' + app.id + ', \'rejected\')" style="background: #f44336; color: white; border: none; padding: 0.5rem; cursor: pointer;">Reject</button>' +
+                                    '</div>';
 
                                 container.appendChild(appDiv);
                             });
@@ -795,6 +814,14 @@
                                 body: JSON.stringify({ status: status })
                             });
 
+                            if (!response.ok) {
+                                // Handle HTTP errors
+                                const errorText = await response.text();
+                                console.error('HTTP Error:', response.status, errorText);
+                                alert(`HTTP Error ${response.status}: ${errorText}`);
+                                return;
+                            }
+
                             const result = await response.json();
 
                             if (result.success) {
@@ -804,11 +831,36 @@
                                 alert('Error: ' + result.error);
                             }
                         } catch (error) {
-                            console.error('Error updating model status:', error);
-                            alert('Error updating status. Please try again.');
+                            console.error('Network or parsing error:', error);
+                            alert('Network error. Please check your connection and try again.');
+                        }
+                    }
+
+                    // Image modal functionality
+                    function openImageModal(imageSrc) {
+                        const modal = document.getElementById('imageModal');
+                        const modalImage = document.getElementById('modalImage');
+                        modalImage.src = imageSrc;
+                        modal.style.display = 'block';
+                    }
+
+                    function closeImageModal() {
+                        const modal = document.getElementById('imageModal');
+                        modal.style.display = 'none';
+                    }
+
+                    // Close image modal if clicked outside
+                    window.onclick = function(event) {
+                        if (event.target == document.getElementById('imageModal')) {
+                            closeImageModal();
+                        }
+                        if (event.target == document.getElementById('chatModal')) {
+                            closeChatModal();
+                        }
+                        if (event.target == editEscortModal) {
+                            editEscortModal.style.display = 'none';
                         }
                     }
                 </script>
             </body>
             </html>
-                        }
