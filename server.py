@@ -430,6 +430,10 @@ def uploaded_file(filename):
     upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
     return send_from_directory(upload_dir, filename)
 
+@app.route('/chat.html')
+def chat_page():
+    return send_from_directory('.', 'chat.html')
+
 @app.route('/admin/escorts/<int:escort_id>', methods=['PUT', 'DELETE'])
 def manage_escort(escort_id):
     if not session.get('admin_logged_in'):
@@ -787,12 +791,38 @@ def get_chat_messages(request_id):
 @limiter.limit("100 per hour", methods=["POST"])  # Chat message limits
 def send_chat_message(request_id):
     """Send a chat message"""
-    data = request.get_json()
-    sender = data.get('sender', 'unknown')  # 'client' or 'admin'
-    message = data.get('message', '').strip()
+    sender = None
+    message = ""
+    image_url = None
 
-    if not message:
-        return jsonify({'error': 'Message cannot be empty'}), 400
+    # Check if this is a file upload (admin only)
+    if request.content_type and 'multipart/form-data' in request.content_type:
+        # Admin sending an image
+        if not session.get('admin_logged_in'):
+            return jsonify({'error': 'Unauthorized'}), 401
+
+        sender = 'admin'
+        uploaded_file = request.files.get('image')
+
+        if uploaded_file and uploaded_file.filename:
+            # Generate unique filename
+            filename = secure_filename(f"{uuid.uuid4()}_{uploaded_file.filename}")
+            upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            file_path = os.path.join(upload_dir, filename)
+            uploaded_file.save(file_path)
+            image_url = f"/uploads/{filename}"
+            message = request.form.get('message', '').strip() or 'Sent an image'
+        else:
+            return jsonify({'error': 'No image file provided'}), 400
+    else:
+        # Regular text message
+        data = request.get_json()
+        sender = data.get('sender', 'unknown')  # 'client' or 'admin'
+        message = data.get('message', '').strip()
+
+        if not message:
+            return jsonify({'error': 'Message cannot be empty'}), 400
 
     # Load existing messages
     try:
@@ -811,6 +841,10 @@ def send_chat_message(request_id):
         'message': message,
         'timestamp': datetime.now().isoformat()
     }
+
+    # Add image URL if present
+    if image_url:
+        chat_message['image_url'] = image_url
 
     all_messages[request_id].append(chat_message)
 
