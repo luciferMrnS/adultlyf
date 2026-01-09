@@ -31,7 +31,9 @@
         "age": 24,
         "location": "Ilorin, Nigeria",
         "sexual_preference": "Bisexual",
-        "photos": [],
+        "photos": [
+            "/uploads/b6fe3166-bd3e-4152-9ffa-10ba487f8f9c_5.jpg"
+        ],
         "description": "Sweet and charming companion from Ilorin"
     }
 ]
