@@ -603,17 +603,20 @@ def delete_client_history(request_id):
     commit_message = f"ADMIN: Delete client meeting request {request_id} and associated chat history"
     commit_success = commit_to_git('meet_requests.json', commit_message)
 
-    if not commit_success:
-        print("🚨 CRITICAL: Client history deleted but NOT committed to git!")
-        return jsonify({
-            'error': 'Client history deleted but commit to git failed. Contact administrator.',
-            'deleted_request_id': request_id
-        }), 500
-
-    return jsonify({
+    response_data = {
         'success': True,
-        'message': f'Client meeting request {request_id} and associated chat history deleted successfully'
-    })
+        'message': f'Client meeting request {request_id} and associated chat history deleted successfully',
+        'deleted_request_id': request_id
+    }
+
+    if not commit_success:
+        print("⚠️ WARNING: Client history deleted but git commit failed (likely Railway deployment)")
+        print("Data is still deleted, but not version controlled")
+        response_data['warning'] = 'Deletion successful but git commit failed. Data may not be permanently saved.'
+        # Don't return error - deletion succeeded, just git commit failed
+        # This is common on hosted platforms like Railway
+
+    return jsonify(response_data)
 
 @app.route('/delete-model-application/<int:application_id>', methods=['DELETE'])
 @csrf.exempt
