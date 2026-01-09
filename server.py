@@ -462,6 +462,100 @@ def debug_chat():
         'sample_upload_files': upload_contents[:5] if upload_contents else []
     })
 
+@app.route('/delete-client-history/<request_id>', methods=['DELETE'])
+@csrf.exempt
+def delete_client_history(request_id):
+    """Delete a client meeting request from history"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    try:
+        # Load existing meet requests
+        with open('meet_requests.json', 'r') as f:
+            meet_requests = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return jsonify({'error': 'Meet requests file not found'}), 404
+
+    # Find and remove the request
+    original_length = len(meet_requests)
+    meet_requests = [req for req in meet_requests if str(req['id']) != str(request_id)]
+
+    if len(meet_requests) == original_length:
+        return jsonify({'error': 'Meeting request not found'}), 404
+
+    # Save updated requests
+    with open('meet_requests.json', 'w') as f:
+        json.dump(meet_requests, f, indent=4)
+
+    # Also delete associated chat messages
+    try:
+        with open('chat_messages.json', 'r') as f:
+            all_messages = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        all_messages = {}
+
+    if request_id in all_messages:
+        del all_messages[request_id]
+        with open('chat_messages.json', 'w') as f:
+            json.dump(all_messages, f, indent=4)
+
+    # PERMANENTLY commit the deletion to git
+    commit_message = f"ADMIN: Delete client meeting request {request_id} and associated chat history"
+    commit_success = commit_to_git('meet_requests.json', commit_message)
+
+    if not commit_success:
+        print("🚨 CRITICAL: Client history deleted but NOT committed to git!")
+        return jsonify({
+            'error': 'Client history deleted but commit to git failed. Contact administrator.',
+            'deleted_request_id': request_id
+        }), 500
+
+    return jsonify({
+        'success': True,
+        'message': f'Client meeting request {request_id} and associated chat history deleted successfully'
+    })
+
+@app.route('/delete-model-application/<int:application_id>', methods=['DELETE'])
+@csrf.exempt
+def delete_model_application(application_id):
+    """Delete a model application"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    try:
+        # Load existing model applications
+        with open('model_applications.json', 'r') as f:
+            applications = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return jsonify({'error': 'Model applications file not found'}), 404
+
+    # Find and remove the application
+    original_length = len(applications)
+    applications = [app for app in applications if app['id'] != application_id]
+
+    if len(applications) == original_length:
+        return jsonify({'error': 'Model application not found'}), 404
+
+    # Save updated applications
+    with open('model_applications.json', 'w') as f:
+        json.dump(applications, f, indent=4)
+
+    # PERMANENTLY commit the deletion to git
+    commit_message = f"ADMIN: Delete model application {application_id}"
+    commit_success = commit_to_git('model_applications.json', commit_message)
+
+    if not commit_success:
+        print("🚨 CRITICAL: Model application deleted but NOT committed to git!")
+        return jsonify({
+            'error': 'Model application deleted but commit to git failed. Contact administrator.',
+            'deleted_application_id': application_id
+        }), 500
+
+    return jsonify({
+        'success': True,
+        'message': f'Model application {application_id} deleted successfully'
+    })
+
 @app.route('/admin/escorts/<int:escort_id>', methods=['PUT', 'DELETE'])
 def manage_escort(escort_id):
     if not session.get('admin_logged_in'):
@@ -846,7 +940,9 @@ def send_chat_message(request_id):
             file_path = os.path.join(upload_dir, filename)
             uploaded_file.save(file_path)
             image_url = f"/uploads/{filename}"
-            message = request.form.get('message', '').strip()
+            message_text = request.form.get('message', '').strip()
+            # Embed the image directly in the message
+            message = f'<img src="{image_url}" alt="{message_text}" style="max-width: 100%; height: auto;">'
         else:
             return jsonify({'error': 'No image file provided'}), 400
     else:

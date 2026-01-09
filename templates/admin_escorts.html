@@ -862,7 +862,8 @@
                                     '<p><strong>Status:</strong> ' + app.status + '</p>' +
                                     '<div style="margin-top: 1rem;">' +
                                         '<button onclick="updateModelStatus(' + app.id + ', \'approved\')" style="background: #4CAF50; color: white; border: none; padding: 0.5rem; cursor: pointer; margin-right: 0.5rem;">Approve</button>' +
-                                        '<button onclick="updateModelStatus(' + app.id + ', \'rejected\')" style="background: #f44336; color: white; border: none; padding: 0.5rem; cursor: pointer;">Reject</button>' +
+                                        '<button onclick="updateModelStatus(' + app.id + ', \'rejected\')" style="background: #f44336; color: white; border: none; padding: 0.5rem; cursor: pointer; margin-right: 0.5rem;">Reject</button>' +
+                                        '<button onclick="deleteModelApplication(' + app.id + ', \'' + app.name + '\')" style="background: #dc3545; color: white; border: none; padding: 0.5rem; cursor: pointer;">🗑️ Delete</button>' +
                                     '</div>';
 
                                 container.appendChild(appDiv);
@@ -919,7 +920,8 @@
                                     <p><strong>Safe Word:</strong> ${req.safeWord || 'pineapple'}</p>
                                     ${req.endTime ? `<p><strong>Ended:</strong> ${new Date(req.endTime).toLocaleString()}</p>` : ''}
                                     <div style="margin-top: 1rem;">
-                                        <button onclick="openChat('${req.id}', '${req.clientName}')" style="background: #2196F3; color: white; border: none; padding: 0.5rem; cursor: pointer;">💬 Chat History</button>
+                                        <button onclick="openChat('${req.id}', '${req.clientName}')" style="background: #2196F3; color: white; border: none; padding: 0.5rem; cursor: pointer; margin-right: 0.5rem;">💬 Chat History</button>
+                                        <button onclick="deleteClientHistory('${req.id}', '${req.clientName}')" style="background: #f44336; color: white; border: none; padding: 0.5rem; cursor: pointer;">🗑️ Delete</button>
                                     </div>
                                 `;
 
@@ -963,6 +965,60 @@
                             }
                         } catch (error) {
                             console.error('Network or parsing error:', error);
+                            alert('Network error. Please check your connection and try again.');
+                        }
+                    }
+
+                    async function deleteClientHistory(requestId, clientName) {
+                        if (!confirm(`Are you sure you want to permanently delete the meeting request from ${clientName}? This action cannot be undone.`)) {
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch(`/delete-client-history/${requestId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                }
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                alert(`Meeting request from ${clientName} deleted successfully!`);
+                                loadClientHistory(); // Reload the client history
+                            } else {
+                                alert('Error: ' + result.error);
+                            }
+                        } catch (error) {
+                            console.error('Error deleting client history:', error);
+                            alert('Network error. Please check your connection and try again.');
+                        }
+                    }
+
+                    async function deleteModelApplication(applicationId, applicantName) {
+                        if (!confirm(`Are you sure you want to permanently delete the model application from ${applicantName}? This action cannot be undone.`)) {
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch(`/delete-model-application/${applicationId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                }
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                alert(`Model application from ${applicantName} deleted successfully!`);
+                                loadModelApplications(); // Reload the applications
+                            } else {
+                                alert('Error: ' + result.error);
+                            }
+                        } catch (error) {
+                            console.error('Error deleting model application:', error);
                             alert('Network error. Please check your connection and try again.');
                         }
                     }
