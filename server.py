@@ -336,6 +336,57 @@ def meet_requests_json():
     except (FileNotFoundError, json.JSONDecodeError):
         return jsonify([])
 
+@app.route('/my-chats')
+def my_chats():
+    """Return active chats for the current client based on their meeting requests"""
+    # For now, return all meet requests (in production, you'd filter by client identifier)
+    # Since we don't have user authentication for clients, we'll return all active chats
+    try:
+        with open('meet_requests.json', 'r') as f:
+            meet_requests = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        meet_requests = []
+
+    # Get escort names for display
+    try:
+        with open('escorts.json', 'r') as f:
+            escorts = json.load(f)
+        escort_names = {e['id']: e['name'] for e in escorts}
+    except:
+        escort_names = {}
+
+    # Filter to active chats (not ended by admin)
+    active_chats = []
+    for req in meet_requests:
+        # Check if chat still exists (not ended)
+        try:
+            with open('chat_messages.json', 'r') as f:
+                chat_messages = json.load(f)
+            has_chat = req['id'] in chat_messages
+            # Check if chat was ended
+            chat_ended = False
+            if has_chat:
+                messages = chat_messages[req['id']]
+                chat_ended = any(msg.get('message') == 'Chat session ended by administrator' for msg in messages)
+        except:
+            has_chat = False
+            chat_ended = True
+
+        if has_chat and not chat_ended:
+            active_chats.append({
+                'request_id': req['id'],
+                'escort_name': escort_names.get(int(req['escortId']), 'Unknown Escort'),
+                'client_name': req['clientName'],
+                'timestamp': req['timestamp'],
+                'status': req['status'],
+                'chat_url': f'/chat.html?request_id={req["id"]}'
+            })
+
+    return jsonify({
+        'active_chats': active_chats,
+        'total_active': len(active_chats)
+    })
+
 @app.route('/scrape', methods=['POST'])
 @limiter.limit("10 per hour", methods=["POST"])
 def scrape():
@@ -789,6 +840,7 @@ def meet():
         'success': True,
         'message': response_message,
         'request_id': meet_request['id'],
+        'chat_url': f'/chat.html?request_id={meet_request["id"]}',
         'safety_warnings': safety_warnings,
         'chat_enabled': True
     })
