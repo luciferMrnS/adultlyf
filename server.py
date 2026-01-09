@@ -779,6 +779,7 @@ def get_chat_messages(request_id):
     return jsonify({'messages': messages})
 
 @app.route('/chat/<request_id>', methods=['POST'])
+@csrf.exempt
 @limiter.limit("100 per hour", methods=["POST"])  # Chat message limits
 def send_chat_message(request_id):
     """Send a chat message"""
@@ -819,6 +820,7 @@ def send_chat_message(request_id):
     })
 
 @app.route('/chat/<request_id>/end', methods=['POST'])
+@csrf.exempt
 def end_chat_session(request_id):
     """End a chat session - removes it from active status"""
     # Load existing messages
