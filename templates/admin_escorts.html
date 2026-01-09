@@ -553,11 +553,33 @@
                         // Show modal
                         document.getElementById('chatModal').style.display = 'block';
 
+                        // Check admin status and show image button
+                        checkAdminStatus();
+
                         // Load existing messages
                         loadChatMessages(requestId);
 
                         // Start polling for new messages
                         startAdminChatPolling(requestId);
+                    }
+
+                    function checkAdminStatus() {
+                        // Check if user is admin (has admin session)
+                        fetch('/admin/escorts', { credentials: 'same-origin' })
+                            .then(response => {
+                                if (response.status === 200) {
+                                    // User is admin, show image upload button
+                                    document.getElementById('imageUploadLabel').style.display = 'inline-block';
+                                } else {
+                                    // Not admin, hide image upload button
+                                    document.getElementById('imageUploadLabel').style.display = 'none';
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error checking admin status:', error);
+                                // Hide button on error
+                                document.getElementById('imageUploadLabel').style.display = 'none';
+                            });
                     }
 
                     function closeChatModal() {
