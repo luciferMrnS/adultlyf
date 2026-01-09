@@ -844,15 +844,14 @@ def end_chat_session(request_id):
         with open('chat_messages.json', 'w') as f:
             json.dump(all_messages, f, indent=4)
 
-        # PERMANENTLY commit the chat session end to git
+        # Try to commit the chat session end to git (may fail on Railway)
         commit_message = f"ADMIN: Chat session ended for request {request_id}"
         commit_success = commit_to_git('chat_messages.json', commit_message)
 
         if not commit_success:
-            print("🚨 CRITICAL: Chat session ended but NOT committed to git!")
-            return jsonify({
-                'error': 'Chat session ended but commit to git failed. Contact administrator.'
-            }), 500
+            print(f"⚠️  WARNING: Chat session ended but git commit failed (likely Railway deployment)")
+            print("Chat session data is still saved, but not version controlled")
+            # Don't return error - chat ending should still work
 
         return jsonify({
             'success': True,
