@@ -56,6 +56,40 @@
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1.5rem;
         }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .pagination button {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 40px;
+        }
+        .pagination button:hover {
+            background-color: #555;
+        }
+        .pagination button.active {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+        }
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .pagination-info {
+            color: #ccc;
+            margin: 0 1rem;
+            font-size: 0.9rem;
+        }
         .video-item {
             background-color: #2a2a2a;
             border-radius: 8px;
@@ -276,6 +310,9 @@
         <div class="video-grid" id="video-grid">
             <!-- Video items will be injected here -->
         </div>
+        <div class="pagination" id="pagination">
+            <!-- Pagination controls will be injected here -->
+        </div>
     </div>
     <footer>
         <div class="ad-placeholder" style="width: 728px; height: 90px; background-color: #444; margin: 1rem auto; text-align: center; line-height: 90px;">Banner Ad (728x90)</div>
@@ -283,32 +320,59 @@
     </footer>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            let videos = [];
+            let allVideos = [];
+            let filteredVideos = [];
+            let currentPage = 1;
+            const videosPerPage = 50;
             const videoGrid = document.getElementById("video-grid");
+            const paginationContainer = document.getElementById("pagination");
             const searchForm = document.getElementById("search-form");
             const searchInput = document.getElementById("search-input");
+
+            // Get page from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            currentPage = parseInt(urlParams.get('page')) || 1;
 
             fetch("videos.json")
                 .then(response => response.json())
                 .then(data => {
-                    videos = data;
-                    displayVideos(videos);
+                    allVideos = data;
+                    filteredVideos = [...allVideos];
+                    displayCurrentPage();
+                    updatePagination();
                 })
                 .catch(error => {
                     console.error("Error fetching videos.json:", error);
                     videoGrid.innerHTML = "<p>Could not load videos. Please run the scraper to generate the videos.json file.</p>";
                 });
 
-            function displayVideos(videoData) {
+            function displayCurrentPage() {
                 videoGrid.innerHTML = "";
-                videoData.forEach(video => {
-                    const videoItem = document.createElement("div"); // Changed from <a> to <div>
+                const startIndex = (currentPage - 1) * videosPerPage;
+                const endIndex = startIndex + videosPerPage;
+                const videosToShow = filteredVideos.slice(startIndex, endIndex);
+
+                if (videosToShow.length === 0) {
+                    if (filteredVideos.length === 0) {
+                        videoGrid.innerHTML = "<p>No videos found.</p>";
+                    } else {
+                        // If we're on a page that doesn't exist, go to first page
+                        currentPage = 1;
+                        updateURL();
+                        displayCurrentPage();
+                    }
+                    return;
+                }
+
+                videosToShow.forEach(video => {
+                    const videoItem = document.createElement("div");
                     videoItem.classList.add("video-item");
-                    videoItem.dataset.embedUrl = video.embed_url; // Store embed URL in a data attribute
+                    videoItem.dataset.embedUrl = video.embed_url;
 
                     const thumbnail = document.createElement("img");
                     thumbnail.src = video.thumbnail;
                     thumbnail.alt = video.title;
+                    thumbnail.loading = "lazy";
 
                     const title = document.createElement("div");
                     title.classList.add("video-item-title");
@@ -330,12 +394,117 @@
                 });
             }
 
+            function updatePagination() {
+                paginationContainer.innerHTML = "";
+                const totalPages = Math.ceil(filteredVideos.length / videosPerPage);
+
+                if (totalPages <= 1) {
+                    return; // Don't show pagination for single page
+                }
+
+                // Previous button
+                const prevButton = document.createElement("button");
+                prevButton.textContent = "«";
+                prevButton.disabled = currentPage === 1;
+                prevButton.addEventListener("click", () => goToPage(currentPage - 1));
+                paginationContainer.appendChild(prevButton);
+
+                // Page numbers
+                const maxVisiblePages = 7;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+                // Adjust start page if we're near the end
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+
+                // First page + ellipsis if needed
+                if (startPage > 1) {
+                    const firstButton = document.createElement("button");
+                    firstButton.textContent = "1";
+                    firstButton.addEventListener("click", () => goToPage(1));
+                    paginationContainer.appendChild(firstButton);
+
+                    if (startPage > 2) {
+                        const ellipsis = document.createElement("span");
+                        ellipsis.textContent = "...";
+                        ellipsis.style.margin = "0 0.5rem";
+                        paginationContainer.appendChild(ellipsis);
+                    }
+                }
+
+                // Page number buttons
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageButton = document.createElement("button");
+                    pageButton.textContent = i;
+                    pageButton.classList.toggle("active", i === currentPage);
+                    pageButton.addEventListener("click", () => goToPage(i));
+                    paginationContainer.appendChild(pageButton);
+                }
+
+                // Last page + ellipsis if needed
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        const ellipsis = document.createElement("span");
+                        ellipsis.textContent = "...";
+                        ellipsis.style.margin = "0 0.5rem";
+                        paginationContainer.appendChild(ellipsis);
+                    }
+
+                    const lastButton = document.createElement("button");
+                    lastButton.textContent = totalPages;
+                    lastButton.addEventListener("click", () => goToPage(totalPages));
+                    paginationContainer.appendChild(lastButton);
+                }
+
+                // Next button
+                const nextButton = document.createElement("button");
+                nextButton.textContent = "»";
+                nextButton.disabled = currentPage === totalPages;
+                nextButton.addEventListener("click", () => goToPage(currentPage + 1));
+                paginationContainer.appendChild(nextButton);
+
+                // Info text
+                const startItem = (currentPage - 1) * videosPerPage + 1;
+                const endItem = Math.min(currentPage * videosPerPage, filteredVideos.length);
+                const infoDiv = document.createElement("div");
+                infoDiv.className = "pagination-info";
+                infoDiv.textContent = `Showing ${startItem}-${endItem} of ${filteredVideos.length} videos`;
+                paginationContainer.appendChild(infoDiv);
+            }
+
+            function goToPage(page) {
+                const totalPages = Math.ceil(filteredVideos.length / videosPerPage);
+                if (page >= 1 && page <= totalPages) {
+                    currentPage = page;
+                    updateURL();
+                    displayCurrentPage();
+                    updatePagination();
+                    // Scroll to top of video grid
+                    videoGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            function updateURL() {
+                const url = new URL(window.location);
+                if (currentPage === 1) {
+                    url.searchParams.delete('page');
+                } else {
+                    url.searchParams.set('page', currentPage);
+                }
+                window.history.replaceState({}, '', url);
+            }
+
             function filterVideos() {
                 const searchTerm = searchInput.value.toLowerCase();
-                const filteredVideos = videos.filter(video => {
+                filteredVideos = allVideos.filter(video => {
                     return video.title.toLowerCase().includes(searchTerm);
                 });
-                displayVideos(filteredVideos);
+                currentPage = 1; // Reset to first page when filtering
+                updateURL();
+                displayCurrentPage();
+                updatePagination();
             }
 
             searchForm.addEventListener("submit", function(event) {
