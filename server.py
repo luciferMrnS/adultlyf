@@ -330,7 +330,11 @@ def model_applications_json():
 def meet_requests_json():
     if not session.get('admin_logged_in'):
         return jsonify({'error': 'Unauthorized'}), 401
-    return send_from_directory('.', 'meet_requests.json')
+    try:
+        with open('meet_requests.json', 'r') as f:
+            return jsonify(json.load(f))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return jsonify([])
 
 @app.route('/scrape', methods=['POST'])
 @limiter.limit("10 per hour", methods=["POST"])
