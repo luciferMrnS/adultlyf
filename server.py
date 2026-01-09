@@ -975,13 +975,10 @@ def send_chat_message(request_id):
     message = ""
     image_url = None
 
-    # Check if this is a file upload (admin only)
+    # Check if this is a file upload (allowed for both admin and clients)
     if request.content_type and 'multipart/form-data' in request.content_type:
-        # Admin sending an image
-        if not session.get('admin_logged_in'):
-            return jsonify({'error': 'Unauthorized'}), 401
-
-        sender = 'admin'
+        # Determine sender based on admin session
+        sender = 'admin' if session.get('admin_logged_in') else 'client'
         uploaded_file = request.files.get('image')
 
         if uploaded_file and uploaded_file.filename:
@@ -1250,3 +1247,4 @@ if __name__ == '__main__':
         print("   Example: gunicorn --bind 0.0.0.0:8000 --workers 4 server:app")
         print("   Railway will automatically use production server")
         app.run(host='0.0.0.0', port=port, debug=True)
+        print("   Railway will automatically use production server")

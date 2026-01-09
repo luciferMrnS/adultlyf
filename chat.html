@@ -274,13 +274,14 @@
             .then(response => {
                 if (response.ok) {
                     isAdmin = true;
-                    document.getElementById('imageUploadLabel').style.display = 'flex';
                 }
             })
             .catch(() => {
                 // Not admin, that's fine
             })
             .finally(() => {
+                // Show image upload for all users
+                document.getElementById('imageUploadLabel').style.display = 'flex';
                 loadMessages();
                 startPolling();
             });
