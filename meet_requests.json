@@ -174,5 +174,27 @@
             "Warning: meetingDuration not provided",
             "Warning: safeWord not provided"
         ]
+    },
+    {
+        "id": "20260110023518",
+        "escortId": "1",
+        "clientName": "Test Client",
+        "clientLocation": "Test Location",
+        "clientContact": "test@example.com",
+        "emergencyContact": "",
+        "meetingDuration": 60,
+        "safeWord": "pineapple",
+        "meetingDetails": "hello",
+        "timestamp": "2026-01-10T02:35:18.465853",
+        "scheduledTime": "",
+        "status": "pending",
+        "safetyCheckIns": [],
+        "lastCheckIn": null,
+        "adminApproval": false,
+        "safetyWarnings": [
+            "Warning: emergencyContact not provided",
+            "Warning: meetingDuration not provided",
+            "Warning: safeWord not provided"
+        ]
     }
 ]
