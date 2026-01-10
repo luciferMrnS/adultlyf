@@ -17,6 +17,29 @@
                     .completed { border-left: 4px solid #4CAF50; }
                     .back-link { color: #4CAF50; text-decoration: none; }
 
+                    /* Collapsible sections */
+                    .collapsible-section h2 {
+                        cursor: pointer;
+                        user-select: none;
+                        position: relative;
+                    }
+                    .collapsible-section h2::after {
+                        content: '▼';
+                        position: absolute;
+                        right: 0;
+                        transition: transform 0.3s;
+                    }
+                    .collapsible-section.collapsed h2::after {
+                        transform: rotate(-90deg);
+                    }
+                    .collapsible-content {
+                        display: block;
+                        transition: all 0.3s ease;
+                    }
+                    .collapsible-section.collapsed .collapsible-content {
+                        display: none;
+                    }
+
                     /* Modal Styles */
                     .modal {
                         display: none; /* Hidden by default */
@@ -163,9 +186,26 @@
                     const escortsData = {{ escorts_data | tojson }};
 
                     document.addEventListener("DOMContentLoaded", function() {
-                        // Load model applications and client history on page load
+                        // Add collapsible functionality
+                        const collapsibleHeaders = document.querySelectorAll('.collapsible-section h2');
+                        collapsibleHeaders.forEach(header => {
+                            header.addEventListener('click', function() {
+                                this.parentElement.classList.toggle('collapsed');
+            if (!this.parentElement.classList.contains('collapsed')) {
+                let container = this.parentElement.querySelector('#modelApplicationsContainer');
+                if (!container) {
+                    container = this.parentElement.querySelector('#clientHistoryContainer');
+                }
+                if (container && container.innerHTML.trim() === '') {
+                    if (this.textContent.includes('Model Applications')) {
                         loadModelApplications();
+                    } else if (this.textContent.includes('Client Meeting History')) {
                         loadClientHistory();
+                    }
+                }
+            }
+                            });
+                        });
                     });
                 </script>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -253,29 +293,33 @@
                         {% endfor %}
                     </div>
 
-                    <div class="section">
+                    <div class="section collapsible-section collapsed">
                         <h2>Model Applications</h2>
-                        <div style="margin-bottom: 1rem;">
-                            <button onclick="loadModelApplications()" style="background: #FF6B6B; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Load Model Applications</button>
-                            <button onclick="selectAllModelApps()" style="background: #2196F3; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Select All</button>
-                            <button onclick="deselectAllModelApps()" style="background: #757575; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Deselect All</button>
-                            <button onclick="deleteSelectedModelApps()" style="background: #f44336; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer;">🗑️ Delete Selected</button>
-                        </div>
-                        <div id="modelApplicationsContainer">
-                            <!-- Model applications will be loaded here -->
+                        <div class="collapsible-content">
+                            <div style="margin-bottom: 1rem;">
+                                <button onclick="loadModelApplications()" style="background: #FF6B6B; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Load Model Applications</button>
+                                <button onclick="selectAllModelApps()" style="background: #2196F3; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Select All</button>
+                                <button onclick="deselectAllModelApps()" style="background: #757575; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Deselect All</button>
+                                <button onclick="deleteSelectedModelApps()" style="background: #f44336; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer;">🗑️ Delete Selected</button>
+                            </div>
+                            <div id="modelApplicationsContainer">
+                                <!-- Model applications will be loaded here -->
+                            </div>
                         </div>
                     </div>
 
-                    <div class="section">
+                    <div class="section collapsible-section collapsed">
                         <h2>Client Meeting History</h2>
-                        <div style="margin-bottom: 1rem;">
-                            <button onclick="loadClientHistory()" style="background: #9C27B0; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Load Client History</button>
-                            <button onclick="selectAllClientHistory()" style="background: #2196F3; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Select All</button>
-                            <button onclick="deselectAllClientHistory()" style="background: #757575; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Deselect All</button>
-                            <button onclick="deleteSelectedClientHistory()" style="background: #f44336; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer;">🗑️ Delete Selected</button>
-                        </div>
-                        <div id="clientHistoryContainer">
-                            <!-- Client history will be loaded here -->
+                        <div class="collapsible-content">
+                            <div style="margin-bottom: 1rem;">
+                                <button onclick="loadClientHistory()" style="background: #9C27B0; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Load Client History</button>
+                                <button onclick="selectAllClientHistory()" style="background: #2196F3; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Select All</button>
+                                <button onclick="deselectAllClientHistory()" style="background: #757575; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Deselect All</button>
+                                <button onclick="deleteSelectedClientHistory()" style="background: #f44336; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer;">🗑️ Delete Selected</button>
+                            </div>
+                            <div id="clientHistoryContainer">
+                                <!-- Client history will be loaded here -->
+                            </div>
                         </div>
                     </div>
                 </div>
