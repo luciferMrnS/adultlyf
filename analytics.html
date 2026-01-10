@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Adultlyf</title>
+    <meta name="description" content="Comprehensive analytics dashboard for Adultlyf site traffic and visitor insights.">
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="apple-touch-icon" href="/static/logo.svg">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+            min-height: 100px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .site-logo {
+            position: absolute;
+            left: 1rem;
+            top: 10px;
+        }
+
+        .site-logo img {
+            height: 80px;
+            width: auto;
+            vertical-align: middle;
+            margin-right: 15px;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(33,150,243,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(33,150,243,0.4);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background-color: #2a2a2a;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border: 1px solid #444;
+        }
+
+        .chart-card h3 {
+            margin: 0 0 1rem 0;
+            color: #2196F3;
+            font-size: 1.3rem;
+            text-align: center;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffeb3b;
+            margin: 0.5rem 0;
+            text-shadow: 0 0 10px rgba(255,235,59,0.5);
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            color: #ccc;
+            margin: 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .time-selector {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .time-selector button {
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .time-selector button.active {
+            background-color: #2196F3;
+            border-color: #2196F3;
+        }
+
+        .time-selector button:hover {
+            background-color: #555;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                padding: 0.5rem;
+                min-height: auto;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .site-logo img {
+                height: 60px;
+            }
+
+            .back-button {
+                position: static;
+                margin-top: 1rem;
+                display: inline-block;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .metric-value {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-card {
+                padding: 1rem;
+            }
+
+            .metric-value {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="site-logo">
+            <img src="/static/logo.svg" alt="Adultlyf Logo">
+        </a>
+        <h1>Analytics Dashboard</h1>
+        <a href="/" class="back-button">← Back to Home</a>
+    </header>
+
+    <div class="container">
+        <div class="time-selector">
+            <button class="active" onclick="setTimeRange('7d')">Last 7 Days</button>
+            <button onclick="setTimeRange('30d')">Last 30 Days</button>
+            <button onclick="setTimeRange('90d')">Last 90 Days</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="metric-card">
+                <div class="metric-value" id="total-visitors">12,847</div>
+                <div class="metric-label">Total Visitors</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="avg-session">4:32</div>
+                <div class="metric-label">Avg. Session Time</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="bounce-rate">23.4%</div>
+                <div class="metric-label">Bounce Rate</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="page-views">45,231</div>
+                <div class="metric-label">Page Views</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="chart-card">
+                <h3>Daily Visitors</h3>
+                <canvas id="visitorsChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Session Duration Trends</h3>
+                <canvas id="sessionChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Traffic Sources</h3>
+                <canvas id="sourcesChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Visitor Locations</h3>
+                <canvas id="locationsChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Device Types</h3>
+                <canvas id="devicesChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Peak Hours</h3>
+                <canvas id="hoursChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTimeRange = '7d';
+        let charts = {};
+        let analyticsData = null;
+        let isLoading = true;
+
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/analytics');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                analyticsData = await response.json();
+                isLoading = false;
+                updateDashboard();
+            } catch (error) {
+                console.error('Failed to fetch analytics data:', error);
+                isLoading = false;
+                // Show error message to user
+                alert('Failed to load analytics data. Please try refreshing the page.');
+            }
+        }
+
+        function setTimeRange(range) {
+            currentTimeRange = range;
+            document.querySelectorAll('.time-selector button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            if (isLoading || !analyticsData) {
+                // Show loading state
+                document.getElementById('total-visitors').textContent = 'Loading...';
+                document.getElementById('avg-session').textContent = 'Loading...';
+                document.getElementById('bounce-rate').textContent = 'Loading...';
+                document.getElementById('page-views').textContent = 'Loading...';
+                return;
+            }
+
+            const data = analyticsData.timeRanges[currentTimeRange];
+
+            // Update metrics
+            document.getElementById('total-visitors').textContent = data.totalVisitors.toLocaleString();
+            document.getElementById('avg-session').textContent = data.avgSession;
+            document.getElementById('bounce-rate').textContent = data.bounceRate;
+            document.getElementById('page-views').textContent = data.pageViews.toLocaleString();
+
+            // Update charts
+            updateVisitorsChart(data);
+            updateSessionChart(data);
+            updateSourcesChart();
+            updateLocationsChart();
+            updateDevicesChart();
+            updateHoursChart();
+        }
+
+        function updateVisitorsChart(data) {
+            if (charts.visitorsChart) charts.visitorsChart.destroy();
+
+            const ctx = document.getElementById('visitorsChart').getContext('2d');
+            charts.visitorsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Visitors',
+                        data: data.visitors,
+                        borderColor: '#2196F3',
+                        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                color: '#ccc'
+                            },
+                            grid: {
+                                color: '#444'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#ccc'
+                            },
+                            grid: {
+                                color: '#444'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateSessionChart(data) {
+            if (charts.sessionChart) charts.sessionChart.destroy();
+
+            const ctx = document.getElementById('sessionChart').getContext('2d');
+            charts.sessionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Avg Session (minutes)',
+                        data: data.sessions,
+                        backgroundColor: '#4CAF50',
+                        borderColor: '#45a049',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                color: '#ccc'
+                            },
+                            grid: {
+                                color: '#444'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#ccc'
+                            },
+                            grid: {
+                                color: '#444'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateSourcesChart() {
+            if (charts.sourcesChart) charts.sourcesChart.destroy();
+
+            const ctx = document.getElementById('sourcesChart').getContext('2d');
+            const sourcesData = analyticsData.static.trafficSources;
+            charts.sourcesChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: sourcesData.labels,
+                    datasets: [{
+                        data: sourcesData.data,
+                        backgroundColor: [
+                            '#2196F3',
+                            '#4CAF50',
+                            '#FF9800',
+                            '#E91E63',
+                            '#9C27B0'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#2a2a2a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateLocationsChart() {
+            if (charts.locationsChart) charts.locationsChart.destroy();
+
+            const ctx = document.getElementById('locationsChart').getContext('2d');
+            const locationsData = analyticsData.static.locations;
+            charts.locationsChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: locationsData.labels,
+                    datasets: [{
+                        data: locationsData.data,
+                        backgroundColor: [
+                            '#FF5722',
+                            '#2196F3',
+                            '#4CAF50',
+                            '#FF9800',
+                            '#9C27B0',
+                            '#607D8B'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#2a2a2a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateDevicesChart() {
+            if (charts.devicesChart) charts.devicesChart.destroy();
+
+            const ctx = document.getElementById('devicesChart').getContext('2d');
+            const devicesData = analyticsData.static.devices;
+            charts.devicesChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: devicesData.labels,
+                    datasets: [{
+                        label: 'Device Usage (%)',
+                        data: devicesData.data,
+                        backgroundColor: [
+                            '#2196F3',
+                            '#4CAF50',
+                            '#FF9800'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 50,
+                            ticks: {
+                                color: '#ccc',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: '#444'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#ccc'
+                            },
+                            grid: {
+                                color: '#444'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateHoursChart() {
+            if (charts.hoursChart) charts.hoursChart.destroy();
+
+            const ctx = document.getElementById('hoursChart').getContext('2d');
+            const hoursData = analyticsData.static.peakHours;
+            charts.hoursChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: hoursData.labels,
+                    datasets: [{
+                        label: 'Active Users',
+                        data: hoursData.data,
+                        borderColor: '#E91E63',
+                        backgroundColor: 'rgba(233, 30, 99, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                color: '#ccc'
+                            },
+                            grid: {
+                                color: '#444'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#ccc'
+                            },
+                            grid: {
+                                color: '#444'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchData();
+        });
+    </script>
+</body>
+</html>
