@@ -1242,8 +1242,15 @@
             messageDiv.className = `chat-message ${sender}`;
 
             const timestamp = new Date().toLocaleTimeString();
+
+            const escapeHtml = (text) => {
+                const div = document.createElement('div');
+                div.textContent = text ?? '';
+                return div.innerHTML;
+            };
+
             messageDiv.innerHTML = `
-                <div class="message-content">${message}</div>
+                <div class="message-content">${escapeHtml(message)}</div>
                 <div class="message-time">${timestamp}</div>
             `;
 

@@ -158,10 +158,16 @@
             </head>
             <body>
                 <div class="container">
-                    <script>
-                        // escorts_data will be passed from Flask
-                        const escortsData = {{ escorts_data | tojson }};
-                    </script>
+                <script>
+                    // escorts_data will be passed from Flask
+                    const escortsData = {{ escorts_data | tojson }};
+
+                    document.addEventListener("DOMContentLoaded", function() {
+                        // Load model applications and client history on page load
+                        loadModelApplications();
+                        loadClientHistory();
+                    });
+                </script>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <a href="/" class="back-link">&larr; Back to Home</a>
                         <a href="/admin/logout" class="back-link">Logout</a>
@@ -249,18 +255,28 @@
 
                     <div class="section">
                         <h2>Model Applications</h2>
+                        <div style="margin-bottom: 1rem;">
+                            <button onclick="loadModelApplications()" style="background: #FF6B6B; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Load Model Applications</button>
+                            <button onclick="selectAllModelApps()" style="background: #2196F3; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Select All</button>
+                            <button onclick="deselectAllModelApps()" style="background: #757575; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Deselect All</button>
+                            <button onclick="deleteSelectedModelApps()" style="background: #f44336; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer;">🗑️ Delete Selected</button>
+                        </div>
                         <div id="modelApplicationsContainer">
                             <!-- Model applications will be loaded here -->
                         </div>
-                        <button onclick="loadModelApplications()" style="background: #FF6B6B; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer;">Load Model Applications</button>
                     </div>
 
                     <div class="section">
                         <h2>Client Meeting History</h2>
+                        <div style="margin-bottom: 1rem;">
+                            <button onclick="loadClientHistory()" style="background: #9C27B0; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Load Client History</button>
+                            <button onclick="selectAllClientHistory()" style="background: #2196F3; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Select All</button>
+                            <button onclick="deselectAllClientHistory()" style="background: #757575; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; margin-right: 0.5rem;">Deselect All</button>
+                            <button onclick="deleteSelectedClientHistory()" style="background: #f44336; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer;">🗑️ Delete Selected</button>
+                        </div>
                         <div id="clientHistoryContainer">
                             <!-- Client history will be loaded here -->
                         </div>
-                        <button onclick="loadClientHistory()" style="background: #9C27B0; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer;">Load Client History</button>
                     </div>
                 </div>
 
@@ -853,21 +869,21 @@
                                     photosHtml = '<p><strong>Photos:</strong> No photos uploaded</p>';
                                 }
 
-                                appDiv.innerHTML = '<h3>Application #' + app.id + ' - ' + app.name + '</h3>' +
-                                    '<p><strong>Age:</strong> ' + app.age + ' | <strong>Location:</strong> ' + app.location + '</p>' +
-                                    '<p><strong>Height:</strong> ' + app.height + ' | <strong>Body Type:</strong> ' + app.body_type + '</p>' +
-                                    '<p><strong>Address:</strong> ' + app.town + ', ' + app.city + ', ' + app.country + '</p>' +
-                                    '<p><strong>Preference:</strong> ' + app.sexual_preference + ' | <strong>Occupation:</strong> ' + (app.occupation || 'N/A') + '</p>' +
-                                    '<p><strong>Phone:</strong> ' + app.phone + ' | <strong>Email:</strong> ' + app.email + '</p>' +
-                                    '<p><strong>Skin Color:</strong> ' + app.skin_color + ' | <strong>Allergies:</strong> ' + (app.allergy || 'None') + '</p>' +
+                                appDiv.innerHTML = "<input type=\"checkbox\" class=\"model-app-checkbox\" data-id=\"" + app.id + "\" style=\"margin-right: 0.5rem;\"><h3>Application #" + app.id + " - " + app.name + "</h3>" +
+                                    "<p><strong>Age:</strong> " + app.age + " | <strong>Location:</strong> " + app.location + "</p>" +
+                                    "<p><strong>Height:</strong> " + app.height + " | <strong>Body Type:</strong> " + app.body_type + "</p>" +
+                                    "<p><strong>Address:</strong> " + app.town + ", " + app.city + ", " + app.country + "</p>" +
+                                    "<p><strong>Preference:</strong> " + app.sexual_preference + " | <strong>Occupation:</strong> " + (app.occupation || 'N/A') + "</p>" +
+                                    "<p><strong>Phone:</strong> " + app.phone + " | <strong>Email:</strong> " + app.email + "</p>" +
+                                    "<p><strong>Skin Color:</strong> " + app.skin_color + " | <strong>Allergies:</strong> " + (app.allergy || 'None') + "</p>" +
                                     photosHtml +
-                                    '<p><strong>Submitted:</strong> ' + new Date(app.submitted_at).toLocaleString() + '</p>' +
-                                    '<p><strong>Status:</strong> ' + app.status + '</p>' +
-                                    '<div style="margin-top: 1rem;">' +
-                                        '<button onclick="updateModelStatus(' + app.id + ', \'approved\')" style="background: #4CAF50; color: white; border: none; padding: 0.5rem; cursor: pointer; margin-right: 0.5rem;">Approve</button>' +
-                                        '<button onclick="updateModelStatus(' + app.id + ', \'rejected\')" style="background: #f44336; color: white; border: none; padding: 0.5rem; cursor: pointer; margin-right: 0.5rem;">Reject</button>' +
-                                        '<button onclick="deleteModelApplication(' + app.id + ', \'' + app.name + '\')" style="background: #dc3545; color: white; border: none; padding: 0.5rem; cursor: pointer;">🗑️ Delete</button>' +
-                                    '</div>';
+                                    "<p><strong>Submitted:</strong> " + new Date(app.submitted_at).toLocaleString() + "</p>" +
+                                    "<p><strong>Status:</strong> " + app.status + "</p>" +
+                                    "<div style=\"margin-top: 1rem;\">" +
+                                        "<button onclick=\"updateModelStatus(" + app.id + ", 'approved')\" style=\"background: #4CAF50; color: white; border: none; padding: 0.5rem; cursor: pointer; margin-right: 0.5rem;\">Approve</button>" +
+                                        "<button onclick=\"updateModelStatus(" + app.id + ", 'rejected')\" style=\"background: #f44336; color: white; border: none; padding: 0.5rem; cursor: pointer; margin-right: 0.5rem;\">Reject</button>" +
+                                        "<button onclick=\"deleteModelApplication(" + app.id + ", '" + app.name.replace(/'/g, "\\'") + "')\" style=\"background: #dc3545; color: white; border: none; padding: 0.5rem; cursor: pointer;\">🗑️ Delete</button>" +
+                                    "</div>";
 
                                 container.appendChild(appDiv);
                             });
@@ -910,23 +926,22 @@
                                 reqDiv.style.borderLeft = req.status === 'pending' ? '4px solid #ff9800' :
                                                          req.status === 'completed' ? '4px solid #4CAF50' : '4px solid #2196F3';
 
-                                reqDiv.innerHTML = `
-                                    <h3>Request #${req.id} - ${escortNames[req.escortId] || 'Unknown Escort'}</h3>
-                                    <p><strong>Client:</strong> ${req.clientName}</p>
-                                    <p><strong>Location:</strong> ${req.clientLocation}</p>
-                                    <p><strong>Contact:</strong> ${req.clientContact}</p>
-                                    <p><strong>Details:</strong> ${req.meetingDetails || 'None'}</p>
-                                    <p><strong>Time:</strong> ${new Date(req.timestamp).toLocaleString()}</p>
-                                    <p><strong>Status:</strong> ${req.status}</p>
-                                    <p><strong>Emergency Contact:</strong> ${req.emergencyContact || 'N/A'}</p>
-                                    <p><strong>Duration:</strong> ${req.meetingDuration || 60} minutes</p>
-                                    <p><strong>Safe Word:</strong> ${req.safeWord || 'pineapple'}</p>
-                                    ${req.endTime ? `<p><strong>Ended:</strong> ${new Date(req.endTime).toLocaleString()}</p>` : ''}
-                                    <div style="margin-top: 1rem;">
-                                        <button onclick="openChat('${req.id}', '${req.clientName}')" style="background: #2196F3; color: white; border: none; padding: 0.5rem; cursor: pointer; margin-right: 0.5rem;">💬 Chat History</button>
-                                        <button onclick="deleteClientHistory('${req.id}', '${req.clientName}')" style="background: #f44336; color: white; border: none; padding: 0.5rem; cursor: pointer;">🗑️ Delete</button>
-                                    </div>
-                                `;
+                                reqDiv.innerHTML = '<input type="checkbox" class="client-history-checkbox" data-id="' + req.id + '" style="margin-right: 0.5rem;">' +
+                                    '<h3>Request #' + req.id + ' - ' + (escortNames[req.escortId] || 'Unknown Escort') + '</h3>' +
+                                    '<p><strong>Client:</strong> ' + req.clientName + '</p>' +
+                                    '<p><strong>Location:</strong> ' + req.clientLocation + '</p>' +
+                                    '<p><strong>Contact:</strong> ' + req.clientContact + '</p>' +
+                                    '<p><strong>Details:</strong> ' + (req.meetingDetails || 'None') + '</p>' +
+                                    '<p><strong>Time:</strong> ' + new Date(req.timestamp).toLocaleString() + '</p>' +
+                                    '<p><strong>Status:</strong> ' + req.status + '</p>' +
+                                    '<p><strong>Emergency Contact:</strong> ' + (req.emergencyContact || 'N/A') + '</p>' +
+                                    '<p><strong>Duration:</strong> ' + (req.meetingDuration || 60) + ' minutes</p>' +
+                                    '<p><strong>Safe Word:</strong> ' + (req.safeWord || 'pineapple') + '</p>' +
+                                    (req.endTime ? '<p><strong>Ended:</strong> ' + new Date(req.endTime).toLocaleString() + '</p>' : '') +
+                                    '<div style="margin-top: 1rem;">' +
+                                        '<button onclick="openChat(\'' + req.id + '\', \'' + req.clientName.replace(/'/g, "\\'") + '\')" style="background: #2196F3; color: white; border: none; padding: 0.5rem; cursor: pointer; margin-right: 0.5rem;">💬 Chat History</button>' +
+                                        '<button onclick="deleteClientHistory(\'' + req.id + '\', \'' + req.clientName.replace(/'/g, "\\'") + '\')" style="background: #f44336; color: white; border: none; padding: 0.5rem; cursor: pointer;">🗑️ Delete</button>' +
+                                    '</div>';
 
                                 container.appendChild(reqDiv);
                             });
@@ -1050,6 +1065,112 @@
                         if (event.target == editEscortModal) {
                             editEscortModal.style.display = 'none';
                         }
+                    }
+
+                    // Bulk selection functions for Model Applications
+                    function selectAllModelApps() {
+                        const checkboxes = document.querySelectorAll('.model-app-checkbox');
+                        checkboxes.forEach(cb => cb.checked = true);
+                    }
+
+                    function deselectAllModelApps() {
+                        const checkboxes = document.querySelectorAll('.model-app-checkbox');
+                        checkboxes.forEach(cb => cb.checked = false);
+                    }
+
+                    async function deleteSelectedModelApps() {
+                        const selected = document.querySelectorAll('.model-app-checkbox:checked');
+                        if (selected.length === 0) {
+                            alert('No applications selected.');
+                            return;
+                        }
+                        if (!confirm(`Are you sure you want to delete ${selected.length} selected applications? This action cannot be undone.`)) {
+                            return;
+                        }
+
+                        let successCount = 0;
+                        let errorCount = 0;
+
+                        for (const cb of selected) {
+                            const id = cb.getAttribute('data-id');
+                            try {
+                                const response = await fetch(`/delete-model-application/${id}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Content-Type': 'application/json' }
+                                });
+                                const result = await response.json();
+                                if (result.success) {
+                                    successCount++;
+                                } else {
+                                    errorCount++;
+                                    console.error('Error deleting application ' + id + ':', result.error);
+                                }
+                            } catch (error) {
+                                errorCount++;
+                                console.error('Error deleting application:', error);
+                            }
+                        }
+
+                        if (successCount > 0) {
+                            alert(`${successCount} applications deleted successfully!`);
+                        }
+                        if (errorCount > 0) {
+                            alert(`${errorCount} applications failed to delete. Check console for details.`);
+                        }
+                        loadModelApplications(); // Reload the list
+                    }
+
+                    // Bulk selection functions for Client Meeting History
+                    function selectAllClientHistory() {
+                        const checkboxes = document.querySelectorAll('.client-history-checkbox');
+                        checkboxes.forEach(cb => cb.checked = true);
+                    }
+
+                    function deselectAllClientHistory() {
+                        const checkboxes = document.querySelectorAll('.client-history-checkbox');
+                        checkboxes.forEach(cb => cb.checked = false);
+                    }
+
+                    async function deleteSelectedClientHistory() {
+                        const selected = document.querySelectorAll('.client-history-checkbox:checked');
+                        if (selected.length === 0) {
+                            alert('No meeting requests selected.');
+                            return;
+                        }
+                        if (!confirm(`Are you sure you want to delete ${selected.length} selected meeting requests? This action cannot be undone.`)) {
+                            return;
+                        }
+
+                        let successCount = 0;
+                        let errorCount = 0;
+
+                        for (const cb of selected) {
+                            const id = cb.getAttribute('data-id');
+                            try {
+                                const response = await fetch(`/delete-client-history/${id}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Content-Type': 'application/json' }
+                                });
+                                const result = await response.json();
+                                if (result.success) {
+                                    successCount++;
+                                } else {
+                                    errorCount++;
+                                    console.error('Error deleting request ' + id + ':', result.error);
+                                }
+                            } catch (error) {
+                                errorCount++;
+                                console.error('Error deleting request:', error);
+                            }
+                        }
+
+                        if (successCount > 0) {
+                            alert(`${successCount} meeting requests deleted successfully!`);
+                        }
+                        if (errorCount > 0) {
+                            alert(`${errorCount} meeting requests failed to delete. Check console for details.`);
+                        }
+                        loadClientHistory(); // Reload the list
                     }
                 </script>
             </body>

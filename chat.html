@@ -296,12 +296,40 @@
         // Store current chat in localStorage for persistence
         if (requestId) {
             localStorage.setItem('currentChatRequestId', requestId);
+            localStorage.setItem('lastChatAccess', Date.now().toString());
         } else {
             // Try to restore from localStorage
             const storedRequestId = localStorage.getItem('currentChatRequestId');
+            const lastAccess = localStorage.getItem('lastChatAccess');
+
             if (storedRequestId) {
-                window.location.href = `?request_id=${storedRequestId}`;
-                return; // Redirect to restore chat
+                // Check if chat is still active (not ended by admin)
+                fetch(`/chat/${storedRequestId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Check if chat was ended by admin
+                        const isEnded = data.messages && data.messages.some(msg =>
+                            msg.sender === 'system' && msg.message === 'Chat session ended by administrator'
+                        );
+
+                        if (!isEnded) {
+                            // Chat is still active, redirect to resume
+                            window.location.href = `?request_id=${storedRequestId}`;
+                            return;
+                        } else {
+                            // Chat was ended by admin, clear localStorage
+                            localStorage.removeItem('currentChatRequestId');
+                            localStorage.removeItem('lastChatAccess');
+                            document.getElementById('chatMessages').innerHTML = '<div class="message system">Your previous chat session has ended. Please start a new meeting request to chat again.</div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking chat status:', error);
+                        // If we can't check, assume chat is still active
+                        window.location.href = `?request_id=${storedRequestId}`;
+                        return;
+                    });
+                return; // Wait for async check
             }
         }
 
