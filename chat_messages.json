@@ -21,5 +21,14 @@
             "message": "hru",
             "timestamp": "2026-01-09T22:06:03.218248"
         }
+    ],
+    "20260110015245": [
+        {
+            "id": "20260110015259621799",
+            "sender": "client",
+            "message": "",
+            "timestamp": "2026-01-10T01:52:59.621841",
+            "image_url": "/uploads/d91f15d4-dafc-4510-a9f7-1c02cf688ed2_11.jpg"
+        }
     ]
 }
