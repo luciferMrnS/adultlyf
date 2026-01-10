@@ -337,6 +337,152 @@
         }
 
     </style>
+
+    <style>
+    /* Chat Popup Styles */
+    .chat-popup {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 300px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        z-index: 1000;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+        animation: slideUp 0.5s ease-out;
+        border: 2px solid #fff;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(100px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .chat-popup-header {
+        background: rgba(255,255,255,0.1);
+        padding: 15px;
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .chat-popup-header:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .chat-popup-body {
+        padding: 20px;
+        text-align: center;
+        color: white;
+    }
+
+    .chat-popup-body p {
+        margin: 0 0 15px 0;
+        font-size: 16px;
+    }
+
+    .visitor-count {
+        font-size: 24px;
+        font-weight: bold;
+        color: #ffeb3b;
+        text-shadow: 0 0 10px rgba(255,235,59,0.5);
+    }
+
+    .chat-button {
+        background: #4CAF50;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(76,175,80,0.3);
+    }
+
+    .chat-button:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(76,175,80,0.4);
+    }
+
+    .chat-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        transition: background 0.3s ease;
+    }
+
+    .chat-close:hover {
+        background: rgba(255,255,255,0.3);
+    }
+
+    .chat-minimize {
+        position: absolute;
+        top: 10px;
+        right: 40px;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        transition: background 0.3s ease;
+    }
+
+    .chat-minimize:hover {
+        background: rgba(255,255,255,0.3);
+    }
+
+    .chat-popup.minimized {
+        height: auto;
+    }
+
+    .chat-popup.minimized .chat-popup-body {
+        display: none;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .chat-popup {
+            width: 280px;
+            right: 10px;
+            bottom: 10px;
+        }
+
+        .chat-popup-body p {
+            font-size: 14px;
+        }
+
+        .visitor-count {
+            font-size: 20px;
+        }
+    }
+    </style>
+
     <!-- Pop-under ad script from ad network goes here -->
 </head>
 <body>
@@ -383,7 +529,43 @@
         </div>
         <p>&copy; 2026 Adultlyf. All rights reserved.</p>
     </footer>
+
+    <!-- Chat Popup -->
+    <div id="chat-popup" class="chat-popup">
+        <button class="chat-close" onclick="closeChatPopup()">×</button>
+        <button class="chat-minimize" onclick="minimizeChatPopup()">−</button>
+        <div class="chat-popup-header" onclick="toggleChatPopup()">
+            💬 Chat with Others Online
+        </div>
+        <div class="chat-popup-body">
+            <p>Connect with people online right now!</p>
+            <div class="visitor-count" id="visitor-count">(Loading...)</div>
+            <button class="chat-button" onclick="startChat()">Start Chatting</button>
+        </div>
+    </div>
+
     <script>
+        // Chat Popup Functions - moved outside DOMContentLoaded for global scope
+        function closeChatPopup() {
+            const popup = document.getElementById('chat-popup');
+            popup.style.display = 'none';
+        }
+
+        function minimizeChatPopup() {
+            const popup = document.getElementById('chat-popup');
+            popup.classList.toggle('minimized');
+        }
+
+        function toggleChatPopup() {
+            const popup = document.getElementById('chat-popup');
+            popup.classList.toggle('minimized');
+        }
+
+        function startChat() {
+            // Redirect to group chat page
+            window.location.href = 'group_chat.html';
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
             let allVideos = [];
             let filteredVideos = [];
@@ -616,6 +798,21 @@
                 .catch(error => {
                     console.error('Error fetching adverts.json:', error);
                 });
+
+            function updateVisitorCount() {
+                const visitorCountElement = document.getElementById('visitor-count');
+                // Generate a random visitor count between 50-200 for demonstration
+                // In a real implementation, this would come from server-side analytics
+                const visitorCount = Math.floor(Math.random() * 151) + 50;
+                visitorCountElement.textContent = `(${visitorCount} online)`;
+            }
+
+            // Initialize chat popup and visitor count
+            setTimeout(() => {
+                updateVisitorCount();
+                // Update visitor count every 30 seconds
+                setInterval(updateVisitorCount, 30000);
+            }, 2000);
 
         });
     </script>

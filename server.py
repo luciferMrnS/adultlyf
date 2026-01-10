@@ -550,6 +550,10 @@ def uploaded_file(filename):
 def chat_page():
     return send_from_directory('.', 'chat.html')
 
+@app.route('/group_chat.html')
+def group_chat_page():
+    return send_from_directory('.', 'group_chat.html')
+
 @app.route('/debug/chat')
 def debug_chat():
     """Debug endpoint to check chat system status"""
@@ -1088,6 +1092,141 @@ def end_meeting(request_id):
             })
 
     return jsonify({'error': 'Meeting request not found'}), 404
+
+# Group chat endpoints
+@app.route('/group_chat/messages', methods=['GET'])
+def get_group_chat_messages():
+    """Get all group chat messages"""
+    try:
+        with open('group_chat_messages.json', 'r') as f:
+            messages = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        messages = []
+
+    # Get online count (users active in last 5 minutes)
+    current_time = datetime.now()
+    active_users = set()
+    for msg in messages[-50:]:  # Check last 50 messages
+        msg_time = datetime.fromisoformat(msg['timestamp'])
+        if (current_time - msg_time).seconds < 300:  # 5 minutes
+            active_users.add(msg['sender'])
+
+    online_count = len(active_users)
+
+    return jsonify({
+        'success': True,
+        'messages': messages[-100:],  # Return last 100 messages
+        'online_count': online_count
+    })
+
+@app.route('/group_chat/send', methods=['POST'])
+@csrf.exempt
+@limiter.limit("100 per hour", methods=["POST"])  # Group chat message limits
+def send_group_chat_message():
+    """Send a group chat message"""
+    data = request.get_json()
+
+    sender = data.get('sender', 'Anonymous').strip()
+    message = data.get('message', '').strip()
+    original_message = data.get('original_message', '')
+    was_censored = data.get('was_censored', False)
+
+    if not message:
+        return jsonify({'error': 'Message cannot be empty'}), 400
+
+    if len(message) > 2000:
+        return jsonify({'error': 'Message too long'}), 400
+
+    # Sanitize message (basic XSS prevention)
+    message = sanitize_chat_message(message)
+
+    # Additional censorship for contact info if not already censored
+    if not was_censored and original_message:
+        censored_result = censor_contact_info(original_message)
+        if censored_result['wasCensored']:
+            message = censored_result['message']
+
+    # Load existing messages
+    try:
+        with open('group_chat_messages.json', 'r') as f:
+            messages = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        messages = []
+
+    # Generate message ID
+    message_id = len(messages) + 1
+
+    # Create message
+    chat_message = {
+        'id': message_id,
+        'sender': sender[:20],  # Limit username length
+        'message': message,
+        'timestamp': datetime.now().isoformat(),
+        'censored': was_censored or ('[CENSORED]' in message)
+    }
+
+    messages.append(chat_message)
+
+    # Keep only last 500 messages to prevent file from growing too large
+    if len(messages) > 500:
+        messages = messages[-500:]
+
+    # Save messages
+    with open('group_chat_messages.json', 'w') as f:
+        json.dump(messages, f, indent=4)
+
+    # Commit to git (optional for group chat)
+    try:
+        commit_message = f"GROUP CHAT: Message from {sender}"
+        commit_to_git('group_chat_messages.json', commit_message)
+    except:
+        pass  # Don't fail if git commit fails
+
+    return jsonify({
+        'success': True,
+        'message': chat_message
+    })
+
+def censor_contact_info(message):
+    """
+    Censor contact information in messages to prevent sharing personal details.
+    """
+    import re
+
+    # Patterns to censor
+    patterns = [
+        # Phone numbers (various formats)
+        (r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b', '[PHONE NUMBER CENSORED]'),  # 123-456-7890
+        (r'\b\d{1,3}[-.]?\d{3}[-.]?\d{3}[-.]?\d{4}\b', '[PHONE NUMBER CENSORED]'),  # +1-123-456-7890
+        (r'\(\d{3}\)\s*\d{3}[-.]?\d{4}\b', '[PHONE NUMBER CENSORED]'),  # (123) 456-7890
+
+        # Email addresses
+        (r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '[EMAIL CENSORED]'),
+
+        # Social media handles
+        (r'@\w+', '[SOCIAL HANDLE CENSORED]'),
+        (r'(?:instagram|twitter|facebook|snapchat|tiktok|discord|telegram|whatsapp|kik|skype):\s*\w+', '[SOCIAL MEDIA CENSORED]'),
+
+        # URLs
+        (r'(?:http|https|ftp):\/\/[^\s]+', '[URL CENSORED]'),
+        (r'www\.[^\s]+', '[WEBSITE CENSORED]'),
+
+        # Common contact keywords
+        (r'(?:phone|mobile|cell|contact|number|email|insta|ig|snap|discord|telegram|whatsapp):\s*[^\s]+', '[CONTACT INFO CENSORED]')
+    ]
+
+    censored_message = message
+    was_censored = False
+
+    for pattern, replacement in patterns:
+        if re.search(pattern, censored_message, re.IGNORECASE):
+            censored_message = re.sub(pattern, replacement, censored_message, flags=re.IGNORECASE)
+            was_censored = True
+
+    return {
+        'message': censored_message,
+        'wasCensored': was_censored
+    }
 
 # Chat system endpoints
 @app.route('/chat/<request_id>', methods=['GET'])

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Chat - Adultlyf</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .online-count {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 70%;
+            word-wrap: break-word;
+            position: relative;
+            animation: messageSlideIn 0.3s ease-out;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.other {
+            background: #e9ecef;
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.system {
+            background: #fff3cd;
+            color: #856404;
+            text-align: center;
+            margin: 10px auto;
+            max-width: 80%;
+            font-style: italic;
+            border-radius: 10px;
+        }
+
+        .message-username {
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .message-time {
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            resize: none;
+            min-height: 20px;
+            max-height: 100px;
+        }
+
+        .message-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .username-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            outline: none;
+            font-size: 14px;
+            width: 150px;
+        }
+
+        .username-input:focus {
+            border-color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px;
+            text-align: center;
+        }
+
+        .censored {
+            background: #ffeaa7;
+            color: #d63031;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+
+            .username-input {
+                width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            💬 Group Chat - Everyone Online
+            <div class="online-count" id="onlineCount">(0 online)</div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="loading">Connecting to group chat...</div>
+        </div>
+
+        <div class="chat-input">
+            <input type="text" id="usernameInput" class="username-input" placeholder="Your name" maxlength="20">
+            <textarea id="messageInput" class="message-input" placeholder="Type your message..." maxlength="500"></textarea>
+            <button id="sendButton" class="send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let username = localStorage.getItem('groupChatUsername') || '';
+        let pollInterval;
+        let lastMessageId = 0;
+
+        // Set username if available
+        if (username) {
+            document.getElementById('usernameInput').value = username;
+        }
+
+        function censorContactInfo(message) {
+            // Patterns to censor common contact information
+            const patterns = [
+                // Phone numbers (various formats)
+                /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g,  // 123-456-7890, 123.456.7890, 1234567890
+                /\b\d{1,3}[-.]?\d{3}[-.]?\d{3}[-.]?\d{4}\b/g,  // +1-123-456-7890
+                /\(\d{3}\)\s*\d{3}[-.]?\d{4}\b/g,  // (123) 456-7890
+
+                // Email addresses
+                /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
+
+                // Social media handles
+                /@\w+/g,  // @username
+                /(?:instagram|twitter|facebook|snapchat|tiktok|discord|telegram|whatsapp|kik|skype):\s*\w+/gi,
+
+                // URLs that might contain contact info
+                /(?:http|https|ftp):\/\/[^\s]+/gi,
+                /www\.[^\s]+/gi,
+
+                // Common contact keywords followed by info
+                /(?:phone|mobile|cell|contact|number|email|insta|ig|snap|discord|telegram|whatsapp):\s*[^\s]+/gi
+            ];
+
+            let censoredMessage = message;
+            let hasCensorship = false;
+
+            patterns.forEach(pattern => {
+                censoredMessage = censoredMessage.replace(pattern, (match) => {
+                    hasCensorship = true;
+                    return '<span class="censored">[CENSORED]</span>';
+                });
+            });
+
+            return { message: censoredMessage, wasCensored: hasCensorship };
+        }
+
+        function loadMessages() {
+            fetch('/group_chat/messages')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayMessages(data.messages);
+                        updateOnlineCount(data.online_count);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading messages:', error);
+                });
+        }
+
+        function displayMessages(messages) {
+            const container = document.getElementById('chatMessages');
+
+            if (messages.length === 0) {
+                container.innerHTML = '<div class="message system">Welcome to the group chat! Be respectful and have fun.</div>';
+                return;
+            }
+
+            // Only update if there are new messages
+            const newMessages = messages.filter(msg => msg.id > lastMessageId);
+            if (newMessages.length === 0) return;
+
+            // Update last message ID
+            lastMessageId = Math.max(...messages.map(msg => msg.id));
+
+            container.innerHTML = messages.map(msg => {
+                const messageClass = msg.sender === username ? 'user' : 'other';
+                const timeString = new Date(msg.timestamp).toLocaleTimeString();
+
+                let content = msg.message;
+
+                return `
+                    <div class="message ${messageClass}">
+                        <div class="message-username">${msg.sender}</div>
+                        <div>${content}</div>
+                        <div class="message-time">${timeString}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function updateOnlineCount(count) {
+            const countElement = document.getElementById('onlineCount');
+            countElement.textContent = `(${count} online)`;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const usernameInput = document.getElementById('usernameInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Update username
+            username = usernameInput.value.trim() || 'Anonymous';
+            localStorage.setItem('groupChatUsername', username);
+
+            // Censor contact info locally before sending
+            const { message: censoredMessage, wasCensored } = censorContactInfo(message);
+
+            // Send message
+            fetch('/group_chat/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sender: username,
+                    message: censoredMessage,
+                    original_message: message,
+                    was_censored: wasCensored
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    input.value = '';
+                    loadMessages(); // Refresh messages
+                } else {
+                    alert('Error sending message: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+                alert('Failed to send message. Please try again.');
+            });
+        }
+
+        function startPolling() {
+            pollInterval = setInterval(loadMessages, 3000); // Poll every 3 seconds
+        }
+
+        // Event listeners
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.getElementById('usernameInput').addEventListener('input', function(e) {
+            username = e.target.value.trim() || 'Anonymous';
+            localStorage.setItem('groupChatUsername', username);
+        });
+
+        // Auto-resize textarea
+        document.getElementById('messageInput').addEventListener('input', function(e) {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        });
+
+        // Initialize
+        loadMessages();
+        startPolling();
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', function() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+        });
+    </script>
+</body>
+</html>
