@@ -1,0 +1,38 @@
+Detailed XVideos search page analysis...
+Found 108 thumb divs
+
+Thumb div 1:
+  Class: ['frame-block', 'thumb-block']
+  ID: anc-tst-first_video-btn
+  Link href: /video.hdiclmbcd6d/--milf_and_granny-0714_04
+  Link title: None
+  Link text: ...
+  Img src: https://static-cdn77.xvideos-cdn.com/img/lightbox/lightbox-blank.gif
+  Img data-src: https://cdn77-pic.xvideos-cdn.com/videos/thumbs169/60/42/01/60420188baeadf4d11421af225672005/60420188baeadf4d11421af225672005.10.jpg
+  Img alt: None
+  Found 1 script tags in div
+    Script 0: xv.thumbs.prepareVideo(30591099);...
+
+Thumb div 2:
+  Class: ['thumb-inside']
+  ID: None
+  Link href: /video.hdiclmbcd6d/--milf_and_granny-0714_04
+  Link title: None
+  Link text: ...
+  Img src: https://static-cdn77.xvideos-cdn.com/img/lightbox/lightbox-blank.gif
+  Img data-src: https://cdn77-pic.xvideos-cdn.com/videos/thumbs169/60/42/01/60420188baeadf4d11421af225672005/60420188baeadf4d11421af225672005.10.jpg
+  Img alt: None
+
+Thumb div 3:
+  Class: ['thumb']
+  ID: None
+  Link href: /video.hdiclmbcd6d/--milf_and_granny-0714_04
+  Link title: None
+  Link text: ...
+  Img src: https://static-cdn77.xvideos-cdn.com/img/lightbox/lightbox-blank.gif
+  Img data-src: https://cdn77-pic.xvideos-cdn.com/videos/thumbs169/60/42/01/60420188baeadf4d11421af225672005/60420188baeadf4d11421af225672005.10.jpg
+  Img alt: None
+
+Total scripts with content: 31
+Found script with 'thumb' content:
+if(!window.xv){window.xv={};}window.xv.conf={"sitename":"default","domains":{"slave":"https://www.xvideos.com","static":"https:\/\/static-cdn77.xvideos-cdn.com","premium":"https:\/\/www.xvideos.red","info":"https://info.xvideos.net","blog":"https:\/\/pornbiz.com","stats":"https://www.tjk-njk.com"},"...

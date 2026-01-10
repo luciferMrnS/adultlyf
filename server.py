@@ -29,19 +29,23 @@ def commit_to_git(file_path, commit_message):
     This ensures admin changes are never lost or reversed by default.
     """
     try:
+        # IMPORTANT: Never let git operations hang a web request.
+        # On some Windows setups, `git commit` can block (hooks/GPG/editor prompts).
+        GIT_TIMEOUT_S = int(os.environ.get('GIT_TIMEOUT_S', '8'))
+
         # Add the file to git
         result_add = subprocess.run(['git', 'add', file_path],
-                                   check=True, capture_output=True, text=True)
+                                   check=True, capture_output=True, text=True, timeout=GIT_TIMEOUT_S)
         print(f"✅ Added {file_path} to git staging")
 
         # Commit with the message
         result_commit = subprocess.run(['git', 'commit', '-m', commit_message],
-                                      check=True, capture_output=True, text=True)
+                                      check=True, capture_output=True, text=True, timeout=GIT_TIMEOUT_S)
         print(f"✅ Committed: {commit_message}")
 
         # Get the commit hash for logging
         result_hash = subprocess.run(['git', 'rev-parse', 'HEAD'],
-                                    capture_output=True, text=True)
+                                    capture_output=True, text=True, timeout=GIT_TIMEOUT_S)
         commit_hash = result_hash.stdout.strip()[:8] if result_hash.returncode == 0 else 'unknown'
 
         print(f"💾 Changes permanently saved - Commit: {commit_hash}")
@@ -52,6 +56,10 @@ def commit_to_git(file_path, commit_message):
         print(error_msg)
         print(f"Git stderr: {e.stderr}")
         # Don't fail the operation, but log the error prominently
+        return False
+    except subprocess.TimeoutExpired as e:
+        error_msg = f"⚠️ WARNING: git operation timed out after {getattr(e, 'timeout', '?')}s while committing {file_path}"
+        print(error_msg)
         return False
     except Exception as e:
         error_msg = f"❌ CRITICAL: Unexpected error during git commit: {e}"
@@ -894,6 +902,17 @@ def meet():
         with open('meet_requests.json', 'w') as f:
             json.dump(meet_requests, f, indent=4)
         print("DEBUG: Successfully saved meet_requests.json")
+
+        # PERMANENTLY commit the new meeting request to git
+        commit_message = f"NEW MEETING REQUEST: {meet_request['clientName']} for Escort ID {meet_request['escortId']}"
+        commit_success = commit_to_git('meet_requests.json', commit_message)
+
+        if not commit_success:
+            print("⚠️ WARNING: Meeting request saved but git commit failed (likely Railway deployment)")
+            print("Meeting request data is still saved, but not version controlled")
+            # Don't return error - meeting request should still work
+            # This is common on hosted platforms like Railway
+
     except Exception as e:
         print(f"DEBUG: Error saving meet_requests.json: {e}")
         return jsonify({'error': 'Failed to save meeting request'}), 500
@@ -976,6 +995,57 @@ def safety_checkin(request_id):
         'message': f'Check-in recorded: {checkin_type}',
         'checkin': checkin_record
     })
+
+@app.route('/meet/<request_id>/status', methods=['POST'])
+@csrf.exempt
+def update_meeting_status(request_id):
+    """Update meeting request status (admin only)"""
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    data = request.get_json()
+    new_status = data.get('status')
+
+    if new_status not in ['pending', 'completed', 'cancelled', 'emergency']:
+        return jsonify({'error': 'Invalid status'}), 400
+
+    # Load meet requests
+    try:
+        with open('meet_requests.json', 'r') as f:
+            meet_requests = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return jsonify({'error': 'Meeting request not found'}), 404
+
+    # Find and update the request
+    for req in meet_requests:
+        if req['id'] == request_id:
+            old_status = req['status']
+            req['status'] = new_status
+            req['status_updated_at'] = datetime.now().isoformat()
+            req['status_updated_by'] = 'admin'
+
+            # Save updated requests
+            with open('meet_requests.json', 'w') as f:
+                json.dump(meet_requests, f, indent=4)
+
+            # PERMANENTLY commit the status update to git
+            commit_message = f"ADMIN: Meeting status updated - Request {request_id} from {old_status} to {new_status}"
+            commit_success = commit_to_git('meet_requests.json', commit_message)
+
+            if not commit_success:
+                print("🚨 CRITICAL: Meeting status updated but NOT committed to git!")
+                return jsonify({
+                    'error': 'Status updated but commit to git failed. Contact administrator.',
+                    'request': req
+                }), 500
+
+            return jsonify({
+                'success': True,
+                'message': f'Meeting status updated to {new_status}',
+                'request': req
+            })
+
+    return jsonify({'error': 'Meeting request not found'}), 404
 
 @app.route('/meet/<request_id>/end', methods=['POST'])
 def end_meeting(request_id):
@@ -1063,9 +1133,8 @@ def send_chat_message(request_id):
             file_path = os.path.join(upload_dir, filename)
             uploaded_file.save(file_path)
             image_url = f"/uploads/{filename}"
-            message_text = request.form.get('message', '').strip()
-            # Embed the image directly in the message for the client to render.
-            message = f'<img src="{image_url}" alt="{message_text}" style="max-width: 200px; height: auto; border-radius: 8px;">'
+            # Optional caption text (stored separately from image_url so UIs can render safely)
+            message = request.form.get('message', '').strip()
         else:
             return jsonify({'error': 'No image file provided'}), 400
     else:
@@ -1121,15 +1190,18 @@ def send_chat_message(request_id):
 
     print(f"DEBUG: Saved sanitized message for request_id {request_id}")
 
-    # For admin image sends, return a modified message object so the admin UI doesn't show raw HTML.
-    # The client will receive the correct message with the <img> tag on their next fetch.
-    if sender == 'admin' and image_url:
-        response_message = chat_message.copy()
-        response_message['message'] = request.form.get('message', '').strip()  # Return the caption text to admin
-        return jsonify({
-            'success': True,
-            'message': response_message
-        })
+    # PERMANENTLY commit chat messages to git for proper version control
+    # This ensures all chat history is preserved and can be recovered if needed
+    sender_type = "ADMIN" if sender == 'admin' else "CLIENT"
+    message_type = "image" if image_url else "text"
+    commit_message = f"{sender_type} CHAT MESSAGE: {message_type.upper()} message in request {request_id}"
+    commit_success = commit_to_git('chat_messages.json', commit_message)
+
+    if not commit_success:
+        print(f"⚠️  WARNING: Chat message saved but git commit failed for request {request_id}")
+        print("Chat message data is still saved, but not version controlled")
+        # Don't return error - chat should still work even if git commit fails
+        # This is common on hosted platforms like Railway
 
     return jsonify({
         'success': True,
@@ -1322,17 +1394,21 @@ if __name__ == '__main__':
     else:
         print("Autonomous scraper not available - scraper.py not found")
 
-    # Production-ready configuration
-    port = int(os.environ.get('PORT', 8000))
+    is_dev = os.environ.get('FLASK_ENV') == 'development'
 
-    # Only run development server if explicitly requested
-    if os.environ.get('FLASK_ENV') == 'development':
+    # Development defaults (Windows-friendly):
+    # - Use DEV_PORT instead of PORT (many Windows setups have PORT set globally)
+    # - Bind to 127.0.0.1 by default to avoid OS/network policy restrictions
+    if is_dev:
+        host = os.environ.get('DEV_HOST', '127.0.0.1')
+        port = int(os.environ.get('DEV_PORT', 5000))
         print("🚀 Starting Flask development server...")
-        print(f"⚠️  WARNING: This is a development server. Do not use in production!")
-        app.run(host='0.0.0.0', port=port, debug=True)
+        print("⚠️  WARNING: This is a development server. Do not use in production!")
+        print(f"   Listening on http://{host}:{port}")
+        app.run(host=host, port=port, debug=True)
     else:
+        host = os.environ.get('HOST', '0.0.0.0')
+        port = int(os.environ.get('PORT', 8000))
         print("✅ Production mode: Use Gunicorn or another WSGI server")
-        print("   Example: gunicorn --bind 0.0.0.0:8000 --workers 4 server:app")
-        print("   Railway will automatically use production server")
-        app.run(host='0.0.0.0', port=port, debug=True)
-        print("   Railway will automatically use production server")
+        print(f"   Example: gunicorn --bind {host}:{port} --workers 4 server:app")
+        app.run(host=host, port=port, debug=True)

@@ -316,12 +316,19 @@
                 // Not admin, that's fine
             })
             .finally(() => {
-                // Show image upload for all users
+                // Show image upload for ALL users (both clients and admins)
                 const imageLabel = document.getElementById('imageUploadLabel');
+                const imageUpload = document.getElementById('imageUpload');
+
+                // Ensure the upload button is visible and accessible
                 imageLabel.style.display = 'flex';
                 imageLabel.style.visibility = 'visible';
                 imageLabel.style.opacity = '1';
-                console.log('Image upload button should now be visible');
+
+                // Make sure the file input is enabled
+                imageUpload.disabled = false;
+
+                console.log('Image upload button is now visible for ' + (isAdmin ? 'admin' : 'client'));
                 loadMessages();
                 startPolling();
             });

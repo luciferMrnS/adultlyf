@@ -432,6 +432,43 @@
             background: linear-gradient(135deg, #45a049, #4CAF50);
         }
 
+        .chat-image-btn {
+            background: linear-gradient(135deg, #FF6B6B, #EE5A24);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .chat-image-btn:hover {
+            background: linear-gradient(135deg, #EE5A24, #FF6B6B);
+        }
+
+        .chat-image-preview {
+            display: none;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: #2a2a2a;
+            border-radius: 8px;
+            border: 1px solid #555;
+        }
+
+        .chat-message-image {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+            user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+        }
+
         /* Enhanced Responsive Design */
         @media (max-width: 768px) {
             header {
@@ -763,10 +800,29 @@
             <span class="close" onclick="closeChatModal()">&times;</span>
             <h2>Chat Support</h2>
             <div id="chatMessages" class="chat-messages"></div>
-            <div class="chat-input-container">
-                <input type="text" id="chatMessageInput" placeholder="Type your message..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
-                <button onclick="sendChatMessage()" class="chat-send-btn">Send</button>
+            <div id="chatImagePreviewContainer" class="chat-image-preview">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <img id="chatImagePreview" src="" alt="Selected image" style="max-width: 100px; max-height: 100px; border-radius: 4px; border: 1px solid #555;">
+                    <div style="flex: 1;">
+                        <div id="chatImageFilename" style="color: #fff; font-size: 0.9rem; margin-bottom: 0.25rem;"></div>
+                        <button type="button" onclick="removeSelectedChatImage()" style="background: #f44336; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 3px; cursor: pointer; font-size: 0.8rem;">Remove</button>
+                    </div>
+                </div>
             </div>
+            <div class="chat-input-container">
+                <input type="file" id="chatImageInput" accept="image/*" style="display: none;" onchange="handleChatImageSelected(event)">
+                <button type="button" class="chat-image-btn" onclick="document.getElementById('chatImageInput').click()" title="Send Image">📷</button>
+                <input type="text" id="chatMessageInput" placeholder="Type your message..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                <button type="button" onclick="sendChatMessage()" class="chat-send-btn">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Image Modal (prevents easy download by disabling right-click/drag and avoiding new-tab) -->
+    <div id="chatImageModal" class="modal">
+        <div class="modal-content" style="max-width: 90vw; max-height: 90vh; text-align: center;">
+            <span class="close" onclick="closeChatImageModal()">&times;</span>
+            <img id="chatModalImage" src="" alt="Chat image" style="max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px;" draggable="false">
         </div>
     </div>
 
@@ -1216,6 +1272,12 @@
                 const existingMessageIds = new Set(Array.from(chatMessages.children).map(child =>
                     child.dataset.messageId).filter(id => id));
 
+                const escapeHtml = (text) => {
+                    const div = document.createElement('div');
+                    div.textContent = text ?? '';
+                    return div.innerHTML;
+                };
+
                 data.messages.forEach(msg => {
                     if (!existingMessageIds.has(msg.id)) {
                         const messageDiv = document.createElement('div');
@@ -1223,8 +1285,17 @@
                         messageDiv.dataset.messageId = msg.id;
 
                         const timestamp = new Date(msg.timestamp).toLocaleTimeString();
+
+                        const safeText = msg.message ? escapeHtml(msg.message).replace(/\n/g, '<br>') : '';
+                        let content = '';
+                        if (msg.image_url) {
+                            content += `<img src="${msg.image_url}" alt="Sent image" class="chat-message-image" onclick="openChatImage('${msg.image_url}')">`;
+                        }
+                        if (safeText) {
+                            content += `<div class="message-content">${safeText}</div>`;
+                        }
                         messageDiv.innerHTML = `
-                            <div class="message-content">${msg.message}</div>
+                            ${content}
                             <div class="message-time">${timestamp}</div>
                         `;
 
@@ -1241,31 +1312,135 @@
         async function sendChatMessage() {
             const messageInput = document.getElementById('chatMessageInput');
             const message = messageInput.value.trim();
+            const imageFile = document.getElementById('chatImageInput').files[0];
 
-            if (!message || !currentRequestId) return;
+            if ((!message && !imageFile) || !currentRequestId) return;
 
             try {
-                const response = await fetch(`/chat/${currentRequestId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        sender: 'client',
-                        message: message
-                    })
-                });
+                let response;
+                if (imageFile) {
+                    const formData = new FormData();
+                    formData.append('image', imageFile);
+                    if (message) {
+                        formData.append('message', message);
+                    }
+
+                    response = await fetch(`/chat/${currentRequestId}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                } else {
+                    response = await fetch(`/chat/${currentRequestId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sender: 'client',
+                            message: message
+                        })
+                    });
+                }
 
                 const result = await response.json();
 
                 if (result.success) {
                     // Don't add message locally - let polling handle it to avoid duplicates
                     messageInput.value = '';
+                    removeSelectedChatImage();
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
             }
         }
+
+        function openChatImage(imageUrl) {
+            const modal = document.getElementById('chatImageModal');
+            const modalImg = document.getElementById('chatModalImage');
+            if (!modal || !modalImg) return;
+
+            modalImg.src = imageUrl;
+            modal.style.display = 'block';
+        }
+
+        function closeChatImageModal() {
+            const modal = document.getElementById('chatImageModal');
+            const modalImg = document.getElementById('chatModalImage');
+            if (modal) modal.style.display = 'none';
+            if (modalImg) modalImg.src = '';
+        }
+
+        function handleChatImageSelected(e) {
+            const file = e.target.files[0];
+            if (!file) {
+                removeSelectedChatImage();
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file.');
+                e.target.value = '';
+                removeSelectedChatImage();
+                return;
+            }
+
+            const previewContainer = document.getElementById('chatImagePreviewContainer');
+            const previewImg = document.getElementById('chatImagePreview');
+            const filenameDiv = document.getElementById('chatImageFilename');
+
+            const objectUrl = URL.createObjectURL(file);
+            previewImg.src = objectUrl;
+            previewImg.onload = function() {
+                URL.revokeObjectURL(objectUrl);
+            };
+            filenameDiv.textContent = file.name;
+            previewContainer.style.display = 'block';
+        }
+
+        function removeSelectedChatImage() {
+            const input = document.getElementById('chatImageInput');
+            const previewContainer = document.getElementById('chatImagePreviewContainer');
+            const previewImg = document.getElementById('chatImagePreview');
+            const filenameDiv = document.getElementById('chatImageFilename');
+
+            if (input) input.value = '';
+            if (previewImg) previewImg.src = '';
+            if (filenameDiv) filenameDiv.textContent = '';
+            if (previewContainer) previewContainer.style.display = 'none';
+        }
+
+        // Close chat image modal when clicking outside the modal content
+        (function() {
+            const chatImageModal = document.getElementById('chatImageModal');
+            if (chatImageModal) {
+                chatImageModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeChatImageModal();
+                    }
+                });
+            }
+        })();
+
+        // Discourage saving: prevent right-click and dragging of chat images
+        document.addEventListener('contextmenu', function(e) {
+            const t = e.target;
+            const isChatImage = !!(t && t.classList && t.classList.contains('chat-message-image'));
+            const isModalImage = !!(t && t.id === 'chatModalImage');
+            if (isChatImage || isModalImage) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        document.addEventListener('dragstart', function(e) {
+            const t = e.target;
+            const isChatImage = !!(t && t.classList && t.classList.contains('chat-message-image'));
+            const isModalImage = !!(t && t.id === 'chatModalImage');
+            if (isChatImage || isModalImage) {
+                e.preventDefault();
+                return false;
+            }
+        });
 
         function closeChatModal() {
             document.getElementById('chatModal').style.display = 'none';

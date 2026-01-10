@@ -523,9 +523,32 @@
                         });
                     }
 
-                    function updateStatus(requestId, status) {
-                        // For now, just show alert. In production, you'd update the database
-                        alert('Status update functionality would be implemented here');
+                    async function updateStatus(requestId, status) {
+                        if (!confirm(`Are you sure you want to mark this meeting request as ${status}?`)) {
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch(`/meet/${requestId}/status`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ status: status })
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                alert(`Meeting request status updated to ${status}!`);
+                                location.reload(); // Refresh to show updated status
+                            } else {
+                                alert('Error: ' + result.error);
+                            }
+                        } catch (error) {
+                            console.error('Error updating status:', error);
+                            alert('Network error. Please check your connection and try again.');
+                        }
                     }
 
                     // Close the modal if the user clicks outside of it
