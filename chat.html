@@ -349,7 +349,21 @@
                 })
                 .catch(error => {
                     console.error('Error loading messages:', error);
-                    document.getElementById('chatMessages').innerHTML = '<div class="error">Failed to load messages. Please refresh the page.</div>';
+                    // Don't stop polling on errors - just log and continue
+                    // Only show error if it's been failing for a while
+                    if (!window.consecutiveErrors) {
+                        window.consecutiveErrors = 0;
+                    }
+                    window.consecutiveErrors++;
+
+                    if (window.consecutiveErrors >= 5) {
+                        document.getElementById('chatMessages').innerHTML = '<div class="error">Connection lost. Please refresh the page to reconnect.</div>';
+                        // Stop polling after too many consecutive errors
+                        if (pollInterval) {
+                            clearInterval(pollInterval);
+                            pollInterval = null;
+                        }
+                    }
                 });
         }
 

@@ -1110,7 +1110,7 @@ def get_chat_messages(request_id):
 
 @app.route('/chat/<request_id>', methods=['POST'])
 @csrf.exempt
-@limiter.limit("100 per hour", methods=["POST"])  # Chat message limits
+@limiter.limit("200 per hour", methods=["POST"])  # Chat message limits - increased for better UX
 def send_chat_message(request_id):
     """Send a chat message"""
 
