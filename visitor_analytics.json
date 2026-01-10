@@ -2,9 +2,9 @@
   "visitors": [
     {
       "ip_address": "127.0.0.1",
-      "first_visit": "2026-01-10T19:37:39.895233",
-      "last_visit": "2026-01-10T19:37:39.895233",
-      "visit_count": 1,
+      "first_visit": "2026-01-10T19:42:04.009482",
+      "last_visit": "2026-01-10T19:42:17.030521",
+      "visit_count": 7,
       "location": {
         "country": "Unknown",
         "region": "",
@@ -15,19 +15,66 @@
       "user_agents": [
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
       ],
-      "total_visits": 1
+      "total_visits": 7
     }
   ],
   "sessions": [
     {
       "ip_address": "127.0.0.1",
-      "timestamp": "2026-01-10T19:37:39.895233",
-      "path": "/uploads/047cc291-4c2d-48f4-a799-7632a71972f4_8.jpg",
+      "timestamp": "2026-01-10T19:42:04.009482",
+      "path": "/group_chat.html",
       "method": "GET",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
-      "session_id": "127.0.0.1_20260110193739"
+      "session_id": "127.0.0.1_20260110194204"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-10T19:42:04.687456",
+      "path": "/group_chat/messages",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260110194204"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-10T19:42:07.521301",
+      "path": "/group_chat.html",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260110194207"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-10T19:42:07.607481",
+      "path": "/group_chat/messages",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260110194207"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-10T19:42:11.005762",
+      "path": "/group_chat/messages",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260110194211"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-10T19:42:14.002854",
+      "path": "/group_chat/messages",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260110194214"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-10T19:42:17.030521",
+      "path": "/group_chat/messages",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260110194217"
     }
   ],
-  "last_cleanup": "2026-01-10T19:37:40.327090"
-}"
+  "last_cleanup": "2026-01-10T19:42:17.030613"
 }
