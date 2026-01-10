@@ -393,7 +393,7 @@
             const loadingHtml = `
                 <div class="loading">
                     <div class="loading-spinner"></div>
-                    <h2>🎥 Searching for "${searchTerm}"</h2>
+                    <h2>🎥 Searching for "${decodeURIComponent(searchTerm)}"</h2>
                     <p>Please wait while we search across multiple adult sites...</p>
                     <div class="countdown-container">
                         <div class="countdown-circle">
