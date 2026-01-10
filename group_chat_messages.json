@@ -5,5 +5,12 @@
         "message": "hey",
         "timestamp": "2026-01-10T15:31:49.647859",
         "censored": false
+    },
+    {
+        "id": 2,
+        "sender": "Betty",
+        "message": "i want sex",
+        "timestamp": "2026-01-10T17:54:20.717329",
+        "censored": false
     }
 ]
