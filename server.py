@@ -127,6 +127,9 @@ def validate_image_url(url):
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_here_change_in_production')
 
+# Configure CSRF protection with longer timeout (1 hour)
+app.config['WTF_CSRF_TIME_LIMIT'] = 3600  # 1 hour in seconds
+
 # Initialize CSRF protection
 csrf = CSRFProtect(app)
 
@@ -1255,14 +1258,24 @@ def end_chat_session(request_id):
 @limiter.limit("20 per hour", methods=["POST"])  # More lenient limit for admin login
 def admin_login():
     form = AdminLoginForm()
-    if form.validate_on_submit():
-        password = form.password.data
-        if check_password_hash(ADMIN_PASSWORD_HASH, password):
-            session['admin_logged_in'] = True
-            return redirect('/admin/escorts')
+    error_message = None
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            password = form.password.data
+            if check_password_hash(ADMIN_PASSWORD_HASH, password):
+                session['admin_logged_in'] = True
+                return redirect('/admin/escorts')
+            else:
+                error_message = 'Invalid password'
         else:
-            return render_template('admin_login.html', form=form, error='Invalid password')
-    return render_template('admin_login.html', form=form)
+            # Handle CSRF token expiry and other validation errors
+            if 'csrf_token' in form.errors:
+                error_message = 'Session expired. Please refresh the page and try again.'
+            else:
+                error_message = 'Form validation error. Please try again.'
+
+    return render_template('admin_login.html', form=form, error=error_message)
 
 @app.route('/admin/logout')
 def admin_logout():
