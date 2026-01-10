@@ -324,8 +324,15 @@
             // Update last message ID
             lastMessageId = Math.max(...messages.map(msg => msg.id));
 
+            // Get current user's ID
+            const currentUserId = localStorage.getItem('groupChatUserId');
+
             container.innerHTML = messages.map(msg => {
-                const messageClass = msg.sender === username ? 'user' : 'other';
+                // Determine if this message is from the current user
+                // Check both username AND user_id to distinguish between different users with same username
+                const isCurrentUser = (msg.user_id && msg.user_id === currentUserId) ||
+                                     (!msg.user_id && msg.sender === username);
+                const messageClass = isCurrentUser ? 'user' : 'other';
                 const timeString = new Date(msg.timestamp).toLocaleTimeString();
 
                 let content = msg.message;
@@ -359,10 +366,17 @@
             username = usernameInput.value.trim() || 'Anonymous';
             localStorage.setItem('groupChatUsername', username);
 
+            // Generate or get user ID for this session
+            let userId = localStorage.getItem('groupChatUserId');
+            if (!userId) {
+                userId = 'user-' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('groupChatUserId', userId);
+            }
+
             // Censor contact info locally before sending
             const { message: censoredMessage, wasCensored } = censorContactInfo(message);
 
-            // Send message
+            // Send message with user ID
             fetch('/group_chat/send', {
                 method: 'POST',
                 headers: {
@@ -370,6 +384,7 @@
                 },
                 body: JSON.stringify({
                     sender: username,
+                    user_id: userId,
                     message: censoredMessage,
                     original_message: message,
                     was_censored: wasCensored

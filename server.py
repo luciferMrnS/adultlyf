@@ -1426,6 +1426,7 @@ def send_group_chat_message():
     data = request.get_json()
 
     sender = data.get('sender', 'Anonymous').strip()
+    user_id = data.get('user_id', None)  # Get user_id if provided
     message = data.get('message', '').strip()
     original_message = data.get('original_message', '')
     was_censored = data.get('was_censored', False)
@@ -1455,7 +1456,7 @@ def send_group_chat_message():
     # Generate message ID
     message_id = len(messages) + 1
 
-    # Create message
+    # Create message with user_id if provided
     chat_message = {
         'id': message_id,
         'sender': sender[:20],  # Limit username length
@@ -1463,6 +1464,10 @@ def send_group_chat_message():
         'timestamp': datetime.now().isoformat(),
         'censored': was_censored or ('[CENSORED]' in message)
     }
+
+    # Add user_id to message if provided (for distinguishing users with same username)
+    if user_id:
+        chat_message['user_id'] = user_id
 
     messages.append(chat_message)
 
