@@ -168,6 +168,13 @@
             "sender": "client",
             "message": "hi",
             "timestamp": "2026-01-10T12:16:47.265320"
+        },
+        {
+            "id": "20260110121710880124",
+            "sender": "admin",
+            "message": "",
+            "timestamp": "2026-01-10T12:17:10.880187",
+            "image_url": "/uploads/6fde2532-516e-45c6-ac44-1ad3286f5ba2_OIP_2.jpg"
         }
     ]
 }
