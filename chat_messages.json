@@ -595,6 +595,13 @@
             "sender": "client",
             "message": "how&#x27;re you",
             "timestamp": "2026-01-11T06:47:46.647225"
+        },
+        {
+            "id": "20260111064806870482",
+            "sender": "client",
+            "message": "join",
+            "timestamp": "2026-01-11T06:48:06.870569",
+            "image_url": "/uploads/ba08eb24-8cd3-4f42-8492-14061e8f63e5_8.jpg"
         }
     ]
 }
