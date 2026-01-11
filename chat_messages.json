@@ -589,6 +589,12 @@
             "sender": "admin",
             "message": "how are you",
             "timestamp": "2026-01-11T06:47:37.553158"
+        },
+        {
+            "id": "20260111064746647179",
+            "sender": "client",
+            "message": "how&#x27;re you",
+            "timestamp": "2026-01-11T06:47:46.647225"
         }
     ]
 }
