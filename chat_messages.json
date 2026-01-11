@@ -709,6 +709,13 @@
             "message": "join",
             "timestamp": "2026-01-11T07:06:37.590284",
             "image_url": "/uploads/c730261c-1f00-4fe1-a1a9-8fde0b426846_OIP_1.jpg"
+        },
+        {
+            "id": "20260111070655610934",
+            "sender": "client",
+            "message": "here",
+            "timestamp": "2026-01-11T07:06:55.610989",
+            "image_url": "/uploads/710b1644-6d8c-4e13-8aea-99f4f89f3114_OIP_3.jpg"
         }
     ]
 }
