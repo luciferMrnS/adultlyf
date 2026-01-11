@@ -259,6 +259,13 @@
             "sender": "client",
             "message": "hi there",
             "timestamp": "2026-01-11T07:42:03.363837"
+        },
+        {
+            "id": "20260111074211582521",
+            "sender": "client",
+            "message": "",
+            "timestamp": "2026-01-11T07:42:11.582568",
+            "image_url": "/uploads/443096d2-97f9-4d65-889b-00eb7cd3f3bc_OIP_3.jpg"
         }
     ]
 }
