@@ -742,6 +742,13 @@
             "sender": "admin",
             "message": "how&#x27;re you",
             "timestamp": "2026-01-11T07:24:08.175631"
+        },
+        {
+            "id": "20260111072418862738",
+            "sender": "client",
+            "message": "",
+            "timestamp": "2026-01-11T07:24:18.862787",
+            "image_url": "/uploads/c1e695d0-7d10-4df6-a92f-a90137048ef7_OIP_2.jpg"
         }
     ]
 }
