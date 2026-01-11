@@ -467,6 +467,13 @@
             "sender": "client",
             "message": "ok",
             "timestamp": "2026-01-11T06:27:04.390189"
+        },
+        {
+            "id": "20260111063023547637",
+            "sender": "admin",
+            "message": "",
+            "timestamp": "2026-01-11T06:30:23.547685",
+            "image_url": "/uploads/f8d6ff57-ad07-4d66-9291-093bbfb1c785_0.jpg"
         }
     ]
 }
