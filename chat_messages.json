@@ -309,6 +309,12 @@
             "message": "",
             "timestamp": "2026-01-11T05:57:18.017156",
             "image_url": "/uploads/58ede07d-5a3b-4074-a09a-09da36aec45f_OIP_1.jpg"
+        },
+        {
+            "id": "20260111055729947531",
+            "sender": "client",
+            "message": "hru",
+            "timestamp": "2026-01-11T05:57:29.947566"
         }
     ]
 }
