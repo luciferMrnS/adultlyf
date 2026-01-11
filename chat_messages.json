@@ -481,6 +481,12 @@
             "message": "",
             "timestamp": "2026-01-11T06:30:38.556689",
             "image_url": "/uploads/62f10f5a-0497-4012-b3f7-3f4250606786_OIP_4.jpg"
+        },
+        {
+            "id": "20260111063249207173",
+            "sender": "client",
+            "message": "hi",
+            "timestamp": "2026-01-11T06:32:49.207199"
         }
     ]
 }
