@@ -202,6 +202,10 @@ class EscortForm(FlaskForm):
 def index():
     return send_from_directory('.', 'index.html')
 
+@app.route('/game.html')
+def game():
+    return send_from_directory('.', 'game.html')
+
 @app.route('/index.html')
 def index_html():
     return send_from_directory('.', 'index.html')
