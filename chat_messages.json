@@ -528,6 +528,12 @@
             "message": "",
             "timestamp": "2026-01-11T06:37:12.302257",
             "image_url": "/uploads/e6a92480-1a20-4ac1-b79b-8217c6b9bd16_OIP_1.jpg"
+        },
+        {
+            "id": "20260111064059524832",
+            "sender": "client",
+            "message": "hi",
+            "timestamp": "2026-01-11T06:40:59.524874"
         }
     ]
 }
