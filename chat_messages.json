@@ -702,6 +702,13 @@
             "sender": "admin",
             "message": "how&#x27;re you",
             "timestamp": "2026-01-11T07:06:27.351508"
+        },
+        {
+            "id": "20260111070637590239",
+            "sender": "admin",
+            "message": "join",
+            "timestamp": "2026-01-11T07:06:37.590284",
+            "image_url": "/uploads/c730261c-1f00-4fe1-a1a9-8fde0b426846_OIP_1.jpg"
         }
     ]
 }
