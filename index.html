@@ -9,6 +9,177 @@
     <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
     <link rel="apple-touch-icon" href="/static/logo.svg">
     <style>
+        /* Age verification popup styles */
+        .age-verification-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .age-verification-popup {
+            background-color: #1a1a1a;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            animation: fadeIn 0.5s ease;
+            z-index: 10000;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .eggplant-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .age-verification-question {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2rem 0;
+        }
+
+        .toggle-switch span {
+            font-size: 18px;
+            margin: 0 10px;
+            color: white;
+        }
+
+        .toggle-switch input[type="checkbox"] {
+            height: 0;
+            width: 0;
+            visibility: hidden;
+        }
+
+        .toggle-switch label {
+            cursor: pointer;
+            text-indent: -9999px;
+            width: 50px;
+            height: 25px;
+            background: grey;
+            display: block;
+            border-radius: 100px;
+            position: relative;
+        }
+
+        .toggle-switch label:after {
+            content: '';
+            position: absolute;
+            top: 2.5px;
+            left: 5px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 90px;
+            transition: 0.3s;
+        }
+
+        .toggle-switch input:checked + label {
+            background: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .toggle-switch input:checked + label:after {
+            left: calc(100% - 5px);
+            transform: translateX(-100%);
+            background: #fff;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        }
+
+        /* Highlight the "Yes" text when selected */
+        .toggle-switch input:checked + label + span {
+            color: #4CAF50;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+
+        /* Dim the "No" text when "Yes" is selected */
+        .toggle-switch input:checked ~ span:first-child {
+            color: #888;
+            opacity: 0.7;
+        }
+
+        .popup-message {
+            font-size: 16px;
+            color: red;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .not-eligible-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            animation: shake 0.5s;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+            25% { transform: translate(-50%, -50%) rotate(5deg); }
+            75% { transform: translate(-50%, -50%) rotate(-5deg); }
+        }
+
+        .not-eligible-message h3 {
+            margin-top: 0;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .not-eligible-message p {
+            font-size: 1.5rem;
+            margin-bottom: 0;
+        }
+
+        /* Hide main content when age verification is active */
+        .blurred-content {
+            filter: blur(5px);
+            pointer-events: none;
+            user-select: none;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background-color: #1a1a1a;
@@ -109,11 +280,10 @@
             background-color: #333;
             padding: 1rem;
             text-align: center;
-            /* position: fixed; */ /* Removed fixed positioning to avoid overlap issues with modal */
             width: 100%;
             bottom: 0;
-            position: relative; /* Added relative positioning to footer */
-            margin-top: 2rem; /* Added margin-top to separate from content */
+            position: relative;
+            margin-top: 2rem;
         }
 
         .escort-button {
@@ -336,414 +506,274 @@
             }
         }
 
-    </style>
-
-    <style>
-    /* Chat Popup Styles */
-    .chat-popup {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 300px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        z-index: 1000;
-        font-family: Arial, sans-serif;
-        overflow: hidden;
-        animation: slideUp 0.5s ease-out;
-        border: 2px solid #fff;
-    }
-
-    @keyframes slideUp {
-        from {
-            transform: translateY(100px);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    }
-
-    .chat-popup-header {
-        background: rgba(255,255,255,0.1);
-        padding: 15px;
-        color: white;
-        font-weight: bold;
-        text-align: center;
-        cursor: pointer;
-        transition: background 0.3s ease;
-    }
-
-    .chat-popup-header:hover {
-        background: rgba(255,255,255,0.2);
-    }
-
-    .chat-popup-body {
-        padding: 20px;
-        text-align: center;
-        color: white;
-    }
-
-    .chat-popup-body p {
-        margin: 0 0 15px 0;
-        font-size: 16px;
-    }
-
-    .visitor-count {
-        font-size: 24px;
-        font-weight: bold;
-        color: #ffeb3b;
-        text-shadow: 0 0 10px rgba(255,235,59,0.5);
-    }
-
-    .chat-button {
-        background: #4CAF50;
-        color: white;
-        border: none;
-        padding: 12px 25px;
-        border-radius: 25px;
-        cursor: pointer;
-        font-size: 16px;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(76,175,80,0.3);
-    }
-
-    .chat-button:hover {
-        background: #45a049;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(76,175,80,0.4);
-    }
-
-    .chat-close {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: rgba(255,255,255,0.2);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 25px;
-        height: 25px;
-        cursor: pointer;
-        font-size: 14px;
-        line-height: 1;
-        transition: background 0.3s ease;
-    }
-
-    .chat-close:hover {
-        background: rgba(255,255,255,0.3);
-    }
-
-    .chat-minimize {
-        position: absolute;
-        top: 10px;
-        right: 40px;
-        background: rgba(255,255,255,0.2);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 25px;
-        height: 25px;
-        cursor: pointer;
-        font-size: 14px;
-        line-height: 1;
-        transition: background 0.3s ease;
-    }
-
-    .chat-minimize:hover {
-        background: rgba(255,255,255,0.3);
-    }
-
-    .chat-popup.minimized {
-        height: auto;
-    }
-
-    .chat-popup.minimized .chat-popup-body {
-        display: none;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
+        /* Chat Popup Styles */
         .chat-popup {
-            width: 280px;
-            right: 10px;
-            bottom: 10px;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+            border: 2px solid #fff;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .chat-popup-header {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .chat-popup-header:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .chat-popup-body {
+            padding: 20px;
+            text-align: center;
+            color: white;
         }
 
         .chat-popup-body p {
-            font-size: 14px;
+            margin: 0 0 15px 0;
+            font-size: 16px;
         }
 
         .visitor-count {
-            font-size: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffeb3b;
+            text-shadow: 0 0 10px rgba(255,235,59,0.5);
         }
-    }
-    </style>
 
-    <!-- Name Entry Modal Styles -->
-    <style>
-    /* Glass Modal Effect */
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(5px);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 2000;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
+        .chat-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76,175,80,0.3);
+        }
 
-    .modal-overlay.active {
-        display: flex;
-        opacity: 1;
-    }
+        .chat-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76,175,80,0.4);
+        }
 
-    .name-modal {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 30px;
-        width: 90%;
-        max-width: 400px;
-        box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        text-align: center;
-        transform: scale(0.9);
-        transition: transform 0.3s ease;
-    }
+        .chat-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+            transition: background 0.3s ease;
+        }
 
-    .modal-overlay.active .name-modal {
-        transform: scale(1);
-    }
+        .chat-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
 
-    .name-modal h2 {
-        color: white;
-        margin-bottom: 20px;
-        font-size: 1.8rem;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
+        .chat-minimize {
+            position: absolute;
+            top: 10px;
+            right: 40px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+            transition: background 0.3s ease;
+        }
 
-    .name-modal p {
-        color: rgba(255, 255, 255, 0.9);
-        margin-bottom: 25px;
-        font-size: 1.1rem;
-    }
+        .chat-minimize:hover {
+            background: rgba(255,255,255,0.3);
+        }
 
-    .name-input {
-        width: 100%;
-        padding: 15px;
-        border-radius: 10px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-        font-size: 1.1rem;
-        margin-bottom: 20px;
-        transition: border-color 0.3s ease;
-    }
+        .chat-popup.minimized {
+            height: auto;
+        }
 
-    .name-input:focus {
-        outline: none;
-        border-color: #00ffff;
-    }
+        .chat-popup.minimized .chat-popup-body {
+            display: none;
+        }
 
-    .name-input::placeholder {
-        color: rgba(255, 255, 255, 0.6);
-    }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .chat-popup {
+                width: 280px;
+                right: 10px;
+                bottom: 10px;
+            }
 
-    .modal-buttons {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-    }
+            .chat-popup-body p {
+                font-size: 14px;
+            }
 
-    .modal-button {
-        padding: 12px 30px;
-        border-radius: 25px;
-        font-weight: bold;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: none;
-    }
+            .visitor-count {
+                font-size: 20px;
+            }
+        }
 
-    .modal-button.primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
+        /* Name Entry Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
 
-    .modal-button.secondary {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-    }
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
 
-    .modal-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .modal-button.secondary:hover {
-        background: rgba(255, 255, 255, 0.3);
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
         .name-modal {
-            width: 95%;
-            padding: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .name-modal {
+            transform: scale(1);
         }
 
         .name-modal h2 {
-            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .name-modal p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease;
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-color: #00ffff;
+        }
+
+        .name-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-button {
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: bold;
             font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
         }
-    }
+
+        .modal-button.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .modal-button.secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .modal-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-button.secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .name-modal {
+                width: 95%;
+                padding: 25px;
+            }
+
+            .name-modal h2 {
+                font-size: 1.5rem;
+            }
+
+            .name-modal p {
+                font-size: 1rem;
+            }
+        }
     </style>
-
-    <!-- Pop-under ad script from ad network goes here -->
-</head>
-    </style>
-
-    <!-- Name Entry Modal Styles -->
-    <style>
-    /* Glass Modal Effect */
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(5px);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 2000;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .modal-overlay.active {
-        display: flex;
-        opacity: 1;
-    }
-
-    .name-modal {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 30px;
-        width: 90%;
-        max-width: 400px;
-        box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        text-align: center;
-        transform: scale(0.9);
-        transition: transform 0.3s ease;
-    }
-
-    .modal-overlay.active .name-modal {
-        transform: scale(1);
-    }
-
-    .name-modal h2 {
-        color: white;
-        margin-bottom: 20px;
-        font-size: 1.8rem;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    .name-modal p {
-        color: rgba(255, 255, 255, 0.9);
-        margin-bottom: 25px;
-        font-size: 1.1rem;
-    }
-
-    .name-input {
-        width: 100%;
-        padding: 15px;
-        border-radius: 10px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-        font-size: 1.1rem;
-        margin-bottom: 20px;
-        transition: border-color 0.3s ease;
-    }
-
-    .name-input:focus {
-        outline: none;
-        border-color: #00ffff;
-    }
-
-    .name-input::placeholder {
-        color: rgba(255, 255, 255, 0.6);
-    }
-
-    .modal-buttons {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-    }
-
-    .modal-button {
-        padding: 12px 30px;
-        border-radius: 25px;
-        font-weight: bold;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: none;
-    }
-
-    .modal-button.primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-
-    .modal-button.secondary {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-    }
-
-    .modal-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .modal-button.secondary:hover {
-        background: rgba(255, 255, 255, 0.3);
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .name-modal {
-            width: 95%;
-            padding: 25px;
-        }
-
-        .name-modal h2 {
-            font-size: 1.5rem;
-        }
-
-        .name-modal p {
-            font-size: 1rem;
-        }
-    }
-    </style>
-
-    <!-- Pop-under ad script from ad network goes here -->
 </head>
 <body>
     <header>
@@ -790,6 +820,27 @@
         </div>
         <p>&copy; 2026 Adultlyf. All rights reserved.</p>
     </footer>
+
+    <!-- Age Verification Modal -->
+    <div id="age-verification-overlay" class="age-verification-overlay">
+        <div class="age-verification-popup">
+            <img src="/static/logo.svg" alt="Adultlyf Logo" class="eggplant-logo">
+            <div class="age-verification-question">Are you 18+?</div>
+
+            <div class="toggle-container toggle-switch">
+                <span>No</span>
+                <input type="checkbox" id="age-toggle"/>
+                <label for="age-toggle">Toggle</label>
+                <span>Yes</span>
+            </div>
+            <div id="popupMessage" class="popup-message"></div>
+        </div>
+    </div>
+
+    <div class="not-eligible-message" id="age-rejection" style="display: none;">
+        <h3>🚫 Access Denied</h3>
+        <p>You are not eligible to proceed</p>
+    </div>
 
     <!-- Name Entry Modal -->
     <div id="name-modal-overlay" class="modal-overlay">
@@ -849,57 +900,7 @@
             }
         }
 
-        // Chat Popup Functions - moved outside DOMContentLoaded for global scope
-        function closeChatPopup() {
-            const popup = document.getElementById('chat-popup');
-            popup.style.display = 'none';
-        }
-
-        function minimizeChatPopup() {
-            const popup = document.getElementById('chat-popup');
-            popup.classList.toggle('minimized');
-        }
-
-        function toggleChatPopup() {
-            const popup = document.getElementById('chat-popup');
-            popup.classList.toggle('minimized');
-        }
-
-        function startChat() {
-            // Show the name entry modal instead of direct navigation
-            openNameModal();
-        }
-        // Name Modal Functions
-        function openNameModal() {
-            const modalOverlay = document.getElementById('name-modal-overlay');
-            modalOverlay.classList.add('active');
-
-            // Focus on the input field
-            setTimeout(() => {
-                document.getElementById('username-input').focus();
-            }, 300);
-        }
-
-        function closeNameModal() {
-            const modalOverlay = document.getElementById('name-modal-overlay');
-            modalOverlay.classList.remove('active');
-        }
-
-        function joinChat() {
-            const usernameInput = document.getElementById('username-input');
-            const username = usernameInput.value.trim();
-
-            if (username) {
-                // Store the username in localStorage for the chat to use
-                localStorage.setItem('groupChatUsername', username);
-                // Redirect to group chat page
-                window.location.href = 'group_chat.html';
-            } else {
-                alert('Please enter your name to join the chat.');
-            }
-        }
-
-        // Chat Popup Functions - moved outside DOMContentLoaded for global scope
+        // Chat Popup Functions
         function closeChatPopup() {
             const popup = document.getElementById('chat-popup');
             popup.style.display = 'none';
@@ -921,6 +922,52 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
+            // Age Verification Logic
+            const ageOverlay = document.getElementById('age-verification-overlay');
+            const ageToggle = document.getElementById('age-toggle');
+            const popupMessage = document.getElementById('popupMessage');
+
+            const mainContent = document.querySelectorAll('header, .container, footer');
+
+            // Show modal on load
+            ageOverlay.style.display = 'flex';
+            mainContent.forEach(el => el.classList.add('blurred-content')); // Apply blur to background
+
+            ageToggle.addEventListener('change', () => {
+                if (ageToggle.checked) {
+                    // Yes selected - proceed to homepage with smooth transition
+                    ageOverlay.style.opacity = '0';
+                    ageOverlay.style.transition = 'opacity 0.5s ease';
+                    mainContent.forEach(el => {
+                        el.classList.remove('blurred-content');
+                        el.style.filter = 'blur(0px)';
+                        el.style.transition = 'filter 0.5s ease';
+                    });
+
+                    // Hide overlay completely after transition
+                    setTimeout(() => {
+                        ageOverlay.style.display = 'none';
+                    }, 500);
+                } else {
+                    // No selected - show rejection message
+                    popupMessage.textContent = 'You are not eligible to proceed.';
+                    popupMessage.style.display = 'block';
+
+                    // Add visual feedback for "No" selection
+                    const toggleLabel = ageToggle.nextElementSibling;
+                    toggleLabel.style.background = '#ff4444';
+                    toggleLabel.style.boxShadow = '0 0 10px rgba(255, 68, 68, 0.5)';
+
+                    // Reset after a short delay
+                    setTimeout(() => {
+                        if (!ageToggle.checked) {
+                            toggleLabel.style.background = 'grey';
+                            toggleLabel.style.boxShadow = 'none';
+                        }
+                    }, 1000);
+                }
+            });
+
             let allVideos = [];
             let filteredVideos = [];
             let currentPage = 1;
