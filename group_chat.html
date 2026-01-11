@@ -163,18 +163,7 @@
             transform: none;
         }
 
-        .username-input {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 15px;
-            outline: none;
-            font-size: 14px;
-            width: 150px;
-        }
-
-        .username-input:focus {
-            border-color: #667eea;
-        }
+        /* Username input removed - now collected via modal before entering chat */
 
         .loading {
             text-align: center;
@@ -209,10 +198,6 @@
                 max-width: 85%;
             }
 
-            .username-input {
-                width: 120px;
-            }
-
             .message-input {
                 min-height: 40px;
                 font-size: 16px; /* Prevents zoom on iOS */
@@ -243,21 +228,16 @@
         </div>
 
         <div class="chat-input">
-            <input type="text" id="usernameInput" class="username-input" placeholder="Your name" maxlength="20">
             <textarea id="messageInput" class="message-input" placeholder="Type your message..." maxlength="500"></textarea>
             <button id="sendButton" class="send-button">Send</button>
         </div>
     </div>
 
     <script>
-        let username = localStorage.getItem('groupChatUsername') || '';
+        // Get username from localStorage (set by the name entry modal)
+        let username = localStorage.getItem('groupChatUsername') || 'Anonymous';
         let pollInterval;
         let lastMessageId = 0;
-
-        // Set username if available
-        if (username) {
-            document.getElementById('usernameInput').value = username;
-        }
 
         function censorContactInfo(message) {
             // Patterns to censor common contact information
@@ -357,14 +337,9 @@
 
         function sendMessage() {
             const input = document.getElementById('messageInput');
-            const usernameInput = document.getElementById('usernameInput');
             const message = input.value.trim();
 
             if (!message) return;
-
-            // Update username
-            username = usernameInput.value.trim() || 'Anonymous';
-            localStorage.setItem('groupChatUsername', username);
 
             // Generate or get user ID for this session
             let userId = localStorage.getItem('groupChatUserId');
@@ -417,11 +392,6 @@
                 e.preventDefault();
                 sendMessage();
             }
-        });
-
-        document.getElementById('usernameInput').addEventListener('input', function(e) {
-            username = e.target.value.trim() || 'Anonymous';
-            localStorage.setItem('groupChatUsername', username);
         });
 
         // Auto-resize textarea
