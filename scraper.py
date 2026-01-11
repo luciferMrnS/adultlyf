@@ -529,7 +529,9 @@ class AdultScraper:
             ("https://www.youporn.com", "youporn"),
             ("https://www.xnxx.com", "xnxx"),
             ("https://www.pornhub.com", "pornhub"),
-            ("https://www.brazzers.com", "brazzers")
+            ("https://www.brazzers.com", "brazzers"),
+            ("https://www.redtube.com", "redtube"),
+            ("https://www.xhamster.com", "xhamster")
         ]
 
         all_videos = []
@@ -735,7 +737,9 @@ def scrape_with_keyword(keyword: str, limit_per_site: int = 10) -> List[Dict[str
         ("xnxx", f"https://www.xnxx.com/search/{keyword.replace(' ', '+')}"),
         ("xvideos", f"https://www.xvideos.com/?k={keyword.replace(' ', '+')}"),
         ("youporn", f"https://www.youporn.com/search?query={keyword.replace(' ', '+')}"),
-        ("brazzers", f"https://www.brazzers.com/search?q={keyword.replace(' ', '+')}")
+        ("brazzers", f"https://www.brazzers.com/search?q={keyword.replace(' ', '+')}"),
+        ("redtube", f"https://www.redtube.com/search?search={keyword.replace(' ', '+')}"),
+        ("xhamster", f"https://xhamster.com/search?q={keyword.replace(' ', '+')}")
     ]
 
     all_new_videos = []
