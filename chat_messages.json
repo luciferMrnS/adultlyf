@@ -622,6 +622,13 @@
             "sender": "admin",
             "message": "hey",
             "timestamp": "2026-01-11T06:55:22.743124"
+        },
+        {
+            "id": "20260111065534344754",
+            "sender": "client",
+            "message": "",
+            "timestamp": "2026-01-11T06:55:34.344799",
+            "image_url": "/uploads/ba7d4b08-c645-4249-8928-01840d23984b_OIP_1.jpg"
         }
     ]
 }
