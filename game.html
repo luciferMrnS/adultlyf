@@ -10,14 +10,15 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d1b69 100%);
-            color: white;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2a 50%, #2d1b3a 100%);
+            color: #e0e0e0;
             margin: 0;
             padding: 0;
             min-height: 100vh;
             background-image:
-                radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(76, 175, 80, 0.1) 0%, transparent 50%);
+                radial-gradient(circle at 15% 20%, rgba(102, 51, 153, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(153, 51, 102, 0.15) 0%, transparent 40%);
+            background-attachment: fixed;
         }
 
         .game-container {
@@ -102,14 +103,14 @@
         .card {
             width: 100%;
             aspect-ratio: 1;
-            background: linear-gradient(135deg, #333 0%, #1a1a1a 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
             border-radius: 15px;
             position: relative;
             cursor: pointer;
             transform-style: preserve-3d;
-            transition: transform 0.6s, box-shadow 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            border: 3px solid rgba(255, 107, 107, 0.1);
+            transition: transform 0.6s, box-shadow 0.3s, border-color 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+            border: 3px solid rgba(102, 51, 153, 0.3);
         }
 
         .card.flipped {
@@ -123,6 +124,11 @@
             cursor: default;
         }
 
+        .card:hover:not(.flipped):not(.matched) {
+            border-color: rgba(255, 107, 107, 0.5);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
         .card-front, .card-back {
             position: absolute;
             width: 100%;
@@ -132,21 +138,39 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s;
         }
 
         .card-front {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            color: white;
-            font-size: 2rem;
+            background: linear-gradient(135deg, #661133 0%, #331122 100%);
+            color: #ffeb3b;
+            font-size: 2.5rem;
             font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
             transform: rotateY(180deg);
-            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.3);
+            box-shadow: 0 4px 20px rgba(102, 51, 153, 0.5);
+            border: 2px solid rgba(255, 235, 59, 0.2);
         }
 
         .card-back {
-            background: linear-gradient(135deg, #333 0%, #1a1a1a 100%);
-            border: 2px solid rgba(255, 107, 107, 0.2);
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            border: 2px solid rgba(102, 51, 153, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-back::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg,
+                rgba(255, 107, 107, 0.05) 0%,
+                rgba(102, 51, 153, 0.08) 50%,
+                rgba(153, 51, 102, 0.05) 100%);
+            animation: cardGlow 3s ease-in-out infinite alternate;
         }
 
         .card-icon {
@@ -363,6 +387,32 @@
             }
             100% {
                 background-position: 100% 100%, 0% 0%, 25% 75%;
+            }
+        }
+
+        @keyframes cardGlow {
+            0% {
+                opacity: 0.8;
+                transform: scale(1) rotate(0deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05) rotate(2deg);
+            }
+            100% {
+                opacity: 0.8;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        @keyframes buttonPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 6px 25px rgba(255, 107, 107, 0.5);
             }
         }
     </style>
