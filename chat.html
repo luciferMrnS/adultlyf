@@ -63,6 +63,7 @@
             color: white;
             margin-left: auto;
             border-bottom-right-radius: 5px;
+            text-align: right;
         }
 
         .message.client {
@@ -70,6 +71,7 @@
             color: #333;
             margin-right: auto;
             border-bottom-left-radius: 5px;
+            text-align: left;
         }
 
         .message.system {
@@ -284,7 +286,26 @@
     <script>
         // Get request ID from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const requestId = urlParams.get('request_id');
+        const requestId = urlParams.get('requestId');
+
+        const clientName = urlParams.get('clientName');
+        const chatHeader = document.querySelector('.chat-header');
+        const chatMessages = document.getElementById('chatMessages');
+
+        if (clientName) {
+            const decodedClientName = decodeURIComponent(clientName);
+            chatHeader.textContent = `Chat with ${decodedClientName}`;
+            document.title = `Chat with ${decodedClientName} - Adultlyf`;
+        }
+
+        if (requestId && clientName) {
+            chatMessages.innerHTML = `
+                <div class="message system">
+                    Welcome ${decodeURIComponent(clientName)}! Your meeting request has been submitted. An admin will respond shortly.
+                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                </div>
+            `;
+        }
 
         if (!requestId) {
             document.getElementById('chatMessages').innerHTML = '<div class="error">No chat session found. Please check your meeting request.</div>';
@@ -314,7 +335,7 @@
 
                         if (!isEnded) {
                             // Chat is still active, redirect to resume
-                            window.location.href = `?request_id=${storedRequestId}`;
+                            window.location.href = `?requestId=${storedRequestId}`;
                             return;
                         } else {
                             // Chat was ended by admin, clear localStorage
@@ -326,7 +347,7 @@
                     .catch(error => {
                         console.error('Error checking chat status:', error);
                         // If we can't check, assume chat is still active
-                        window.location.href = `?request_id=${storedRequestId}`;
+                        window.location.href = `?requestId=${storedRequestId}`;
                         return;
                     });
                 return; // Wait for async check

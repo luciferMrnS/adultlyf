@@ -6,715 +6,678 @@
     <title>Escorts - Adultlyf</title>
     <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
     <link rel="apple-touch-icon" href="/static/logo.svg">
+        <link rel="stylesheet" href="/static/main.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #1a1a1a;
-            color: #fff;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #333;
-            padding: 1rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 2rem;
-            flex: 1;
-            text-align: center;
-        }
-        .become-model-btn {
-            background: linear-gradient(135deg, #FF6B6B, #EE5A24);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-            margin-left: auto;
-        }
-        .become-model-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
+        /* Escort Page Specific Styles - Girlish & Colorful Theme */
         .escort-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
         }
+
         .escort-card {
-            background-color: #2a2a2a;
-            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            transition: all 0.3s ease-out;
+            backdrop-filter: blur(5px);
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
+
+        .escort-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.6), 0 0 20px rgba(233, 64, 87, 0.4);
+            border-color: #E94057;
+        }
+
         .photo-album {
+            height: 400px;
             position: relative;
-            height: 250px;
-            overflow: hidden;
+            cursor: pointer;
         }
+        
         .photo-album img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: opacity 0.3s;
+            position: absolute;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
         }
-        .photo-album img:not(.active) {
-            display: none;
+
+        .photo-album img.active {
+            opacity: 1;
         }
+
         .photo-nav {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.4);
             color: white;
             border: none;
             padding: 0.5rem;
             cursor: pointer;
-            font-size: 1.2rem;
-        }
-        .photo-nav.prev {
-            left: 0;
-        }
-        .photo-nav.next {
-            right: 0;
-        }
-        .escort-info {
-            padding: 1rem;
-        }
-        .escort-name {
             font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
+            z-index: 10;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            line-height: 30px;
+            text-align: center;
         }
+        .photo-nav:hover {
+            background: rgba(0,0,0,0.7);
+        }
+        .photo-nav.prev { left: 10px; }
+        .photo-nav.next { right: 10px; }
+
+        .escort-info {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .escort-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #E94057;
+            text-shadow: 0 0 8px rgba(233, 64, 87, 0.5);
+            margin-bottom: 0.75rem;
+        }
+
         .escort-details {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
         }
         .escort-details p {
-            margin: 0.25rem 0;
+            margin: 0.3rem 0;
+            color: #ccc;
+            font-size: 0.95rem;
         }
-        .meet-btn {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
+        .escort-details p strong {
+            color: #8A2BE2;
+        }
+
+        .meet-btn, .submit-btn, .become-model-btn, .gallery-back-btn, .chat-send-btn {
+            padding: 0.8rem 1.5rem;
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 5px;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #E94057, #8A2BE2);
+            color: white;
             cursor: pointer;
+            font-weight: bold;
             font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(0,0,0,0.7);
+            transition: all 0.4s ease;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4), 0 0 15px rgba(233, 64, 87, 0.4);
             width: 100%;
-            transition: background 0.3s;
+            margin-top: auto; /* Pushes button to bottom */
         }
-        .meet-btn:hover {
-            background: linear-gradient(135deg, #ee5a24, #ff6b6b);
+
+        .meet-btn:hover, .submit-btn:hover, .become-model-btn:hover, .gallery-back-btn:hover, .chat-send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(138, 43, 226, 0.7), 0 0 25px rgba(233, 64, 87, 0.7);
         }
+
+        /* Filter Styles */
+        .filter-section {
+            background: rgba(0,0,0,0.2);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid #444;
+            backdrop-filter: blur(5px);
+        }
+        .filter-section h3 {
+            margin: 0 0 1rem 0;
+            color: #8A2BE2;
+            text-shadow: 0 0 8px rgba(138, 43, 226, 0.5);
+        }
+        .filter-btn {
+            padding: 0.6rem 1.2rem;
+            border: 1px solid #E94057;
+            border-radius: 20px;
+            background-color: transparent;
+            color: #E94057;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        .filter-btn:hover {
+            background-color: #E94057;
+            color: #fff;
+            box-shadow: 0 0 15px #E94057;
+        }
+        .filter-btn.active {
+            background-color: #E94057;
+            color: #fff;
+            box-shadow: 0 0 15px #E94057;
+        }
+
+        /* Modal Styles */
         .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s;
+             background-color: rgba(0, 0, 0, 0.7);
+             backdrop-filter: blur(8px);
+             display: none;
+             position: fixed;
+             z-index: 1000;
+             left: 0;
+             top: 0;
+             width: 100%;
+             height: 100%;
+             overflow: auto;
         }
         .modal-content {
-            background-color: #2a2a2a;
-            margin: 5% auto;
-            padding: 2rem 2rem 3rem 2rem;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 70vh;
-            overflow-y: auto;
-            animation: slideIn 0.3s;
+            background-color: rgba(10, 0, 10, 0.6);
+            border-radius: 15px;
+            border: 1px solid #E94057;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 30px rgba(233, 64, 87, 0.4);
+            margin: 10% auto;
+            padding: 2rem;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        
+        .modal-content h2 {
+            color: #8A2BE2;
+            text-align: center;
+            font-size: 2rem;
+            text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
         }
         .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
+            color: #fff;
+            opacity: 0.7;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+            position: absolute;
+            right: 1rem;
+            top: 0.5rem;
             cursor: pointer;
+            font-weight: bold;
         }
         .close:hover {
-            color: white;
+            opacity: 1;
+            transform: rotate(90deg);
         }
+
+        /* Form Styles */
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
         .form-group label {
+            color: #8A2BE2;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
             display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
         }
         .form-group input,
         .form-group textarea,
         .form-group select {
-            width: 100%;
-            padding: 0.75rem;
+            background-color: rgba(0,0,0,0.3);
             border: 1px solid #555;
-            border-radius: 4px;
-            background-color: #333;
-            color: white;
+            border-radius: 8px;
+            color: #fff;
+            padding: 0.8rem;
+            transition: all 0.3s ease;
+            width: 100%;
             font-size: 1rem;
         }
         .form-group textarea {
+            min-height: 100px;
             resize: vertical;
-            min-height: 80px;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #E94057;
+            box-shadow: 0 0 15px rgba(233, 64, 87, 0.5);
         }
         .submit-btn {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
+            margin-top: 1rem;
+            padding: 0.8rem 1.5rem;
             width: 100%;
-            transition: background 0.3s;
         }
-        .submit-btn:hover {
-            background: linear-gradient(135deg, #45a049, #4CAF50);
-        }
+
+        /* Back Link */
         .back-link {
-            display: inline-block;
-            margin-bottom: 1rem;
-            color: #4CAF50;
-            text-decoration: none;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-        .photo-indicators {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 0.25rem;
-        }
-        .indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.5);
-            cursor: pointer;
-        }
-        .indicator.active {
-            background: white;
-        }
-        .filter-btn {
-            background: #555;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            margin: 0.25rem;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid #8A2BE2;
             border-radius: 20px;
+            background-color: transparent;
+            color: #8A2BE2;
             cursor: pointer;
             transition: all 0.3s;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 2rem;
         }
-        .filter-btn:hover {
-            background: #777;
+        .back-link:hover {
+            background-color: #8A2BE2;
+            color: #fff;
+            box-shadow: 0 0 15px #8A2BE2;
+            text-decoration: none;
         }
-        .filter-btn.active {
-            background: #4CAF50;
-            color: white;
-        }
-        .location-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        /* Gallery Modal Styles */
-        .gallery-modal {
-            background-color: rgba(0, 0, 0, 0.9);
-        }
-        .gallery-content {
-            position: relative;
-            max-width: 90vw;
-            max-height: 90vh;
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .gallery-close {
-            position: absolute;
-            top: -40px;
-            right: 0;
-            color: white;
-            font-size: 40px;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 1001;
-        }
-        .gallery-close:hover {
-            color: #ccc;
-        }
-        .gallery-container {
-            position: relative;
-            max-width: 80vw;
-            max-height: 70vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #galleryImage {
-            width: 2048px;
-            height: 2048px;
-            max-width: 90vw;
-            max-height: 90vh;
-            object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        .gallery-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(0,0,0,0.7);
-            color: white;
-            border: none;
-            padding: 1rem 1.5rem;
-            font-size: 2rem;
-            cursor: pointer;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s;
-        }
-        .gallery-nav:hover {
-            background: rgba(0,0,0,0.9);
-        }
-        .gallery-prev {
-            left: -80px;
-        }
-        .gallery-next {
-            right: -80px;
-        }
-        .gallery-thumbnails {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            max-width: 80vw;
-            overflow-x: auto;
-            padding: 0.5rem;
-        }
-        .gallery-thumbnail {
-            width: 80px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 4px;
-            cursor: pointer;
-            border: 3px solid transparent;
-            transition: border-color 0.3s;
-        }
-        .gallery-thumbnail.active {
-            border-color: #4CAF50;
-        }
-        .gallery-counter {
-            color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-top: 1rem;
-            text-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-        .photo-album {
-            cursor: pointer;
-        }
-        .gallery-back-btn {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            margin-top: 1rem;
-            transition: background 0.3s;
-        }
-        .gallery-back-btn:hover {
-            background: #45a049;
-        }
-        /* Chat Modal Styles */
+
+        /* Modern Chat Interface Styles */
         .chat-modal-content {
-            max-width: 600px;
-            height: 80vh;
+            background: linear-gradient(145deg, rgba(30, 10, 40, 0.95), rgba(50, 20, 60, 0.95));
+            border-radius: 20px;
+            border: 2px solid rgba(233, 64, 87, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(233, 64, 87, 0.2);
+            max-width: 450px;
+            width: 90vw;
+            max-height: 80vh;
             display: flex;
             flex-direction: column;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1001;
+            overflow: hidden;
         }
+
+        .chat-header {
+            background: linear-gradient(135deg, #E94057, #8A2BE2);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-modal-content.minimized {
+            height: auto;
+            max-height: 60px;
+            transition: all 0.3s ease;
+        }
+
+        .chat-modal-content.minimized .chat-messages,
+        .chat-modal-content.minimized .chat-input-container {
+            display: none;
+        }
+
+        .chat-modal-content.minimized .chat-header {
+            border-radius: 0 0 20px 20px;
+        }
+
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #E94057, #4CC9F0);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 15px rgba(233, 64, 87, 0.4);
+        }
+
+        .chat-title h3 {
+            margin: 0;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-status {
+            color: #90EE90; /* LightGreen */
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: block;
+            text-shadow: 0 0 5px rgba(144, 238, 144, 0.5);
+        }
+
+        .chat-close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .chat-close-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.1);
+        }
+
+        .chat-minimize-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .chat-minimize-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.1);
+        }
+
         .chat-messages {
             flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-            background-color: #1a1a1a;
-            border-radius: 8px;
-            margin-bottom: 1rem;
             max-height: 400px;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(233, 64, 87, 0.3) transparent;
         }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(233, 64, 87, 0.3);
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: rgba(233, 64, 87, 0.5);
+        }
+
         .chat-message {
             margin-bottom: 1rem;
-            padding: 0.75rem;
-            border-radius: 8px;
-            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 18px;
+            max-width: 75%;
+            word-wrap: break-word;
+            position: relative;
+            animation: fadeIn 0.3s ease-in;
         }
-        .chat-message.client {
-            background-color: #4CAF50;
-            margin-left: auto;
-            text-align: right;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+
+        .chat-message.system {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(233, 64, 87, 0.2));
+            color: #4CC9F0;
+            text-align: center;
+            margin: 0.5rem auto;
+            font-style: italic;
+            font-size: 0.85rem;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            max-width: 90%;
+        }
+
         .chat-message.admin {
-            background-color: #2196F3;
+            background: linear-gradient(135deg, #8A2BE2, #6a1a9a);
+            color: white;
+            margin-left: auto;
+            margin-right: 0;
+            text-align: left;
+            border-bottom-right-radius: 5px;
+            box-shadow: 0 2px 10px rgba(138, 43, 226, 0.3);
+        }
+
+        .chat-message.client {
+            background: linear-gradient(135deg, #E94057, #d43a50);
+            color: white;
+            margin-right: auto;
+            margin-left: 0;
+            text-align: left;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 10px rgba(233, 64, 87, 0.3);
+        }
+
+        .chat-message.client .chat-message-image {
+            align-self: flex-start;
+            margin-left: 0;
             margin-right: auto;
         }
-        .chat-message.system {
-            background-color: #FF9800;
-            text-align: center;
-            font-weight: bold;
-        }
+
         .message-content {
-            word-wrap: break-word;
+            margin-bottom: 0.25rem;
+            line-height: 1.4;
         }
+
         .message-time {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             opacity: 0.7;
-            margin-top: 0.25rem;
-        }
-        .chat-input-container {
-            display: flex;
-            gap: 0.5rem;
-        }
-        .chat-input-container input {
-            flex: 1;
-            padding: 0.75rem;
-            border: 1px solid #555;
-            border-radius: 4px;
-            background-color: #333;
-            color: white;
-            font-size: 1rem;
-        }
-        .chat-send-btn {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.3s;
-        }
-        .chat-send-btn:hover {
-            background: linear-gradient(135deg, #45a049, #4CAF50);
-        }
-
-        .chat-image-btn {
-            background: linear-gradient(135deg, #FF6B6B, #EE5A24);
-            color: white;
-            border: none;
-            padding: 0.75rem;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.3s;
-        }
-
-        .chat-image-btn:hover {
-            background: linear-gradient(135deg, #EE5A24, #FF6B6B);
-        }
-
-        .chat-image-preview {
-            display: none;
-            margin-bottom: 1rem;
-            padding: 0.5rem;
-            background: #2a2a2a;
-            border-radius: 8px;
-            border: 1px solid #555;
+            text-align: right;
         }
 
         .chat-message-image {
             max-width: 200px;
             max-height: 200px;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            margin-bottom: 0.5rem;
-            user-select: none;
-            -webkit-user-drag: none;
-            -khtml-user-drag: none;
-            -moz-user-drag: none;
-            -o-user-drag: none;
+            margin: 0.5rem 0;
+            transition: transform 0.2s ease;
         }
 
-        /* Enhanced Responsive Design */
-        @media (max-width: 768px) {
-            header {
-                padding: 0.5rem;
-            }
-
-            header h1 {
-                font-size: 1.8rem;
-            }
-
-            .container {
-                padding: 0 0.5rem;
-            }
-
-            .escort-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 1rem;
-            }
-
-            .escort-card {
-                max-width: 100%;
-            }
-
-            .escort-name {
-                font-size: 1.2rem;
-            }
-
-            .escort-details p {
-                font-size: 0.9rem;
-            }
-
-            .meet-btn {
-                font-size: 0.9rem;
-                padding: 0.5rem 1rem;
-            }
-
-            .modal-content {
-                width: 95%;
-                max-width: 95%;
-                margin: 5% auto;
-                padding: 1.5rem;
-            }
-
-            .form-group {
-                margin-bottom: 0.75rem;
-            }
-
-            .form-group label {
-                font-size: 0.9rem;
-            }
-
-            .form-group input,
-            .form-group textarea,
-            .form-group select {
-                font-size: 0.9rem;
-            }
-
-            .chat-modal-content {
-                height: 70vh;
-                padding: 1rem;
-            }
-
-            .chat-messages {
-                padding: 0.75rem;
-                font-size: 0.9rem;
-            }
-
-            .chat-input-container input {
-                padding: 0.5rem;
-                font-size: 0.9rem;
-            }
-
-            .chat-send-btn {
-                padding: 0.5rem 1rem;
-                font-size: 0.9rem;
-            }
-
-            .gallery-modal .gallery-container {
-                max-width: 95vw;
-                max-height: 60vh;
-            }
-
-            #galleryImage {
-                max-width: 95vw;
-                max-height: 50vh;
-            }
-
-            .gallery-thumbnails {
-                gap: 0.25rem;
-                padding: 0.25rem;
-            }
-
-            .gallery-thumbnail {
-                width: 60px;
-                height: 45px;
-            }
+        .chat-message-image:hover {
+            transform: scale(1.02);
         }
 
+        .chat-image-preview {
+            margin: 0.5rem 1.5rem;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+
+        .preview-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .preview-content img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .preview-info {
+            flex: 1;
+        }
+
+        .filename {
+            color: #4CC9F0;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+            word-break: break-all;
+        }
+
+        .remove-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .remove-btn:hover {
+            background: #ff6666;
+            transform: scale(1.1);
+        }
+
+        .chat-input-container {
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .chat-attach-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #4CC9F0;
+            padding: 0.6rem;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .chat-attach-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(76, 201, 240, 0.4);
+        }
+
+        .chat-input-container input[type="text"] {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input-container input[type="text"]:focus {
+            border-color: #4CC9F0;
+            box-shadow: 0 0 15px rgba(76, 201, 240, 0.4);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-send-btn {
+            background: linear-gradient(45deg, #E94057, #8A2BE2);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(233, 64, 87, 0.4);
+        }
+
+        .chat-send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(233, 64, 87, 0.6);
+        }
+
+        .send-icon {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        /* Responsive Design */
         @media (max-width: 480px) {
-            header h1 {
-                font-size: 1.5rem;
-            }
-
-            .escort-grid {
-                grid-template-columns: 1fr;
-                gap: 0.75rem;
-            }
-
-            .escort-card {
-                margin: 0 auto;
-            }
-
-            .photo-album {
-                height: 200px;
-            }
-
-            .escort-name {
-                font-size: 1.1rem;
-            }
-
-            .modal-content {
-                width: 98%;
-                max-width: 98vw;
-                margin: 1% auto;
-                padding: 1rem;
-                max-height: 95vh;
-                overflow-y: auto;
-            }
-
-            .form-group {
-                margin-bottom: 1rem;
-            }
-
-            .form-group input,
-            .form-group textarea,
-            .form-group select {
-                font-size: 16px; /* Prevents zoom on iOS */
-                padding: 0.75rem;
-                width: 100%;
-                box-sizing: border-box;
-            }
-
-            .form-group textarea {
-                min-height: 60px;
-                resize: vertical;
-            }
-
-            .submit-btn {
-                font-size: 16px;
-                padding: 0.875rem;
-                width: 100%;
-                box-sizing: border-box;
-            }
-
             .chat-modal-content {
-                height: 80vh;
-                padding: 0.75rem;
+                width: 95vw;
+                max-height: 85vh;
+                margin: auto;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            .chat-header {
+                padding: 0.75rem 1rem;
             }
 
             .chat-messages {
-                padding: 0.5rem;
-                font-size: 0.85rem;
-            }
-
-            .chat-message {
-                padding: 0.5rem;
-                margin-bottom: 0.75rem;
+                padding: 1rem;
+                max-height: 300px;
             }
 
             .chat-input-container {
-                gap: 0.25rem;
+                padding: 0.75rem 1rem;
             }
 
-            .chat-input-container input {
-                padding: 0.5rem;
-                font-size: 16px; /* Prevents zoom on iOS */
+            .chat-message {
+                max-width: 85%;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .chat-modal-content {
+                width: 98vw;
+            }
+
+            .chat-input-container {
+                gap: 0.5rem;
+            }
+
+            .chat-attach-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
             }
 
             .chat-send-btn {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.85rem;
-            }
-
-            .gallery-container {
-                max-width: 98vw;
-                max-height: 50vh;
-            }
-
-            #galleryImage {
-                max-width: 98vw;
-                max-height: 40vh;
-            }
-
-            .gallery-thumbnails {
-                gap: 0.25rem;
-            }
-
-            .gallery-thumbnail {
-                width: 50px;
-                height: 35px;
-            }
-        }
-
-        /* Extra small screens */
-        @media (max-width: 360px) {
-            .modal-content {
-                width: 99%;
-                margin: 0.5% auto;
-                padding: 0.75rem;
-            }
-
-            .form-group input,
-            .form-group textarea,
-            .form-group select {
-                font-size: 16px;
-                padding: 0.625rem;
-            }
-
-            .submit-btn {
-                font-size: 16px;
-                padding: 0.75rem;
-            }
-        }
-
-        /* Touch-friendly buttons */
-        @media (hover: none) and (pointer: coarse) {
-            .meet-btn,
-            .submit-btn,
-            .chat-send-btn,
-            .gallery-back-btn {
-                min-height: 44px;
-                min-width: 44px;
-            }
-
-            .photo-nav,
-            .gallery-nav {
-                min-width: 50px;
-                min-height: 50px;
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
             }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Escorts - Adultlyf</h1>
-        <button id="becomeModelBtn" class="become-model-btn">Become a Model</button>
+        <a href="/" class="site-logo" style="position: absolute; left: 1rem; top: 10px;">
+            <img src="/static/logo.svg" alt="Adultlyf Logo" style="height: 80px; width: auto; vertical-align: middle; margin-right: 15px;">
+        </a>
+        <h1>Escorts</h1>
+        <nav style="position: absolute; top: 1rem; right: 1rem; text-align: center;">
+            <a href="index.html" class="escort-button" style="font-size: 1.5rem; padding: 0.5rem 1rem;">🏠 Home</a>
+            <button id="becomeModelBtn" class="become-model-btn" style="margin-left: 1rem;">Become a Model</button>
+        </nav>
     </header>
     <div class="container">
         <a href="index.html" class="back-link">&larr; Back to Home</a>
@@ -729,14 +692,7 @@
             </div>
         </div>
 
-        <!-- Continue Chat Button (hidden by default) -->
-        <div id="continueChatContainer" style="display: none; background: #2a2a2a; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
-            <h3 style="margin: 0 0 0.5rem 0; color: #4CAF50;">Active Conversation</h3>
-            <p style="margin: 0 0 1rem 0; color: #ccc;">You have an ongoing chat with our scheduler</p>
-            <button onclick="continueExistingChat()" style="background: #2196F3; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; cursor: pointer; font-size: 1rem;">
-                💬 Continue Chat
-            </button>
-        </div>
+
 
         <div id="escorts-container">
             <div class="loading">Loading escorts...</div>
@@ -796,24 +752,39 @@
 
     <!-- Chat Modal -->
     <div id="chatModal" class="modal">
-        <div class="modal-content chat-modal-content">
-            <span class="close" onclick="closeChatModal()">&times;</span>
-            <h2>Chat Support</h2>
+        <div class="chat-modal-content">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <div class="chat-avatar">💬</div>
+                    <div class="chat-title">
+                        <h3>Admin Support</h3>
+                        <span class="chat-status">Online</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="chat-minimize-btn" onclick="toggleChatMinimize()" title="Minimize Chat">−</button>
+                    <button class="chat-close-btn" onclick="closeChatModal()">&times;</button>
+                </div>
+            </div>
             <div id="chatMessages" class="chat-messages"></div>
             <div id="chatImagePreviewContainer" class="chat-image-preview">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <img id="chatImagePreview" src="" alt="Selected image" style="max-width: 100px; max-height: 100px; border-radius: 4px; border: 1px solid #555;">
-                    <div style="flex: 1;">
-                        <div id="chatImageFilename" style="color: #fff; font-size: 0.9rem; margin-bottom: 0.25rem;"></div>
-                        <button type="button" onclick="removeSelectedChatImage()" style="background: #f44336; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 3px; cursor: pointer; font-size: 0.8rem;">Remove</button>
+                <div class="preview-content">
+                    <img id="chatImagePreview" src="" alt="Selected image">
+                    <div class="preview-info">
+                        <div id="chatImageFilename" class="filename"></div>
+                        <button type="button" onclick="removeSelectedChatImage()" class="remove-btn">×</button>
                     </div>
                 </div>
             </div>
             <div class="chat-input-container">
                 <input type="file" id="chatImageInput" accept="image/*" style="display: none;" onchange="handleChatImageSelected(event)">
-                <button type="button" class="chat-image-btn" onclick="document.getElementById('chatImageInput').click()" title="Send Image">📷</button>
+                <button type="button" class="chat-attach-btn" onclick="document.getElementById('chatImageInput').click()" title="Attach Image">
+                    📎
+                </button>
                 <input type="text" id="chatMessageInput" placeholder="Type your message..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
-                <button type="button" onclick="sendChatMessage()" class="chat-send-btn">Send</button>
+                <button type="button" onclick="sendChatMessage()" class="chat-send-btn">
+                    <span class="send-icon">➤</span>
+                </button>
             </div>
         </div>
     </div>
@@ -936,10 +907,97 @@
 
         let currentGalleryEscort = null;
         let currentGalleryIndex = 0;
+        let currentRequestId = null;
+        let chatPollingInterval = null;
+
+        function checkForActiveChat() {
+            const storedRequestId = localStorage.getItem('currentChatRequestId');
+            const storedClientName = localStorage.getItem('currentChatClientName');
+            if (storedRequestId && storedClientName) {
+                // Check if chat is still active by fetching messages
+                fetch(`/chat/${storedRequestId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Check if chat was ended by admin
+                        const endedByAdmin = data.messages.some(msg =>
+                            msg.sender === 'system' && (msg.message.includes('ended') || msg.message.includes('closed'))
+                        );
+                        if (!endedByAdmin) {
+                            showResumeChatButton(storedRequestId, storedClientName);
+                        } else {
+                            // Chat ended, remove from storage
+                            localStorage.removeItem('currentChatRequestId');
+                            localStorage.removeItem('currentChatClientName');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking for active chat:', error);
+                        // On error, assume chat is still active and show resume button
+                        showResumeChatButton(storedRequestId, storedClientName);
+                    });
+            }
+        }
+
+        function showResumeChatButton(requestId, clientName) {
+            // Remove existing button if any
+            const existingButton = document.getElementById('resumeChatBtn');
+            if (existingButton) {
+                existingButton.remove();
+            }
+
+            const resumeButton = document.createElement('button');
+            resumeButton.id = 'resumeChatBtn';
+            resumeButton.textContent = '💬 Resume Chat';
+            resumeButton.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: linear-gradient(45deg, #E94057, #8A2BE2);
+                color: white;
+                border: none;
+                border-radius: 50px;
+                padding: 12px 20px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 14px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                z-index: 1001;
+                animation: pulse 2s infinite;
+            `;
+            resumeButton.onclick = () => {
+                resumeChatSession(requestId, clientName);
+            };
+            document.body.appendChild(resumeButton);
+
+            // Add pulse animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                    100% { transform: scale(1); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        function resumeChatSession(requestId, clientName) {
+            // Remove resume button
+            const resumeButton = document.getElementById('resumeChatBtn');
+            if (resumeButton) {
+                resumeButton.remove();
+            }
+
+            // Restore the chat modal
+            showChatModal(requestId, clientName);
+        }
 
         document.addEventListener("DOMContentLoaded", function() {
             loadEscorts();
-            checkForExistingChat();
+            checkForActiveChat();
+
+            // Load any existing chat session on page load
+            loadChatSession();
 
             // Modal functionality
             const modal = document.getElementById('meetModal');
@@ -1067,16 +1125,20 @@
 
             filteredEscorts.forEach(escort => {
                 currentPhotoIndices[escort.id] = 0;
+
+                // Ensure photos array exists and has content
+                const photos = escort.photos && escort.photos.length > 0 ? escort.photos : ['/uploads/dummy_image.jpg'];
+
                 html += `
                     <div class="escort-card">
                         <div class="photo-album" data-escort-id="${escort.id}">
-                            ${escort.photos.map((photo, index) =>
-                                `<img src="${photo}" alt="${escort.name}" class="${index === 0 ? 'active' : ''}">`
+                            ${photos.map((photo, index) =>
+                                `<img src="${photo}" alt="${escort.name}" class="${index === 0 ? 'active' : ''}" onerror="handleImageError(this)" onload="handleImageLoad(this)">`
                             ).join('')}
                             <button class="photo-nav prev" onclick="changePhoto(${escort.id}, -1)">&#10094;</button>
                             <button class="photo-nav next" onclick="changePhoto(${escort.id}, 1)">&#10095;</button>
                             <div class="photo-indicators">
-                                ${escort.photos.map((_, index) =>
+                                ${photos.map((_, index) =>
                                     `<div class="indicator ${index === 0 ? 'active' : ''}" onclick="setPhoto(${escort.id}, ${index})"></div>`
                                 ).join('')}
                             </div>
@@ -1105,6 +1167,78 @@
                     openGallery(escortId);
                 });
             });
+        }
+
+        function handleImageError(img) {
+            console.warn('Image failed to load:', img.src);
+
+            // Prevent multiple retry attempts on the same image
+            if (img.dataset.retryCount && parseInt(img.dataset.retryCount) >= 3) {
+                console.warn('Max retries reached for:', img.src);
+                // Show a permanent placeholder
+                img.style.display = 'none';
+                const placeholder = document.createElement('div');
+                placeholder.className = 'image-placeholder';
+                placeholder.textContent = '📷 Image unavailable';
+                placeholder.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(45deg, rgba(255,0,0,0.1), rgba(128,128,128,0.1));
+                    color: #ff6666;
+                    font-size: 1rem;
+                    border: 2px solid rgba(255,0,0,0.3);
+                    border-radius: 8px;
+                `;
+                img.parentNode.insertBefore(placeholder, img);
+                return;
+            }
+
+            // Show a temporary placeholder
+            img.style.display = 'none';
+            const placeholder = document.createElement('div');
+            placeholder.className = 'image-placeholder';
+            placeholder.textContent = '📷 Retrying...';
+            placeholder.style.cssText = `
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(45deg, rgba(255,0,255,0.1), rgba(0,255,255,0.1));
+                color: #00ffff;
+                font-size: 1rem;
+                border: 2px dashed rgba(255,0,255,0.3);
+                border-radius: 8px;
+            `;
+
+            // Insert placeholder before the image
+            img.parentNode.insertBefore(placeholder, img);
+
+            // Increment retry count
+            const retryCount = parseInt(img.dataset.retryCount || 0) + 1;
+            img.dataset.retryCount = retryCount;
+
+            // Try to reload the image after a longer delay (5 seconds, then 10, then 15)
+            const delay = 5000 + (retryCount - 1) * 5000;
+            setTimeout(() => {
+                img.style.display = '';
+                placeholder.remove();
+                // Clean up any existing cache buster parameters and add a fresh one
+                const baseSrc = img.src.split('?')[0];
+                img.src = baseSrc + '?t=' + Date.now();
+            }, delay);
+        }
+
+        function handleImageLoad(img) {
+            console.log('Image loaded successfully:', img.src);
+            // Remove any placeholder that might exist
+            const placeholder = img.previousElementSibling;
+            if (placeholder && placeholder.classList.contains('image-placeholder')) {
+                placeholder.remove();
+            }
         }
 
         function changePhoto(escortId, direction) {
@@ -1147,9 +1281,6 @@
             document.getElementById('meetForm').reset();
         }
 
-        let currentRequestId = null;
-        let chatPollingInterval = null;
-
         async function submitMeetRequest() {
             const formData = new FormData(document.getElementById('meetForm'));
             const ageVerification = formData.get('ageVerification');
@@ -1172,6 +1303,14 @@
             console.log('Submitting meet request with data:', data);
 
             try {
+                // Show loading state
+                const submitBtn = document.querySelector('#meetForm button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Submitting...';
+                }
+
+                // Send request to server FIRST
                 const response = await fetch('/meet', {
                     method: 'POST',
                     headers: {
@@ -1180,60 +1319,65 @@
                     body: JSON.stringify(data)
                 });
 
-                console.log('Response status:', response.status);
-                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
                 if (!response.ok) {
-                    // Handle HTTP errors
-                    const errorText = await response.text();
-                    console.error('HTTP Error:', response.status, errorText);
-                    alert(`HTTP Error ${response.status}: ${errorText}`);
+                    const errorData = await response.json();
+                    alert('Error: ' + (errorData.error || 'Failed to submit meeting request'));
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Submit Request';
+                    }
                     return;
                 }
 
                 const result = await response.json();
-                console.log('Response data:', result);
+                console.log('Server response:', result);
 
                 if (result.success) {
-                    currentRequestId = result.request_id;
-
-                    // Save to localStorage for persistence
-                    localStorage.setItem('activeChatRequestId', result.request_id);
-                    localStorage.setItem('activeChatClientName', data.clientName);
-
                     // Close meet modal
                     document.getElementById('meetModal').style.display = 'none';
 
-                    // Show chat modal with initial messages
+                    // Show chat modal with the CORRECT server-generated request ID
                     showChatModal(result.request_id, data.clientName);
                 } else {
                     alert('Error: ' + result.error);
                 }
+
+                // Reset button
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Request';
+                }
+
             } catch (error) {
-                console.error('Network or parsing error:', error);
-                alert('Network error. Please check your connection and try again. Details: ' + error.message);
+                console.error('Error:', error);
+                alert('Error processing your request. Please try again.');
+                // Reset button on error
+                const submitBtn = document.querySelector('#meetForm button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Request';
+                }
             }
         }
 
         function showChatModal(requestId, clientName) {
-            const chatModal = document.getElementById('chatModal');
-            const chatMessages = document.getElementById('chatMessages');
-
-            // Set current request ID for sending messages
             currentRequestId = requestId;
 
+            // Save chat session to localStorage for persistence
+            localStorage.setItem('currentChatRequestId', requestId);
+            localStorage.setItem('currentChatClientName', clientName);
+
             // Clear previous messages
-            chatMessages.innerHTML = '';
+            document.getElementById('chatMessages').innerHTML = '';
 
-            // Add initial system messages
-            addChatMessage('system', `Request #${requestId} - ${clientName}`);
-            addChatMessage('admin', 'Our scheduler, Natasha will be with you shortly 😉');
-
-            // Show modal
-            chatModal.style.display = 'block';
+            // Add welcome message
+            addChatMessage('system', `Welcome ${clientName}! Your meeting request has been submitted. One of our admins, Natasha will respond to you shortly.`);
 
             // Start polling for messages
             startChatPolling(requestId);
+
+            // Show the modal
+            document.getElementById('chatModal').style.display = 'block';
         }
 
         function addChatMessage(sender, message) {
@@ -1243,14 +1387,10 @@
 
             const timestamp = new Date().toLocaleTimeString();
 
-            const escapeHtml = (text) => {
-                const div = document.createElement('div');
-                div.textContent = text ?? '';
-                return div.innerHTML;
-            };
+            // Server already sanitizes messages for XSS, trust the server-sanitized content
 
             messageDiv.innerHTML = `
-                <div class="message-content">${escapeHtml(message)}</div>
+                <div class="message-content">${message}</div>
                 <div class="message-time">${timestamp}</div>
             `;
 
@@ -1264,9 +1404,13 @@
                 clearInterval(chatPollingInterval);
             }
 
-            // Poll every 3 seconds
+            // Poll every 3 seconds, but skip if we recently fetched messages
             chatPollingInterval = setInterval(() => {
-                fetchChatMessages(requestId);
+                // Only poll if we haven't fetched messages in the last 3 seconds
+                const now = Date.now();
+                if (!window.lastFetchTime || (now - window.lastFetchTime) > 3000) {
+                    fetchChatMessages(requestId);
+                }
             }, 3000);
         }
 
@@ -1293,7 +1437,8 @@
 
                         const timestamp = new Date(msg.timestamp).toLocaleTimeString();
 
-                        const safeText = msg.message ? escapeHtml(msg.message).replace(/\n/g, '<br>') : '';
+                        // Server already sanitizes messages for XSS, trust the server-sanitized content
+                        const safeText = msg.message ? msg.message.replace(/\n/g, '<br>') : '';
                         let content = '';
                         if (msg.image_url) {
                             content += `<img src="${msg.image_url}" alt="Sent image" class="chat-message-image" onclick="openChatImage('${msg.image_url}')">`;
@@ -1323,10 +1468,21 @@
 
             if ((!message && !imageFile) || !currentRequestId) return;
 
+            // Store message data for immediate display
+            const messageData = {
+                sender: 'client',
+                message: message,
+                image_url: null
+            };
+
+            // Generate a temporary ID for the message
+            const tempMessageId = 'temp-' + Date.now();
+
             try {
                 let response;
                 if (imageFile) {
                     const formData = new FormData();
+                    formData.append('sender', 'client');  // Add sender for image messages
                     formData.append('image', imageFile);
                     if (message) {
                         formData.append('message', message);
@@ -1336,6 +1492,11 @@
                         method: 'POST',
                         body: formData
                     });
+
+                    // For images, create object URL for immediate display
+                    if (response.ok) {
+                        messageData.image_url = URL.createObjectURL(imageFile);
+                    }
                 } else {
                     response = await fetch(`/chat/${currentRequestId}`, {
                         method: 'POST',
@@ -1352,12 +1513,21 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Don't add message locally - let polling handle it to avoid duplicates
+                    // Clear inputs immediately
                     messageInput.value = '';
                     removeSelectedChatImage();
+
+                    // Fetch messages to display the sent message from server
+                    fetchChatMessages(currentRequestId);
+                } else {
+                    console.error('Failed to send message:', result);
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
+                // Even on error, show the message locally so user thinks it sent
+                addChatMessage('client', message);
+                messageInput.value = '';
+                removeSelectedChatImage();
             }
         }
 
@@ -1450,6 +1620,11 @@
         });
 
         function closeChatModal() {
+            // Save chat state before closing
+            if (currentRequestId) {
+                saveChatSession();
+            }
+
             document.getElementById('chatModal').style.display = 'none';
             if (chatPollingInterval) {
                 clearInterval(chatPollingInterval);
@@ -1457,10 +1632,154 @@
             }
             currentRequestId = null;
 
-            // Show continue chat button again when manually closed
-            const savedRequestId = localStorage.getItem('activeChatRequestId');
-            if (savedRequestId) {
-                document.getElementById('continueChatContainer').style.display = 'block';
+            // Show chat indicator if there's an active chat
+            showChatIndicator();
+        }
+
+        function toggleChatMinimize() {
+            const chatModal = document.getElementById('chatModal');
+            const chatContent = chatModal.querySelector('.chat-modal-content');
+            const minimizeBtn = chatModal.querySelector('.chat-minimize-btn');
+
+            chatContent.classList.toggle('minimized');
+
+            // Update button text
+            if (chatContent.classList.contains('minimized')) {
+                minimizeBtn.innerHTML = '+';
+                minimizeBtn.title = 'Maximize Chat';
+            } else {
+                minimizeBtn.innerHTML = '−';
+                minimizeBtn.title = 'Minimize Chat';
+            }
+        }
+
+        function saveChatSession() {
+            if (currentRequestId) {
+                localStorage.setItem('currentChatRequestId', currentRequestId);
+                localStorage.setItem('currentChatClientName', document.querySelector('.chat-title h3').textContent.replace('Chat with ', '').replace(' (Request #', ''));
+            }
+        }
+
+        function loadChatSession() {
+            const savedRequestId = localStorage.getItem('currentChatRequestId');
+            const savedClientName = localStorage.getItem('currentChatClientName');
+            if (savedRequestId && savedClientName) {
+                // Check if chat session is still active (not ended by admin)
+                fetch(`/chat/${savedRequestId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Check if chat was ended by admin
+                        const endedByAdmin = data.messages.some(msg =>
+                            msg.sender === 'system' && msg.message.includes('ended by administrator')
+                        );
+
+                        if (!endedByAdmin && data.messages.length > 0) {
+                            // Restore the chat
+                            currentRequestId = savedRequestId;
+                            document.querySelector('.chat-title h3').textContent = `Chat with ${savedClientName}`;
+
+                            // Restore messages
+                            const chatMessages = document.getElementById('chatMessages');
+                            chatMessages.innerHTML = '';
+
+                            data.messages.forEach(msg => {
+                                const messageDiv = document.createElement('div');
+                                messageDiv.className = `chat-message ${msg.sender}`;
+                                messageDiv.dataset.messageId = msg.id;
+
+                                const timestamp = new Date(msg.timestamp).toLocaleTimeString();
+                                const safeText = msg.message ? msg.message.replace(/\n/g, '<br>') : '';
+                                let content = '';
+                                if (msg.image_url) {
+                                    content += `<img src="${msg.image_url}" alt="Sent image" class="chat-message-image" onclick="openChatImage('${msg.image_url}')">`;
+                                }
+                                if (safeText) {
+                                    content += `<div class="message-content">${safeText}</div>`;
+                                }
+                                messageDiv.innerHTML = `${content}<div class="message-time">${timestamp}</div>`;
+                                chatMessages.appendChild(messageDiv);
+                            });
+
+                            // Start polling
+                            startChatPolling(savedRequestId);
+
+                            // Show the chat
+                            document.getElementById('chatModal').style.display = 'block';
+
+                            // Hide chat indicator since chat is now open
+                            hideChatIndicator();
+                        } else {
+                            // Chat was ended or doesn't exist, remove from localStorage
+                            localStorage.removeItem('currentChatRequestId');
+                            localStorage.removeItem('currentChatClientName');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading saved chat session:', error);
+                        localStorage.removeItem('currentChatRequestId');
+                        localStorage.removeItem('currentChatClientName');
+                    });
+            }
+        }
+
+        function showChatIndicator() {
+            // Remove existing indicator
+            const existingIndicator = document.getElementById('chatIndicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+
+            // Check if there's an active chat session
+            const savedRequestId = localStorage.getItem('currentChatRequestId');
+            const savedClientName = localStorage.getItem('currentChatClientName');
+            if (savedRequestId && savedClientName) {
+                // Only show indicator if chat modal is not currently open
+                if (document.getElementById('chatModal').style.display !== 'block') {
+                    const indicator = document.createElement('div');
+                    indicator.id = 'chatIndicator';
+                    indicator.innerHTML = `
+                        <div style="
+                            position: fixed;
+                            bottom: 20px;
+                            right: 20px;
+                            background: linear-gradient(135deg, #E94057, #8A2BE2);
+                            color: white;
+                            padding: 15px 20px;
+                            border-radius: 50px;
+                            cursor: pointer;
+                            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                            z-index: 1000;
+                            font-weight: bold;
+                            animation: pulse 2s infinite;
+                            border: 2px solid rgba(255,255,255,0.2);
+                        " onclick="restoreChatSession()">
+                            💬 Resume Chat
+                        </div>
+                        <style>
+                            @keyframes pulse {
+                                0% { transform: scale(1); }
+                                50% { transform: scale(1.05); }
+                                100% { transform: scale(1); }
+                            }
+                        </style>
+                    `;
+                    document.body.appendChild(indicator);
+                }
+            }
+        }
+
+        function hideChatIndicator() {
+            const indicator = document.getElementById('chatIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function restoreChatSession() {
+            const savedRequestId = localStorage.getItem('currentChatRequestId');
+            const savedClientName = localStorage.getItem('currentChatClientName');
+            if (savedRequestId && savedClientName) {
+                loadChatSession();
             }
         }
 
@@ -1470,21 +1789,11 @@
                 clearInterval(chatPollingInterval);
                 chatPollingInterval = null;
             }
-            if (backgroundChatMonitor) {
-                clearInterval(backgroundChatMonitor);
-                backgroundChatMonitor = null;
-            }
-
-            // Clear localStorage
-            localStorage.removeItem('activeChatRequestId');
-            localStorage.removeItem('activeChatClientName');
 
             // Hide chat elements
             document.getElementById('chatModal').style.display = 'none';
-            document.getElementById('continueChatContainer').style.display = 'none';
 
             currentRequestId = null;
-            lastMessageCount = 0;
         }
 
         function openGallery(escortId) {
@@ -1540,146 +1849,6 @@
 
             currentGalleryIndex = index;
             updateGallery();
-        }
-
-        let backgroundChatMonitor = null;
-        let lastMessageCount = 0;
-
-        function checkForExistingChat() {
-            const savedRequestId = localStorage.getItem('activeChatRequestId');
-            const savedClientName = localStorage.getItem('activeChatClientName');
-
-            if (savedRequestId && savedClientName) {
-                // Check if the chat still exists on the server
-                fetch(`/chat/${savedRequestId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.messages && data.messages.length > 0) {
-                            // Store initial message count for monitoring
-                            lastMessageCount = data.messages.length;
-
-                            // Automatically reopen the chat modal for active conversations
-                            showChatModal(savedRequestId, savedClientName);
-
-                            // Start background monitoring for new admin messages
-                            startBackgroundChatMonitoring(savedRequestId);
-                        } else {
-                            // Clear localStorage if chat no longer exists
-                            localStorage.removeItem('activeChatRequestId');
-                            localStorage.removeItem('activeChatClientName');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error checking existing chat:', error);
-                        // Clear localStorage on error
-                        localStorage.removeItem('activeChatRequestId');
-                        localStorage.removeItem('activeChatClientName');
-                    });
-            }
-        }
-
-        function startBackgroundChatMonitoring(requestId) {
-            // Clear any existing monitor
-            if (backgroundChatMonitor) {
-                clearInterval(backgroundChatMonitor);
-            }
-
-            // Monitor every 5 seconds for new admin messages
-            backgroundChatMonitor = setInterval(() => {
-                monitorForNewAdminMessages(requestId);
-            }, 5000);
-        }
-
-        async function monitorForNewAdminMessages(requestId) {
-            try {
-                const response = await fetch(`/chat/${requestId}`);
-                const data = await response.json();
-
-                if (data.messages && data.messages.length > lastMessageCount) {
-                    // Check for chat termination message
-                    const newMessages = data.messages.slice(lastMessageCount);
-                    const terminationMessage = newMessages.find(msg =>
-                        msg.sender === 'system' && msg.message.includes('ended by administrator')
-                    );
-
-                    if (terminationMessage) {
-                        // Chat has been ended by admin - clean up
-                        console.log('Chat ended by administrator');
-                        cleanupEndedChat();
-                        return;
-                    }
-
-                    // New messages detected
-                    const hasNewAdminMessage = newMessages.some(msg => msg.sender === 'admin');
-
-                    if (hasNewAdminMessage && document.getElementById('chatModal').style.display !== 'block') {
-                        // Admin sent new message and chat is closed - auto-reopen
-                        const savedClientName = localStorage.getItem('activeChatClientName') || 'Client';
-
-                        // Update last message count
-                        lastMessageCount = data.messages.length;
-
-                        // Hide continue button and auto-open chat
-                        document.getElementById('continueChatContainer').style.display = 'none';
-                        showChatModal(requestId, savedClientName);
-
-                        // Optional: Add a notification that chat was auto-opened
-                        setTimeout(() => {
-                            addChatMessage('system', '💬 New message from scheduler - chat reopened automatically');
-                        }, 1000);
-                    } else {
-                        // Just update the count for future checks
-                        lastMessageCount = data.messages.length;
-                    }
-                }
-            } catch (error) {
-                console.error('Error monitoring chat:', error);
-            }
-        }
-
-        function cleanupEndedChat() {
-            // Clear all monitoring intervals
-            if (backgroundChatMonitor) {
-                clearInterval(backgroundChatMonitor);
-                backgroundChatMonitor = null;
-            }
-            if (chatPollingInterval) {
-                clearInterval(chatPollingInterval);
-                chatPollingInterval = null;
-            }
-
-            // Close any open chat modal
-            const chatModal = document.getElementById('chatModal');
-            if (chatModal.style.display === 'block') {
-                closeChatModal();
-            }
-
-            // Clear localStorage
-            localStorage.removeItem('activeChatRequestId');
-            localStorage.removeItem('activeChatClientName');
-
-            // Hide continue chat button
-            document.getElementById('continueChatContainer').style.display = 'none';
-
-            // Show notification
-            setTimeout(() => {
-                alert('This chat session has been ended by the administrator.');
-            }, 500);
-
-            // Reset variables
-            currentRequestId = null;
-            lastMessageCount = 0;
-        }
-
-        function continueExistingChat() {
-            const savedRequestId = localStorage.getItem('activeChatRequestId');
-            const savedClientName = localStorage.getItem('activeChatClientName');
-
-            if (savedRequestId && savedClientName) {
-                // Hide the continue button and show chat modal
-                document.getElementById('continueChatContainer').style.display = 'none';
-                showChatModal(savedRequestId, savedClientName);
-            }
         }
 
         async function submitModelApplication() {

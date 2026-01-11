@@ -7,22 +7,18 @@
     <meta name="description" content="Test your memory skills with our naughty memory match game. Flip cards to find matching pairs!">
     <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
     <link rel="apple-touch-icon" href="/static/logo.svg">
+        <link rel="stylesheet" href="/static/main.css">
     <style>
+        /* Game Page Specific Styles */
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #ffebee 0%, #fce4ec 100%);
-            color: #333;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            background-image:
-                radial-gradient(circle at 15% 20%, rgba(255, 192, 203, 0.2) 0%, transparent 40%),
-                radial-gradient(circle at 85% 80%, rgba(255, 182, 193, 0.2) 0%, transparent 40%);
-            background-attachment: fixed;
+            /* main.css provides the background, but we can add more layers */
+            background-image: radial-gradient(circle at 50% 50%, rgba(255, 0, 255, 0.15), transparent 30%), 
+                              radial-gradient(circle at top right, rgba(255, 0, 255, 0.08), transparent 35%), 
+                              radial-gradient(circle at bottom left, rgba(0, 255, 255, 0.08), transparent 35%);
         }
 
         .game-container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 2rem auto;
             padding: 2rem;
             text-align: center;
@@ -34,27 +30,24 @@
         }
 
         .game-title {
-            font-size: 3rem;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+            font-size: 3.5rem;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.3), 0 0 20px #ff00ff, 0 0 35px #ff00ff;
             margin-bottom: 0.5rem;
-            background: linear-gradient(45deg, #ff6b6b, #ff8e53, #ff6b6b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .game-subtitle {
-            font-size: 1.2rem;
-            color: #ff8e53;
+            font-size: 1.5rem;
+            color: #00ffff;
             margin-bottom: 1rem;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
         }
 
         .game-description {
             font-size: 1.1rem;
             line-height: 1.6;
             margin-bottom: 2rem;
-            color: #e0e0e0;
+            color: #ccc;
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
@@ -63,54 +56,56 @@
         .game-stats {
             display: flex;
             justify-content: center;
-            gap: 2rem;
+            gap: 1.5rem;
             margin-bottom: 2rem;
             flex-wrap: wrap;
         }
 
         .stat-item {
             background: rgba(0, 0, 0, 0.3);
-            padding: 1rem 2rem;
-            border-radius: 15px;
-            min-width: 150px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 107, 107, 0.2);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            min-width: 140px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+        .stat-item:hover {
+            border-color: #00ffff;
+            transform: translateY(-5px);
         }
 
         .stat-label {
             font-size: 0.9rem;
-            color: #ff8e53;
+            color: #00ffff;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 0.5rem;
         }
 
         .stat-value {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: bold;
             color: white;
-            text-shadow: 0 0 5px rgba(255, 107, 107, 0.3);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
         }
 
         .game-board {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(6, 1fr); /* Default for easy */
             gap: 1rem;
             margin-bottom: 2rem;
-            perspective: 1000px;
+            perspective: 1200px;
         }
 
         .card {
             width: 100%;
             aspect-ratio: 1;
-            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
-            border-radius: 15px;
             position: relative;
             cursor: pointer;
             transform-style: preserve-3d;
-            transition: transform 0.6s, box-shadow 0.3s, border-color 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
-            border: 3px solid rgba(102, 51, 153, 0.3);
+            transition: transform 0.7s, box-shadow 0.3s;
         }
 
         .card.flipped {
@@ -118,17 +113,27 @@
         }
 
         .card.matched {
-            visibility: hidden;
-            transform: scale(0.8);
-            opacity: 0;
+            transform: scale(0.9) rotateY(180deg);
+            opacity: 0.5;
             cursor: default;
         }
 
-        .card:hover:not(.flipped):not(.matched) {
-            border-color: rgba(255, 107, 107, 0.5);
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        @keyframes vanish {
+            0% {
+                transform: scale(1) rotateY(180deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0) rotateY(180deg) translateX(50px) rotateZ(30deg);
+                opacity: 0;
+            }
         }
 
+        .card.vanishing {
+            animation: vanish 0.8s ease-in forwards;
+            cursor: default;
+        }
+        
         .card-front, .card-back {
             position: absolute;
             width: 100%;
@@ -139,281 +144,77 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
         }
 
         .card-front {
-            background: linear-gradient(135deg, #661133 0%, #331122 100%);
-            color: #ffeb3b;
-            font-size: 2.5rem;
-            font-weight: bold;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(135deg, #ff00ff, #00ffff);
+            font-size: 3rem; /* Adjusted for larger cards */
             transform: rotateY(180deg);
-            box-shadow: 0 4px 20px rgba(102, 51, 153, 0.5);
-            border: 2px solid rgba(255, 235, 59, 0.2);
+            border: 1px solid #fff;
         }
-
+        
         .card-back {
-            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
-            border: 2px solid rgba(102, 51, 153, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-back::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg,
-                rgba(255, 107, 107, 0.05) 0%,
-                rgba(102, 51, 153, 0.08) 50%,
-                rgba(153, 51, 102, 0.05) 100%);
-            animation: cardGlow 3s ease-in-out infinite alternate;
-        }
-
-        .card-icon {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #555;
             font-size: 3rem;
-            color: rgba(255, 107, 107, 0.8);
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+        .card:not(.flipped):hover .card-back {
+            border-color: #ff00ff;
+            box-shadow: 0 0 20px rgba(255,0,255,0.5);
         }
 
-        .game-controls {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .game-button {
-            padding: 1rem 2rem;
+        .game-button, .difficulty-button {
+            padding: 0.8rem 1.75rem;
             border: none;
-            border-radius: 25px;
-            font-size: 1rem;
-            font-weight: bold;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            color: white;
             cursor: pointer;
-            transition: all 0.3s;
+            font-weight: bold;
+            font-size: 1rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 0 5px rgba(0,0,0,0.7);
+            transition: all 0.4s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4), 0 0 15px rgba(255, 0, 255, 0.4);
         }
 
-        .restart-button {
-            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-            color: white;
+        .game-button:hover, .difficulty-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.7), 0 0 25px rgba(255, 0, 255, 0.7);
         }
-
-        .restart-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
-        }
-
-        .back-button {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-        }
-
-        .back-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .game-message {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            min-height: 3rem;
-            color: #ffeb3b;
-            text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
-            animation: pulse 2s infinite;
-        }
-
-        .timer {
-            font-size: 1.2rem;
-            color: #ffeb3b;
-            margin-bottom: 1rem;
-            font-weight: bold;
-        }
-
-        .difficulty-selector {
-            margin-bottom: 2rem;
-        }
-
+        
         .difficulty-button {
-            padding: 0.8rem 1.5rem;
-            margin: 0 0.5rem;
-            border: 2px solid rgba(255, 107, 107, 0.3);
-            background: rgba(255, 107, 107, 0.1);
-            color: white;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: bold;
+            background: transparent;
+            border: 1px solid #ff00ff;
+            color: #ff00ff;
         }
-
-        .difficulty-button:hover, .difficulty-button.active {
-            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-            border-color: transparent;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        .difficulty-button.active {
+             background: linear-gradient(45deg, #ff00ff, #00ffff);
+             color: white;
+             border: none;
         }
 
         .leaderboard {
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.3);
             padding: 1.5rem;
             border-radius: 15px;
             margin-top: 2rem;
-            border: 2px solid rgba(255, 107, 107, 0.2);
+            border: 1px solid #444;
+            backdrop-filter: blur(5px);
             max-width: 500px;
             margin-left: auto;
             margin-right: auto;
         }
 
         .leaderboard-title {
-            font-size: 1.5rem;
-            color: #ffeb3b;
+            font-size: 1.8rem;
+            color: #00ffff;
+            text-shadow: 0 0 8px rgba(0,255,255,0.5);
             margin-bottom: 1rem;
-            text-align: center;
-        }
-
-        .leaderboard-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.8rem;
-            margin-bottom: 0.5rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            border-left: 3px solid #ff6b6b;
-        }
-
-        .leaderboard-rank {
-            font-weight: bold;
-            color: #ffeb3b;
-            min-width: 30px;
-        }
-
-        .leaderboard-name {
-            flex-grow: 1;
-            padding-left: 1rem;
-            color: white;
-        }
-
-        .leaderboard-score {
-            color: #4CAF50;
-            font-weight: bold;
-        }
-
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                text-shadow: 0 0 5px rgba(255, 235, 59, 0.3);
-            }
-            50% {
-                text-shadow: 0 0 20px rgba(255, 235, 59, 0.7);
-            }
-        }
-
-        @keyframes flipIn {
-            from {
-                transform: rotateY(90deg);
-                opacity: 0;
-            }
-            to {
-                transform: rotateY(0);
-                opacity: 1;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .game-board {
-                grid-template-columns: repeat(3, 1fr);
-            }
-
-            .game-title {
-                font-size: 2rem;
-            }
-
-            .game-stats {
-                flex-direction: column;
-                align-items: center;
-            }
-
-        .stat-item {
-            background: rgba(255, 255, 255, 0.8);
-            padding: 1rem 2rem;
-            border-radius: 15px;
-            min-width: 150px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            border: 2px solid rgba(255, 107, 107, 0.3);
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: #ff6b6b;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #ff6b6b;
-            text-shadow: 0 0 5px rgba(255, 107, 107, 0.2);
-        }
-
-        .timer {
-            font-size: 1.2rem;
-            color: #ff6b6b;
-            margin-bottom: 1rem;
-            font-weight: bold;
-        }
-
-        .game-message {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            min-height: 3rem;
-            color: #ff6b6b;
-            text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes cardGlow {
-            0% {
-                opacity: 0.8;
-                transform: scale(1) rotate(0deg);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.05) rotate(2deg);
-            }
-            100% {
-                opacity: 0.8;
-                transform: scale(1) rotate(0deg);
-            }
-        }
-
-        @keyframes buttonPulse {
-            0%, 100% {
-                transform: scale(1);
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            }
-            50% {
-                transform: scale(1.05);
-                box-shadow: 0 6px 25px rgba(255, 107, 107, 0.5);
-            }
         }
     </style>
 </head>
@@ -673,10 +474,16 @@
             if (actualCard1.symbol === actualCard2.symbol) {
                 // Match found!
                 setTimeout(() => {
-                    card1.element.classList.add('matched');
-                    card2.element.classList.add('matched');
+                    card1.element.classList.add('vanishing');
+                    card2.element.classList.add('vanishing');
                     actualCard1.matched = true;
                     actualCard2.matched = true;
+
+                    // After animation ends, set visibility to hidden
+                    setTimeout(() => {
+                        card1.element.style.visibility = 'hidden';
+                        card2.element.style.visibility = 'hidden';
+                    }, 800); // Matches animation duration
 
                     matchedPairs++;
                     matchesDisplay.textContent = matchedPairs;

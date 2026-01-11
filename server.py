@@ -1552,6 +1552,7 @@ def censor_contact_info(message):
 
 # Chat system endpoints
 @app.route('/chat/<request_id>', methods=['GET'])
+@limiter.exempt  # Exempt chat polling from rate limiting
 def get_chat_messages(request_id):
     """Get all chat messages for a request"""
     print(f"DEBUG: Getting chat messages for request_id: {request_id}")
@@ -1569,6 +1570,39 @@ def get_chat_messages(request_id):
         print(f"DEBUG: Sample message: {messages[-1]}")  # Show last message
     return jsonify({'messages': messages})
 
+@app.route('/chat/<request_id>/status', methods=['GET'])
+def get_chat_status(request_id):
+    """Check if a chat session is still active."""
+    try:
+        with open('chat_messages.json', 'r') as f:
+            all_messages = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        all_messages = {}
+
+    if request_id not in all_messages:
+        return jsonify({'active': False, 'reason': 'not_found'})
+
+    messages = all_messages.get(request_id, [])
+    is_ended = any(msg.get('sender') == 'system' and 'ended by administrator' in msg.get('message', '') for msg in messages)
+
+    if is_ended:
+        return jsonify({'active': False, 'reason': 'ended'})
+    else:
+        # To get the client's name, we need to look at the meet_requests.json file
+        client_name = 'Unknown'
+        try:
+            with open('meet_requests.json', 'r') as f:
+                meet_requests = json.load(f)
+            
+            for req in meet_requests:
+                if str(req.get('id')) == str(request_id):
+                    client_name = req.get('clientName', 'Unknown')
+                    break
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass # Ignore if meet_requests.json is not available
+
+        return jsonify({'active': True, 'clientName': client_name})
+
 @app.route('/chat/<request_id>', methods=['POST'])
 @csrf.exempt
 @limiter.limit("200 per hour", methods=["POST"])  # Chat message limits - increased for better UX
@@ -1585,8 +1619,11 @@ def send_chat_message(request_id):
 
     # Check if this is a file upload (allowed for both admin and clients)
     if request.content_type and 'multipart/form-data' in request.content_type:
-        # Determine sender based on admin session
-        sender = 'admin' if session.get('admin_logged_in') else 'client'
+        # Get sender from form data - prioritize explicit sender over session
+        sender = request.form.get('sender')
+        if not sender:
+            # Fallback to session check if no explicit sender provided
+            sender = 'admin' if session.get('admin_logged_in') else 'client'
         uploaded_file = request.files.get('image')
 
         if uploaded_file and uploaded_file.filename:

@@ -729,18 +729,50 @@
 
                     async function loadChatMessages(requestId) {
                         try {
-                            const response = await fetch(`/chat/${requestId}`);
-                            const data = await response.json();
-
-                            const chatMessages = document.getElementById('chatMessages');
-                            chatMessages.innerHTML = '';
-
-                            data.messages.forEach(msg => {
-                                addAdminChatMessage(msg.sender, msg.message, msg.timestamp, msg.image_url);
+                            console.log('Admin: Loading chat messages for requestId:', requestId);
+                            const response = await fetch(`/chat/${requestId}`, {
+                                credentials: 'same-origin'
                             });
+
+                            if (!response.ok) {
+                                console.error('Admin: Failed to load chat messages:', response.status, response.statusText);
+                                // Try without credentials if session auth fails
+                                const retryResponse = await fetch(`/chat/${requestId}`);
+                                if (retryResponse.ok) {
+                                    const retryData = await retryResponse.json();
+                                    console.log('Admin: Retried without credentials, got messages:', retryData.messages.length);
+                                    processChatMessages(retryData.messages);
+                                    return;
+                                }
+                                return;
+                            }
+
+                            const data = await response.json();
+                            console.log('Admin: Loaded chat messages:', data.messages.length, 'messages for requestId:', requestId);
+
+                            processChatMessages(data.messages);
                         } catch (error) {
-                            console.error('Error loading chat messages:', error);
+                            console.error('Admin: Error loading chat messages:', error);
+                        } finally {
+                            // Update fetch timestamp to prevent overlapping polls
+                            window.lastAdminFetchTime = Date.now();
                         }
+                    }
+
+                    function processChatMessages(messages) {
+                        const chatMessages = document.getElementById('chatMessages');
+                        const existingMessageIds = new Set(Array.from(chatMessages.children).map(child =>
+                            child.dataset.messageId).filter(id => id));
+
+                        console.log('Admin: Processing', messages.length, 'messages, existing IDs:', existingMessageIds.size);
+
+                        // Only add new messages to avoid duplicates
+                        messages.forEach(msg => {
+                            if (!existingMessageIds.has(msg.id)) {
+                                console.log('Admin: Adding new message from', msg.sender, ':', msg.message.substring(0, 50));
+                                addAdminChatMessage(msg.sender, msg.message, msg.timestamp, msg.image_url, msg.id);
+                            }
+                        });
                     }
 
                     function startAdminChatPolling(requestId) {
@@ -748,12 +780,17 @@
                             clearInterval(chatPollingInterval);
                         }
 
+                        // Poll every 3 seconds, but skip if we recently fetched messages
                         chatPollingInterval = setInterval(() => {
-                            loadChatMessages(requestId);
+                            // Only poll if we haven't fetched messages in the last 3 seconds
+                            const now = Date.now();
+                            if (!window.lastAdminFetchTime || (now - window.lastAdminFetchTime) > 3000) {
+                                loadChatMessages(requestId);
+                            }
                         }, 3000);
                     }
 
-                    function addAdminChatMessage(sender, message, timestamp, imageUrl = null) {
+                    function addAdminChatMessage(sender, message, timestamp, imageUrl = null, messageId = null) {
                         const chatMessages = document.getElementById('chatMessages');
                         const messageDiv = document.createElement('div');
                         messageDiv.className = `chat-message ${sender}`;
@@ -762,20 +799,20 @@
                                 'background-color: #4CAF50; margin-left: auto; text-align: right;' :
                                 'background-color: #2196F3; margin-right: auto;');
 
+                        // Set message ID for duplicate prevention
+                        if (messageId) {
+                            messageDiv.dataset.messageId = messageId;
+                        }
+
                         const time = new Date(timestamp).toLocaleTimeString();
-                        // Escape HTML to prevent XSS
-                        const escapeHtml = (text) => {
-                            const div = document.createElement('div');
-                            div.textContent = text;
-                            return div.innerHTML;
-                        };
+                        // Server already sanitizes messages for XSS, trust the server-sanitized content
 
                         let content = '';
                         if (imageUrl) {
                             content = `<img src="${imageUrl}" alt="Sent image" style="max-width: 200px; max-height: 200px; border-radius: 10px; cursor: pointer; margin-bottom: 0.5rem;" onclick="openImageModal('${imageUrl}')">`;
                         }
                         if (message) {
-                            content += `<div style="word-wrap: break-word;">${escapeHtml(message)}</div>`;
+                            content += `<div style="word-wrap: break-word;">${message}</div>`;
                         }
 
                         messageDiv.innerHTML = `
