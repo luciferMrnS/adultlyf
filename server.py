@@ -571,12 +571,26 @@ def escorts_json():
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
-    response = send_from_directory(upload_dir, filename)
-    # Add CORS headers for image access
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-    response.headers['Access-Control-Allow-Methods'] = 'GET'
-    return response
+    print(f"DEBUG: Serving file {filename} from upload_dir: {upload_dir}")
+    print(f"DEBUG: Current working directory: {os.getcwd()}")
+    print(f"DEBUG: Upload directory exists: {os.path.exists(upload_dir)}")
+    if os.path.exists(upload_dir):
+        print(f"DEBUG: Files in upload directory: {os.listdir(upload_dir)[:5]}")  # Show first 5 files
+
+    # Ensure the upload directory exists
+    os.makedirs(upload_dir, exist_ok=True)
+
+    try:
+        response = send_from_directory(upload_dir, filename)
+        # Add CORS headers for image access
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        response.headers['Access-Control-Allow-Methods'] = 'GET'
+        print(f"DEBUG: Successfully served file {filename}")
+        return response
+    except Exception as e:
+        print(f"ERROR: Failed to serve file {filename}: {e}")
+        return jsonify({'error': f'Failed to serve file: {e}'}), 404
 
 @app.route('/chat.html')
 def chat_page():
