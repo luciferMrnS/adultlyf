@@ -284,6 +284,13 @@
             "sender": "admin",
             "message": "how&#x27;re you",
             "timestamp": "2026-01-11T07:43:25.817204"
+        },
+        {
+            "id": "20260111074334108455",
+            "sender": "admin",
+            "message": "",
+            "timestamp": "2026-01-11T07:43:34.108493",
+            "image_url": "/uploads/6cbc3d16-968c-46a5-ab47-5ddcb4d0f31a_OIP_2.jpg"
         }
     ]
 }
