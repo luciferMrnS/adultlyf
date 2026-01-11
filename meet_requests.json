@@ -240,27 +240,5 @@
             "Warning: meetingDuration not provided",
             "Warning: safeWord not provided"
         ]
-    },
-    {
-        "id": "20260111064220",
-        "escortId": "3",
-        "clientName": "isssh",
-        "clientLocation": "lagos",
-        "clientContact": "56787654345678",
-        "emergencyContact": "",
-        "meetingDuration": 60,
-        "safeWord": "pineapple",
-        "meetingDetails": "",
-        "timestamp": "2026-01-11T06:42:20.547664",
-        "scheduledTime": "",
-        "status": "pending",
-        "safetyCheckIns": [],
-        "lastCheckIn": null,
-        "adminApproval": false,
-        "safetyWarnings": [
-            "Warning: emergencyContact not provided",
-            "Warning: meetingDuration not provided",
-            "Warning: safeWord not provided"
-        ]
     }
 ]
