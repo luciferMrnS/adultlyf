@@ -41,6 +41,7 @@
             width: 100%;
             height: 100%;
             border: 0;
+            pointer-events: auto; /* Allow normal iframe interaction */
         }
         .related-videos {
             margin-top: 2rem;
@@ -312,6 +313,73 @@
                 setTimeout(() => {
                     this.style.backgroundColor = '#4CAF50';
                 }, 200);
+            });
+
+            // Prevent double-tap and double-click redirects to source sites
+            const videoPlayer = document.getElementById('video-player');
+            let lastTap = 0;
+            let tapCount = 0;
+
+            // Prevent double-click on desktop
+            videoPlayer.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            });
+
+            // Handle touch events - allow single taps, block double-taps
+            videoPlayer.addEventListener('touchstart', function(e) {
+                const currentTime = new Date().getTime();
+                const tapGap = currentTime - lastTap;
+
+                if (tapGap < 500 && tapGap > 0) {
+                    tapCount++;
+                } else {
+                    tapCount = 1;
+                }
+
+                lastTap = currentTime;
+
+                // If double-tap detected, prevent default behavior
+                if (tapCount >= 2) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    tapCount = 0; // Reset counter
+                    return false;
+                }
+            }, { passive: false });
+
+            // Prevent context menu
+            videoPlayer.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // Additional prevention: override iframe's click/double-click behavior
+            videoPlayer.addEventListener('load', function() {
+                try {
+                    // Try to inject CSS to prevent redirects in iframe content
+                    const iframeDoc = videoPlayer.contentDocument || videoPlayer.contentWindow.document;
+                    if (iframeDoc) {
+                        const style = iframeDoc.createElement('style');
+                        style.textContent = `
+                            * {
+                                -webkit-touch-callout: none !important;
+                                -webkit-user-select: none !important;
+                                -moz-user-select: none !important;
+                                -ms-user-select: none !important;
+                                user-select: none !important;
+                            }
+                            body {
+                                touch-action: manipulation !important;
+                            }
+                        `;
+                        iframeDoc.head.appendChild(style);
+                    }
+                } catch (e) {
+                    // Cross-origin iframe, can't modify content directly
+                    console.log('Cannot modify iframe content due to cross-origin restrictions');
+                }
             });
         });
     </script>

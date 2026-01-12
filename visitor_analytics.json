@@ -3,8 +3,8 @@
     {
       "ip_address": "127.0.0.1",
       "first_visit": "2026-01-11T08:20:43.930692",
-      "last_visit": "2026-01-11T23:28:02.852168",
-      "visit_count": 24,
+      "last_visit": "2026-01-12T21:57:36.882273",
+      "visit_count": 52,
       "location": {
         "country": "Unknown",
         "region": "",
@@ -15,7 +15,7 @@
       "user_agents": [
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
       ],
-      "total_visits": 24
+      "total_visits": 52
     }
   ],
   "sessions": [
@@ -210,7 +210,231 @@
       "method": "GET",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
       "session_id": "127.0.0.1_20260111232802"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:47:42.516257",
+      "path": "/",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112214742"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:47:43.259558",
+      "path": "/static/main.css",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112214743"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:47:43.427198",
+      "path": "/static/logo.svg",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112214743"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:47:46.215871",
+      "path": "/videos.json",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112214746"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:47:46.748119",
+      "path": "/adverts.json",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112214746"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:48:21.415853",
+      "path": "/player.html",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112214821"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:48:21.491532",
+      "path": "/static/logo.svg",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112214821"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:48:21.646685",
+      "path": "/videos.json",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112214821"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:48:50.303682",
+      "path": "/static/logo.svg",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112214850"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:51:46.521987",
+      "path": "/player.html",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215146"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:51:47.032681",
+      "path": "/static/logo.svg",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215147"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:51:47.199386",
+      "path": "/videos.json",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215147"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:51:49.167064",
+      "path": "/static/logo.svg",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215149"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:52:26.947524",
+      "path": "/player.html",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215226"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:52:27.014537",
+      "path": "/static/logo.svg",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215227"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:52:27.206057",
+      "path": "/videos.json",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215227"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:52:40.060775",
+      "path": "/player.html",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215240"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:52:40.127857",
+      "path": "/static/logo.svg",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215240"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:52:40.212384",
+      "path": "/videos.json",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215240"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:52:41.708906",
+      "path": "/static/logo.svg",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215241"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:55:11.675263",
+      "path": "/player.html",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215511"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:55:11.722801",
+      "path": "/static/logo.svg",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215511"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:55:11.904737",
+      "path": "/videos.json",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215511"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:55:20.033807",
+      "path": "/static/logo.svg",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215520"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:56:13.563973",
+      "path": "/player.html",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215613"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:56:13.635424",
+      "path": "/static/logo.svg",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215613"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:56:13.786455",
+      "path": "/videos.json",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215613"
+    },
+    {
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-01-12T21:57:36.882273",
+      "path": "/static/logo.svg",
+      "method": "GET",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
+      "session_id": "127.0.0.1_20260112215736"
     }
   ],
-  "last_cleanup": "2026-01-11T23:28:02.852330"
+  "last_cleanup": "2026-01-12T21:57:36.882417"
 }
