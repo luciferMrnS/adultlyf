@@ -37,25 +37,22 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 20px;
-            text-align: center;
             font-size: 1.2em;
             font-weight: bold;
-            position: relative;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .chat-title {
-            flex: 1;
-            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
         }
 
         .online-count {
             font-size: 0.9em;
             opacity: 0.9;
             white-space: nowrap;
-            margin-right: 10px;
         }
 
         .chat-messages {
@@ -201,6 +198,19 @@
                 border-radius: 0;
             }
 
+            .chat-header {
+                padding: 15px;
+                font-size: 1.1em;
+            }
+
+            .chat-title {
+                font-size: 1.1em;
+            }
+
+            .online-count {
+                font-size: 0.8em;
+            }
+
             .message {
                 max-width: 85%;
             }
@@ -219,6 +229,18 @@
             .send-button {
                 padding: 14px 20px;
                 font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chat-header {
+                flex-direction: column;
+                gap: 5px;
+                align-items: flex-start;
+            }
+
+            .online-count {
+                align-self: flex-end;
             }
         }
     </style>
