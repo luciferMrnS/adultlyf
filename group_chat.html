@@ -41,14 +41,21 @@
             font-size: 1.2em;
             font-weight: bold;
             position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-title {
+            flex: 1;
+            text-align: center;
         }
 
         .online-count {
-            position: absolute;
-            right: 20px;
-            top: 20px;
             font-size: 0.9em;
             opacity: 0.9;
+            white-space: nowrap;
+            margin-right: 10px;
         }
 
         .chat-messages {
@@ -219,7 +226,7 @@
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            💬 Group Chat - Everyone Online
+            <div class="chat-title">💬 Group Chat</div>
             <div class="online-count" id="onlineCount">(0 online)</div>
         </div>
 
