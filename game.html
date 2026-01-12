@@ -446,21 +446,7 @@
             <h3 class="leaderboard-title">🏆 Top Players</h3>
             <div id="leaderboard-list">
                 <!-- Leaderboard will be populated by JavaScript -->
-                <div class="leaderboard-item">
-                    <span class="leaderboard-rank">1</span>
-                    <span class="leaderboard-name">Player1</span>
-                    <span class="leaderboard-score">1500</span>
-                </div>
-                <div class="leaderboard-item">
-                    <span class="leaderboard-rank">2</span>
-                    <span class="leaderboard-name">Player2</span>
-                    <span class="leaderboard-score">1200</span>
-                </div>
-                <div class="leaderboard-item">
-                    <span class="leaderboard-rank">3</span>
-                    <span class="leaderboard-name">Player3</span>
-                    <span class="leaderboard-score">900</span>
-                </div>
+                <div class="leaderboard-loading">Loading leaderboard...</div>
             </div>
         </div>
     </div>
@@ -771,38 +757,93 @@
             createConfetti();
         }
 
-        // Update the leaderboard
-        function updateLeaderboard() {
-            // In a real implementation, this would save to localStorage or a server
-            // For now, we'll just show a mock leaderboard
+        // Load leaderboard from server
+        function loadLeaderboard() {
             const leaderboardList = document.getElementById('leaderboard-list');
 
-            // Simple mock leaderboard update
-            const playerName = 'Player' + (Math.floor(Math.random() * 100) + 1);
-            const newScore = score;
+            fetch('/game/leaderboard')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayLeaderboard(data.leaderboard);
+                    } else {
+                        leaderboardList.innerHTML = '<div class="leaderboard-error">Failed to load leaderboard</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading leaderboard:', error);
+                    leaderboardList.innerHTML = '<div class="leaderboard-error">Unable to connect to server</div>';
+                });
+        }
 
-            // Create new leaderboard item
-            const newItem = document.createElement('div');
-            newItem.className = 'leaderboard-item';
-            newItem.innerHTML = `
-                <span class="leaderboard-rank">1</span>
-                <span class="leaderboard-name">${playerName}</span>
-                <span class="leaderboard-score">${newScore}</span>
-            `;
+        // Display leaderboard data
+        function displayLeaderboard(scores) {
+            const leaderboardList = document.getElementById('leaderboard-list');
 
-            // Add to top of leaderboard
-            leaderboardList.insertBefore(newItem, leaderboardList.firstChild);
-
-            // Limit to top 5
-            const items = leaderboardList.querySelectorAll('.leaderboard-item');
-            if (items.length > 5) {
-                leaderboardList.removeChild(items[items.length - 1]);
+            if (scores.length === 0) {
+                leaderboardList.innerHTML = '<div class="leaderboard-empty">No scores yet. Be the first!</div>';
+                return;
             }
 
-            // Update ranks
-            items.forEach((item, index) => {
-                item.querySelector('.leaderboard-rank').textContent = index + 1;
+            leaderboardList.innerHTML = scores.map((score, index) => `
+                <div class="leaderboard-item ${index < 3 ? 'top-' + (index + 1) : ''}">
+                    <span class="leaderboard-rank">${index + 1}</span>
+                    <span class="leaderboard-name" title="${score.player_name}">${score.player_name}</span>
+                    <span class="leaderboard-score">${score.score.toLocaleString()}</span>
+                    <span class="leaderboard-difficulty">${score.difficulty}</span>
+                </div>
+            `).join('');
+        }
+
+        // Submit score to server
+        function submitScore(playerName) {
+            const scoreData = {
+                player_name: playerName,
+                score: score,
+                difficulty: difficulty,
+                moves: moves,
+                time_taken: time
+            };
+
+            fetch('/game/submit-score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(scoreData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Score submitted successfully!', data);
+                    // Reload leaderboard to show the new score
+                    loadLeaderboard();
+                } else {
+                    console.error('Failed to submit score:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting score:', error);
             });
+        }
+
+        // Prompt for player name and submit score
+        function promptPlayerName() {
+            const playerName = prompt('🎉 Congratulations! Enter your name for the leaderboard:', 'Anonymous');
+
+            if (playerName !== null && playerName.trim() !== '') {
+                submitScore(playerName.trim());
+            } else if (playerName !== null) {
+                // User clicked OK but entered empty name
+                submitScore('Anonymous');
+            }
+            // If user clicked Cancel, don't submit score
+        }
+
+        // Update the leaderboard (now just prompts for name)
+        function updateLeaderboard() {
+            // Prompt for player name and submit score
+            setTimeout(promptPlayerName, 1000); // Delay to let confetti finish
         }
 
         // Create confetti effect
@@ -858,7 +899,10 @@
         }
 
         // Initialize the game when the page loads
-        window.addEventListener('load', initGame);
+        window.addEventListener('load', () => {
+            initGame();
+            loadLeaderboard(); // Load leaderboard on page load
+        });
     </script>
 </body>
 </html>
