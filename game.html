@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Adultlyf - Naughty Memory Match Game</title>
     <meta name="description" content="Test your memory skills with our naughty memory match game. Flip cards to find matching pairs!">
     <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
@@ -109,6 +109,8 @@
             cursor: pointer;
             transform-style: preserve-3d;
             transition: transform 0.7s, box-shadow 0.3s;
+            min-height: 60px; /* Ensure minimum touch target size */
+            touch-action: manipulation; /* Prevent double-tap zoom */
         }
 
         .card.flipped {
