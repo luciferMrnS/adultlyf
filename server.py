@@ -315,13 +315,23 @@ def apply_model():
         if file and file.filename:
             # Generate unique filename
             filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
-            # Use Railway volume path if available, otherwise local uploads
-            upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
+
+            # Railway-specific volume handling
+            if os.environ.get('RAILWAY_ENVIRONMENT'):
+                # Use Railway persistent volume
+                upload_dir = '/volumes/uploads'
+                serve_path = '/uploads'
+            else:
+                # Local development
+                upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
+                serve_path = '/uploads'
+
             os.makedirs(upload_dir, exist_ok=True)
             file_path = os.path.join(upload_dir, filename)
             file.save(file_path)
-            # Serve from the correct path
-            photo_paths.append(f"/uploads/{filename}")
+
+            # Store the full path for serving
+            photo_paths.append(f"{serve_path}/{filename}")
 
     # Load existing model applications
     try:
@@ -574,7 +584,12 @@ def escorts_json():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
+    # Railway-specific volume handling for serving files
+    if os.environ.get('RAILWAY_ENVIRONMENT'):
+        upload_dir = '/volumes/uploads'
+    else:
+        upload_dir = os.environ.get('UPLOAD_DIR', 'uploads')
+
     print(f"DEBUG: Serving file {filename} from upload_dir: {upload_dir}")
     print(f"DEBUG: Current working directory: {os.getcwd()}")
     print(f"DEBUG: Upload directory exists: {os.path.exists(upload_dir)}")
