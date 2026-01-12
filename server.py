@@ -1436,6 +1436,99 @@ def get_group_chat_messages():
         'online_count': online_count
     })
 
+# Game leaderboard endpoints
+@app.route('/game/leaderboard', methods=['GET'])
+def get_game_leaderboard():
+    """Get the top 10 game scores"""
+    try:
+        with open('game_scores.json', 'r') as f:
+            scores = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        scores = []
+
+    # Sort by score descending, then by date descending
+    scores.sort(key=lambda x: (x['score'], x['timestamp']), reverse=True)
+
+    # Return top 10
+    return jsonify({
+        'success': True,
+        'leaderboard': scores[:10]
+    })
+
+@app.route('/game/submit-score', methods=['POST'])
+@csrf.exempt
+@limiter.limit("20 per hour", methods=["POST"])  # Limit score submissions
+def submit_game_score():
+    """Submit a game score"""
+    data = request.get_json()
+
+    player_name = data.get('player_name', 'Anonymous').strip()
+    score = int(data.get('score', 0))
+    difficulty = data.get('difficulty', 'easy')
+    moves = int(data.get('moves', 0))
+    time_taken = int(data.get('time_taken', 0))
+
+    # Validate input
+    if not player_name or len(player_name) > 20:
+        return jsonify({'error': 'Invalid player name'}), 400
+
+    if score < 0 or score > 100000:
+        return jsonify({'error': 'Invalid score'}), 400
+
+    # Load existing scores
+    try:
+        with open('game_scores.json', 'r') as f:
+            scores = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        scores = []
+
+    # Create new score entry
+    score_entry = {
+        'id': len(scores) + 1,
+        'player_name': player_name,
+        'score': score,
+        'difficulty': difficulty,
+        'moves': moves,
+        'time_taken': time_taken,
+        'timestamp': datetime.now().isoformat(),
+        'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    }
+
+    scores.append(score_entry)
+
+    # Keep only top 50 scores to prevent file from growing too large
+    scores.sort(key=lambda x: (x['score'], x['timestamp']), reverse=True)
+    scores = scores[:50]
+
+    # Save scores
+    with open('game_scores.json', 'w') as f:
+        json.dump(scores, f, indent=4)
+
+    # Optional: commit to git (may fail on Railway)
+    try:
+        commit_message = f"GAME: New score - {player_name}: {score} points ({difficulty})"
+        commit_to_git('game_scores.json', commit_message)
+    except:
+        pass  # Don't fail if git commit fails
+
+    return jsonify({
+        'success': True,
+        'message': 'Score submitted successfully',
+        'score_entry': score_entry,
+        'rank': get_score_rank(scores, score_entry)
+    })
+
+def get_score_rank(scores, new_score):
+    """Get the rank of a new score in the leaderboard"""
+    sorted_scores = sorted(scores, key=lambda x: (x['score'], x['timestamp']), reverse=True)
+
+    for i, score in enumerate(sorted_scores):
+        if (score['score'] == new_score['score'] and
+            score['timestamp'] == new_score['timestamp']):
+            return i + 1
+
+    return len(sorted_scores) + 1
+
 @app.route('/group_chat/send', methods=['POST'])
 @csrf.exempt
 @limiter.limit("100 per hour", methods=["POST"])  # Group chat message limits
