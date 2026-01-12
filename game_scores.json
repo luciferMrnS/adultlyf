@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "player_name": "TestPlayer1",
+    "score": 5500,
+    "difficulty": "easy",
+    "moves": 12,
+    "time_taken": 45,
+    "timestamp": "2026-01-13T00:38:00.000000",
+    "date": "2026-01-13 00:38:00"
+  },
+  {
+    "id": 2,
+    "player_name": "TestPlayer2",
+    "score": 4800,
+    "difficulty": "medium",
+    "moves": 18,
+    "time_taken": 62,
+    "timestamp": "2026-01-13T00:39:00.000000",
+    "date": "2026-01-13 00:39:00"
+  },
+  {
+    "id": 3,
+    "player_name": "TestPlayer3",
+    "score": 4200,
+    "difficulty": "hard",
+    "moves": 25,
+    "time_taken": 89,
+    "timestamp": "2026-01-13T00:40:00.000000",
+    "date": "2026-01-13 00:40:00"
+  }
+]

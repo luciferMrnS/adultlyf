@@ -757,22 +757,42 @@
             createConfetti();
         }
 
-        // Load leaderboard from server
+        // Load leaderboard from server with localStorage fallback
         function loadLeaderboard() {
             const leaderboardList = document.getElementById('leaderboard-list');
 
             fetch('/game/leaderboard')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         displayLeaderboard(data.leaderboard);
+                        // Store successful leaderboard in localStorage as backup
+                        localStorage.setItem('gameLeaderboard', JSON.stringify(data.leaderboard));
                     } else {
-                        leaderboardList.innerHTML = '<div class="leaderboard-error">Failed to load leaderboard</div>';
+                        throw new Error('Server returned error');
                     }
                 })
                 .catch(error => {
                     console.error('Error loading leaderboard:', error);
-                    leaderboardList.innerHTML = '<div class="leaderboard-error">Unable to connect to server</div>';
+
+                    // Try to load from localStorage as fallback
+                    const cachedLeaderboard = localStorage.getItem('gameLeaderboard');
+                    if (cachedLeaderboard) {
+                        try {
+                            const scores = JSON.parse(cachedLeaderboard);
+                            displayLeaderboard(scores);
+                            leaderboardList.innerHTML += '<div class="leaderboard-error" style="font-size: 0.8rem; margin-top: 1rem;">⚠️ Showing cached scores (server offline)</div>';
+                        } catch (parseError) {
+                            leaderboardList.innerHTML = '<div class="leaderboard-error">Server offline and no cached scores available</div>';
+                        }
+                    } else {
+                        leaderboardList.innerHTML = '<div class="leaderboard-error">Unable to connect to server. Please make sure the server is running.</div>';
+                    }
                 });
         }
 
