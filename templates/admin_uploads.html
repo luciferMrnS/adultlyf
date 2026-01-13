@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Uploads - Adultlyf Admin</title>
+    <link rel="stylesheet" href="/static/main.css">
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .admin-title {
+            font-size: 2.5rem;
+            color: #00ffff;
+            text-shadow: 0 0 8px rgba(0,255,255,0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        .uploads-summary {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+        }
+
+        .summary-label {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-top: 0.5rem;
+        }
+
+        .uploads-table {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .uploads-header {
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            padding: 1rem;
+            color: white;
+            font-weight: bold;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 3fr;
+            gap: 1rem;
+        }
+
+        .upload-item {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 3fr;
+            gap: 1rem;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .upload-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .upload-item:last-child {
+            border-bottom: none;
+        }
+
+        .upload-filename {
+            font-weight: 500;
+            color: #00ffff;
+            word-break: break-all;
+        }
+
+        .upload-link {
+            color: #00ffff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .upload-link:hover {
+            text-decoration: underline;
+        }
+
+        .upload-size {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .upload-date {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .upload-preview {
+            max-width: 100px;
+            max-height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .upload-preview:hover {
+            transform: scale(1.1);
+        }
+
+        .upload-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .upload-action {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s ease;
+        }
+
+        .upload-action:hover {
+            transform: translateY(-1px);
+        }
+
+        .action-view {
+            background: #00ffff;
+            color: black;
+        }
+
+        .action-download {
+            background: #ff00ff;
+            color: white;
+        }
+
+        .no-uploads {
+            text-align: center;
+            padding: 4rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .admin-nav a {
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.2s ease;
+        }
+
+        .admin-nav a:hover {
+            transform: translateY(-2px);
+        }
+
+        .storage-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        @media (max-width: 1024px) {
+            .uploads-header,
+            .upload-item {
+                grid-template-columns: 1.5fr 1fr 1fr 2fr;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 1rem;
+            }
+
+            .uploads-summary {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .uploads-header,
+            .upload-item {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .upload-preview {
+                max-width: 80px;
+                max-height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="adult-theme"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 class="admin-title">📁 All Uploads Storage</h1>
+            <p>Complete file management system</p>
+        </div>
+
+        <div class="admin-nav">
+            <a href="/admin/escorts">← Back to Escorts</a>
+            <a href="/admin/gallery">🖼️ Model Gallery</a>
+            <a href="/admin/analytics.html">📊 Analytics</a>
+            <a href="/admin/logout">🚪 Logout</a>
+        </div>
+
+        <div class="storage-info">
+            <strong>Storage Location:</strong> {{ upload_dir }}<br>
+            <strong>Total Files:</strong> {{ uploaded_files|length }}<br>
+            <strong>Environment:</strong> {% if upload_dir.startswith('/volumes') %}Railway Persistent Volume{% else %}Local Development{% endif %}
+        </div>
+
+        <div class="uploads-summary">
+            <div class="summary-item">
+                <div class="summary-value">{{ uploaded_files|length }}</div>
+                <div class="summary-label">Total Files</div>
+            </div>
+            {% set total_size = uploaded_files|sum(attribute='size') %}
+            <div class="summary-item">
+                <div class="summary-value">{{ "%.1f"|format(total_size / 1024 / 1024) }} MB</div>
+                <div class="summary-label">Total Size</div>
+            </div>
+            {% if uploaded_files %}
+            <div class="summary-item">
+                <div class="summary-value">{{ uploaded_files[0].modified.split()[0] }}</div>
+                <div class="summary-label">Latest Upload</div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if uploaded_files %}
+        <div class="uploads-table">
+            <div class="uploads-header">
+                <div>Filename</div>
+                <div>Size</div>
+                <div>Modified</div>
+                <div>Preview & Actions</div>
+            </div>
+            {% for file in uploaded_files %}
+            <div class="upload-item">
+                <div class="upload-filename">{{ file.filename }}</div>
+                <div class="upload-size">{{ "%.1f"|format(file.size / 1024) }} KB</div>
+                <div class="upload-date">{{ file.modified }}</div>
+                <div class="upload-actions">
+                    {% if file.filename.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')) %}
+                    <img src="{{ file.url }}" alt="{{ file.filename }}" class="upload-preview"
+                         onclick="window.open('{{ file.url }}', '_blank')">
+                    {% endif %}
+                    <a href="{{ file.url }}" target="_blank" class="upload-action action-view">👁️ View</a>
+                    <a href="{{ file.url }}" download class="upload-action action-download">📥 Download</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-uploads">
+            No uploaded files found.<br>
+            Files will appear here once users upload photos for model applications.
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

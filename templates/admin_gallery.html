@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Gallery - Adultlyf</title>
+    <link rel="stylesheet" href="/static/main.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .admin-title {
+            font-size: 2.5rem;
+            color: #00ffff;
+            text-shadow: 0 0 8px rgba(0,255,255,0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .gallery-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .gallery-info {
+            padding: 1rem;
+        }
+
+        .gallery-model-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #00ffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .gallery-details {
+            font-size: 0.9rem;
+            color: #ccc;
+            line-height: 1.4;
+        }
+
+        .gallery-empty {
+            text-align: center;
+            padding: 4rem;
+            color: #666;
+            font-style: italic;
+            grid-column: 1 / -1;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .admin-nav a {
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.2s ease;
+        }
+
+        .admin-nav a:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 1rem;
+            }
+
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+
+            .gallery-image {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="adult-theme"></div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 class="admin-title">🖼️ Model Gallery</h1>
+            <p>Approved model photos storage</p>
+        </div>
+
+        <div class="admin-nav">
+            <a href="/admin/escorts">← Back to Escorts</a>
+            <a href="/admin/uploads">📁 All Uploads</a>
+            <a href="/admin/analytics.html">📊 Analytics</a>
+            <a href="/admin/logout">🚪 Logout</a>
+        </div>
+
+        <div class="gallery-grid">
+            {% if gallery_items %}
+                {% for item in gallery_items %}
+                <div class="gallery-item">
+                    <img src="{{ item.url }}" alt="{{ item.model_name }}" class="gallery-image" loading="lazy">
+                    <div class="gallery-info">
+                        <div class="gallery-model-name">{{ item.model_name }}</div>
+                        <div class="gallery-details">
+                            Application #{{ item.application_id }}<br>
+                            Uploaded: {{ item.uploaded_at }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="gallery-empty">
+                    No approved model photos found.<br>
+                    Photos will appear here once models are approved.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
