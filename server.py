@@ -24,6 +24,9 @@ load_dotenv()
 # Import database models
 from models import db, Escort, ModelApplication
 
+# Import scraper functions for video shuffling
+from scraper import start_shuffle_scheduler, start_autonomous_scraper
+
 # Initialize Flask app
 app = Flask(__name__)
 
@@ -59,6 +62,10 @@ with app.app_context():
                 db.session.commit()
         except FileNotFoundError:
             pass
+
+# Start background services
+start_shuffle_scheduler()
+start_autonomous_scraper()
 
 # Routes
 
