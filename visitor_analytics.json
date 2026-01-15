@@ -2,9 +2,9 @@
   "visitors": [
     {
       "ip_address": "127.0.0.1",
-      "first_visit": "2026-01-12T22:43:28.513463",
-      "last_visit": "2026-01-12T22:43:29.867430",
-      "visit_count": 5,
+      "first_visit": "2026-01-12T23:29:36.127855",
+      "last_visit": "2026-01-12T23:29:42.533315",
+      "visit_count": 3,
       "location": {
         "country": "Unknown",
         "region": "",
@@ -15,50 +15,34 @@
       "user_agents": [
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
       ],
-      "total_visits": 5
+      "total_visits": 3
     }
   ],
   "sessions": [
     {
       "ip_address": "127.0.0.1",
-      "timestamp": "2026-01-12T22:43:28.513463",
-      "path": "/uploads/518f97bf-75c2-4532-8a6e-7582eb090693_OIP_1.jpg",
+      "timestamp": "2026-01-12T23:29:36.127855",
+      "path": "/videos.json",
       "method": "GET",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
-      "session_id": "127.0.0.1_20260112224328"
+      "session_id": "127.0.0.1_20260112232936"
     },
     {
       "ip_address": "127.0.0.1",
-      "timestamp": "2026-01-12T22:43:29.793293",
-      "path": "/uploads/b6fe3166-bd3e-4152-9ffa-10ba487f8f9c_5.jpg",
+      "timestamp": "2026-01-12T23:29:42.401287",
+      "path": "/game.html",
       "method": "GET",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
-      "session_id": "127.0.0.1_20260112224329"
+      "session_id": "127.0.0.1_20260112232942"
     },
     {
       "ip_address": "127.0.0.1",
-      "timestamp": "2026-01-12T22:43:29.812877",
-      "path": "/uploads/66e10324-0ece-4573-aff8-5231393cbe3a_0.jpg",
+      "timestamp": "2026-01-12T23:29:42.533315",
+      "path": "/static/main.css",
       "method": "GET",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
-      "session_id": "127.0.0.1_20260112224329"
-    },
-    {
-      "ip_address": "127.0.0.1",
-      "timestamp": "2026-01-12T22:43:29.862535",
-      "path": "/uploads/5395647d-8919-489a-905d-ec1d7f34b6f6_3.jpg",
-      "method": "GET",
-      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
-      "session_id": "127.0.0.1_20260112224329"
-    },
-    {
-      "ip_address": "127.0.0.1",
-      "timestamp": "2026-01-12T22:43:29.867430",
-      "path": "/uploads/047cc291-4c2d-48f4-a799-7632a71972f4_8.jpg",
-      "method": "GET",
-      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0",
-      "session_id": "127.0.0.1_20260112224329"
+      "session_id": "127.0.0.1_20260112232942"
     }
   ],
-  "last_cleanup": "2026-01-12T22:43:29.867551"
+  "last_cleanup": "2026-01-12T23:29:42.533412"
 }

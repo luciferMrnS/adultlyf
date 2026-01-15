@@ -815,14 +815,16 @@
             `).join('');
         }
 
-        // Submit score to server
+        // Submit score to server with localStorage fallback
         function submitScore(playerName) {
             const scoreData = {
                 player_name: playerName,
                 score: score,
                 difficulty: difficulty,
                 moves: moves,
-                time_taken: time
+                time_taken: time,
+                timestamp: new Date().toISOString(),
+                date: new Date().toLocaleString()
             };
 
             fetch('/game/submit-score', {
@@ -836,15 +838,62 @@
             .then(data => {
                 if (data.success) {
                     console.log('Score submitted successfully!', data);
+                    // Clear any pending scores since this one was submitted
+                    clearPendingScore();
                     // Reload leaderboard to show the new score
                     loadLeaderboard();
                 } else {
                     console.error('Failed to submit score:', data.error);
+                    // Store score locally for later submission
+                    storePendingScore(scoreData);
                 }
             })
             .catch(error => {
                 console.error('Error submitting score:', error);
+                // Store score locally for later submission
+                storePendingScore(scoreData);
             });
+        }
+
+        // Store pending score in localStorage
+        function storePendingScore(scoreData) {
+            const pendingScores = JSON.parse(localStorage.getItem('pendingGameScores') || '[]');
+            pendingScores.push(scoreData);
+            localStorage.setItem('pendingGameScores', JSON.stringify(pendingScores));
+            console.log('Score stored locally for later submission');
+        }
+
+        // Clear pending scores
+        function clearPendingScore() {
+            localStorage.removeItem('pendingGameScores');
+        }
+
+        // Try to submit any pending scores
+        function submitPendingScores() {
+            const pendingScores = JSON.parse(localStorage.getItem('pendingGameScores') || '[]');
+            if (pendingScores.length > 0) {
+                console.log(`Attempting to submit ${pendingScores.length} pending scores...`);
+                // Submit each pending score
+                pendingScores.forEach(scoreData => {
+                    fetch('/game/submit-score', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(scoreData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Pending score submitted successfully');
+                            // Remove this score from pending
+                            const updatedPending = pendingScores.filter(s => s !== scoreData);
+                            localStorage.setItem('pendingGameScores', JSON.stringify(updatedPending));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Failed to submit pending score:', error);
+                    });
+                });
+            }
         }
 
         // Prompt for player name and submit score
@@ -922,6 +971,7 @@
         window.addEventListener('load', () => {
             initGame();
             loadLeaderboard(); // Load leaderboard on page load
+            submitPendingScores(); // Try to submit any pending scores
         });
     </script>
 </body>
