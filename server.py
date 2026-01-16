@@ -69,6 +69,10 @@ start_autonomous_scraper()
 
 # Routes
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 @app.route('/escorts.json')
 def get_escorts():
     escorts = Escort.query.all()
