@@ -89,6 +89,10 @@ body {
     transform: translateX(-100%);
 }
 
+.eggplant-logo {
+    margin-top: 19px; /* Move down by approximately 0.5cm */
+}
+
 .popup-message {
     font-size: 16px;
     color: red;

@@ -11,7 +11,7 @@ import os
 import json
 import re
 import html
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -36,6 +36,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize database
 db.init_app(app)
+
+# CSRF protection
+csrf = CSRFProtect(app)
 
 # Migrate data on startup
 with app.app_context():
@@ -72,6 +75,18 @@ start_autonomous_scraper()
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/escorts')
+def escorts():
+    return render_template('coming_soon.html')
+
+@app.route('/adverts.json')
+def get_adverts():
+    try:
+        with open('adverts.json', 'r', encoding='utf-8') as f:
+            return jsonify(json.load(f))
+    except FileNotFoundError:
+        return jsonify([])
 
 @app.route('/escorts.json')
 def get_escorts():
@@ -171,6 +186,289 @@ def admin_escorts():
     escorts = Escort.query.all()
     escorts_data = [escort.to_dict() for escort in escorts]
     return render_template('admin_escorts.html', escorts=escorts_data, escorts_data=escorts_data)
+
+@app.route('/meet', methods=['POST'])
+@csrf.exempt
+def submit_meet_request():
+    data = request.get_json()
+    request_id = datetime.now().strftime('%Y%m%d%H%M%S')
+
+    meet_request = {
+        "id": request_id,
+        "escortId": data.get('escortId'),
+        "clientName": data.get('clientName'),
+        "clientLocation": data.get('clientLocation'),
+        "clientContact": data.get('clientContact'),
+        "meetingDetails": data.get('meetingDetails'),
+        "ageVerification": data.get('ageVerification'),
+        "timestamp": datetime.utcnow().isoformat(),
+        "status": "pending",
+        "emergencyContact": "",
+        "meetingDuration": 60,
+        "safeWord": "pineapple",
+        "scheduledTime": "",
+        "safetyCheckIns": [],
+        "lastCheckIn": None,
+        "adminApproval": False,
+        "safetyWarnings": []
+    }
+
+    try:
+        with open('meet_requests.json', 'r') as f:
+            meet_requests = json.load(f)
+    except FileNotFoundError:
+        meet_requests = []
+
+    meet_requests.append(meet_request)
+
+    with open('meet_requests.json', 'w') as f:
+        json.dump(meet_requests, f, indent=2)
+
+    # Initialize chat messages for this request
+    try:
+        with open('chat_messages.json', 'r') as f:
+            chat_messages = json.load(f)
+    except FileNotFoundError:
+        chat_messages = {}
+
+    if request_id not in chat_messages:
+        chat_messages[request_id] = []
+
+    with open('chat_messages.json', 'w') as f:
+        json.dump(chat_messages, f, indent=2)
+
+    return jsonify({'success': True, 'request_id': request_id})
+
+@app.route('/chat/<request_id>', methods=['GET'])
+def get_chat_messages(request_id):
+    try:
+        with open('chat_messages.json', 'r') as f:
+            chat_messages = json.load(f)
+    except FileNotFoundError:
+        chat_messages = {}
+
+    messages = chat_messages.get(request_id, [])
+    return jsonify({'messages': messages})
+
+@app.route('/chat/<request_id>', methods=['POST'])
+@csrf.exempt
+def send_chat_message(request_id):
+    if 'image' in request.files:
+        image = request.files['image']
+        if image:
+            filename = secure_filename(str(uuid.uuid4()) + '_' + image.filename)
+            image.save(os.path.join('uploads', filename))
+            image_url = '/uploads/' + filename
+        else:
+            image_url = None
+    else:
+        image_url = None
+
+    sender = request.form.get('sender')
+    message = request.form.get('message', '')
+
+    message_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
+
+    chat_message = {
+        "id": message_id,
+        "sender": sender,
+        "message": message,
+        "timestamp": datetime.utcnow().isoformat(),
+        "image_url": image_url
+    }
+
+    try:
+        with open('chat_messages.json', 'r') as f:
+            chat_messages = json.load(f)
+    except FileNotFoundError:
+        chat_messages = {}
+
+    if request_id not in chat_messages:
+        chat_messages[request_id] = []
+
+    chat_messages[request_id].append(chat_message)
+
+    with open('chat_messages.json', 'w') as f:
+        json.dump(chat_messages, f, indent=2)
+
+    return jsonify({'success': True})
+
+@app.route('/chat/<request_id>/end', methods=['POST'])
+@csrf.exempt
+def end_chat_session(request_id):
+    message_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
+
+    chat_message = {
+        "id": message_id,
+        "sender": "system",
+        "message": "Chat session ended by administrator",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+    try:
+        with open('chat_messages.json', 'r') as f:
+            chat_messages = json.load(f)
+    except FileNotFoundError:
+        chat_messages = {}
+
+    if request_id not in chat_messages:
+        chat_messages[request_id] = []
+
+    chat_messages[request_id].append(chat_message)
+
+    with open('chat_messages.json', 'w') as f:
+        json.dump(chat_messages, f, indent=2)
+
+    return jsonify({'success': True})
+
+@app.route('/videos.json')
+@csrf.exempt
+def get_videos():
+    return send_from_directory('.', 'videos.json')
+
+@app.route('/player.html')
+def player_page():
+    return send_from_directory('.', 'player.html')
+
+@app.route('/game.html')
+def game_page():
+    return send_from_directory('.', 'game.html')
+
+@app.route('/search.html')
+def search_page():
+    return send_from_directory('.', 'search.html')
+
+@app.route('/chat.html')
+def chat_page():
+    return send_from_directory('.', 'chat.html')
+
+@app.route('/group_chat.html')
+def group_chat_page():
+    return send_from_directory('.', 'group_chat.html')
+
+@app.route('/analytics.html')
+def analytics_page():
+    return send_from_directory('.', 'analytics.html')
+
+@app.route('/escorts.html')
+def escorts_page():
+    return send_from_directory('.', 'escorts.html')
+
+@app.route('/apply-model', methods=['POST'])
+@csrf.exempt
+def apply_model():
+    form_data = request.form
+    photos = request.files.getlist('photos')
+
+    photo_urls = []
+    for photo in photos:
+        if photo:
+            filename = secure_filename(str(uuid.uuid4()) + '_' + photo.filename)
+            photo.save(os.path.join('uploads', filename))
+            photo_urls.append('/uploads/' + filename)
+
+    application = ModelApplication(
+        name=form_data['name'],
+        location=form_data.get('location', ''),
+        age=int(form_data['age']),
+        height=form_data.get('height'),
+        body_type=form_data.get('body_type'),
+        town=form_data.get('town'),
+        city=form_data.get('city'),
+        country=form_data.get('country'),
+        sexual_preference=form_data.get('sexual_preference'),
+        occupation=form_data.get('occupation'),
+        phone=form_data.get('phone'),
+        email=form_data['email'],
+        allergy=form_data.get('allergy'),
+        skin_color=form_data.get('skin_color'),
+        photos=json.dumps(photo_urls)
+    )
+    db.session.add(application)
+    db.session.commit()
+
+    return jsonify({'success': True, 'id': application.id})
+
+@app.route('/group_chat/messages')
+def get_group_chat_messages():
+    try:
+        with open('group_chat_messages.json', 'r', encoding='utf-8') as f:
+            messages = json.load(f)
+    except FileNotFoundError:
+        messages = []
+
+    # Count unique users in recent messages (last 24 hours)
+    recent_messages = [msg for msg in messages if datetime.fromisoformat(msg['timestamp'].replace('Z', '+00:00')) > datetime.utcnow() - timedelta(hours=24)]
+    unique_users = len(set(msg['sender'] for msg in recent_messages))
+
+    return jsonify({
+        'success': True,
+        'messages': messages,
+        'online_count': max(unique_users, 1)  # At least 1 for current user
+    })
+
+@app.route('/group_chat/send', methods=['POST'])
+@csrf.exempt
+def send_group_chat_message():
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': 'No data provided'})
+
+    try:
+        with open('group_chat_messages.json', 'r', encoding='utf-8') as f:
+            messages = json.load(f)
+    except FileNotFoundError:
+        messages = []
+
+    # Get next ID
+    next_id = max([msg['id'] for msg in messages], default=0) + 1
+
+    message = {
+        'id': next_id,
+        'sender': data.get('sender', 'Anonymous'),
+        'user_id': data.get('user_id'),
+        'message': data.get('message', ''),
+        'timestamp': datetime.utcnow().isoformat(),
+        'censored': data.get('was_censored', False)
+    }
+
+    messages.append(message)
+
+    with open('group_chat_messages.json', 'w', encoding='utf-8') as f:
+        json.dump(messages, f, indent=2)
+
+    return jsonify({'success': True})
+    form_data = request.form
+    photos = request.files.getlist('photos')
+
+    photo_urls = []
+    for photo in photos:
+        if photo:
+            filename = secure_filename(str(uuid.uuid4()) + '_' + photo.filename)
+            photo.save(os.path.join('uploads', filename))
+            photo_urls.append('/uploads/' + filename)
+
+    application = ModelApplication(
+        name=form_data['name'],
+        location=form_data.get('location', ''),
+        age=int(form_data['age']),
+        height=form_data.get('height'),
+        body_type=form_data.get('body_type'),
+        town=form_data.get('town'),
+        city=form_data.get('city'),
+        country=form_data.get('country'),
+        sexual_preference=form_data.get('sexual_preference'),
+        occupation=form_data.get('occupation'),
+        phone=form_data.get('phone'),
+        email=form_data['email'],
+        allergy=form_data.get('allergy'),
+        skin_color=form_data.get('skin_color'),
+        photos=json.dumps(photo_urls)
+    )
+    db.session.add(application)
+    db.session.commit()
+
+    return jsonify({'success': True, 'id': application.id})
 
 if __name__ == '__main__':
     app.run(debug=True)

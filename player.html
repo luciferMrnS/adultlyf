@@ -6,34 +6,61 @@
     <title>Adultlyf - Video Player</title>
     <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
     <link rel="apple-touch-icon" href="/static/logo.svg">
+    <link rel="stylesheet" href="/static/main.css">
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            background-color: #000;
-            color: #fff;
-            font-family: Arial, sans-serif;
-        }
+        /* Video Player Specific Styles */
         .player-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 1rem;
+            padding: 2rem 2rem;
         }
+
+        .back-link {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-light);
+        }
+
+        .back-link:hover {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
         .video-title {
             text-align: center;
-            font-size: 1.5rem;
-            margin: 1rem 0;
-            color: #fff;
+            font-size: 2rem;
+            font-weight: 600;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
+
         .video-wrapper {
             position: relative;
             padding-bottom: 56.25%; /* 16:9 aspect ratio */
             height: 0;
             overflow: hidden;
-            background: #000;
-            margin-bottom: 2rem;
+            background: var(--dark-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-heavy);
+            margin-bottom: 3rem;
         }
+
         iframe {
             position: absolute;
             top: 0;
@@ -41,153 +68,160 @@
             width: 100%;
             height: 100%;
             border: 0;
-            pointer-events: auto; /* Allow normal iframe interaction */
+            border-radius: var(--border-radius);
+            pointer-events: auto;
         }
+
         .related-videos {
-            margin-top: 2rem;
+            margin-top: 3rem;
         }
+
         .related-videos h3 {
-            color: #fff;
-            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            text-align: center;
         }
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1rem;
+
+        /* Video fallback message */
+        .video-fallback {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 3rem;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
         }
-        .video-item {
-            background-color: #2a2a2a;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            transition: transform 0.2s;
+
+        .video-fallback h2 {
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
         }
-        .video-item:hover {
-            transform: scale(1.05);
+
+        .video-fallback p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
         }
-        .video-item img {
-            width: 100%;
-            height: auto;
+
+        .watch-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--secondary-gradient);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            transition: var(--transition);
+            box-shadow: var(--shadow-medium);
         }
-        .video-item-title {
-            padding: 0.5rem;
+
+        .watch-button:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .video-fallback .note {
+            color: var(--text-muted);
+            margin-top: 2rem;
             font-size: 0.9rem;
-            font-weight: bold;
-            color: #fff;
         }
 
         /* Responsive Design */
         @media (max-width: 768px) {
+            .player-container {
+                padding: 1rem;
+            }
+
+            .video-title {
+                font-size: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .video-wrapper {
+                margin-bottom: 2rem;
+            }
+
+            .related-videos h3 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
             .player-container {
                 padding: 0.5rem;
             }
 
             .video-title {
                 font-size: 1.2rem;
-                margin: 0.75rem 0;
+                margin-bottom: 1rem;
             }
 
-            .search-form input {
-                width: 70% !important;
-                max-width: 250px;
+            .video-wrapper {
+                margin-bottom: 1.5rem;
             }
 
-            .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap: 0.75rem;
+            .related-videos h3 {
+                font-size: 1.3rem;
             }
 
-            .video-item-title {
-                font-size: 0.8rem;
-                padding: 0.5rem;
-            }
-
-            .site-logo img {
-                height: 50px !important;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .player-container {
-                padding: 0.25rem;
-            }
-
-            .video-title {
-                font-size: 1rem;
-                margin: 0.5rem 0;
-            }
-
-            .search-form {
-                margin: 0.5rem 0;
-            }
-
-            .search-form input {
-                width: 80% !important;
-                max-width: 200px;
-                font-size: 16px; /* Prevents zoom on iOS */
-            }
-
-            .video-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 0.5rem;
-            }
-
-            .video-item-title {
-                font-size: 0.75rem;
-                padding: 0.25rem;
-            }
-
-            .site-logo {
-                left: 0.5rem !important;
-            }
-
-            .site-logo img {
-                height: 40px !important;
-                margin-right: 10px;
-            }
-
-            .back-button a {
+            .back-link {
+                padding: 0.625rem 1.25rem;
                 font-size: 0.9rem;
-            }
-        }
-
-        /* Touch-friendly buttons */
-        @media (hover: none) and (pointer: coarse) {
-            .video-item {
-                min-height: 120px;
-            }
-
-            button {
-                min-height: 44px;
-                padding: 0.75rem;
             }
         }
     </style>
 </head>
 <body>
-    <a href="/" class="site-logo" style="position: absolute; left: 1rem; top: 10px;">
-        <img src="/static/logo.svg" alt="Adultlyf Logo" style="height: 80px; width: auto; vertical-align: middle; margin-right: 15px;">
-    </a>
-    <div class="player-container">
-        <div class="back-button">
-            <a href="index.html">&larr; Back to Videos</a>
-        </div>
-        <div class="search-form" style="margin: 1rem 0; text-align: center;">
-            <input type="text" id="search-input" placeholder="Search for videos..." style="padding: 0.5rem; width: 300px; border: 1px solid #555; border-radius: 4px; background-color: #2a2a2a; color: #fff;">
-            <button type="button" id="search-button" style="padding: 0.5rem 1rem; border: 1px solid #555; border-radius: 4px; background-color: #4CAF50; color: white; cursor: pointer;">Search</button>
-        </div>
-        <div id="video-title" class="video-title"></div>
-        <div class="video-wrapper">
-            <iframe id="video-player" src="" allowfullscreen></iframe>
-        </div>
-        <div class="related-videos">
-            <h3>Related Videos</h3>
-            <div id="related-videos" class="video-grid">
-                <!-- Related videos will be loaded here -->
+    <header>
+        <a href="/" class="site-logo">
+            <img src="/static/logo.svg" alt="Adultlyf Logo">
+        </a>
+        <h1>Video Player</h1>
+        <nav>
+            <a href="/" class="escort-button">🏠 Home</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <a href="/" class="back-link">&larr; Back to Videos</a>
+
+        <form id="search-form" class="search-form">
+            <input type="text" id="search-input" placeholder="Search for videos...">
+            <button type="submit">Search</button>
+        </form>
+
+        <div class="player-container">
+            <div id="video-title" class="video-title"></div>
+            <div class="video-wrapper">
+                <iframe id="video-player" src="" allowfullscreen></iframe>
+            </div>
+            <div class="related-videos">
+                <h3>Related Videos</h3>
+                <div id="related-videos" class="video-grid">
+                    <!-- Related videos will be loaded here -->
+                </div>
             </div>
         </div>
     </div>
+
+    <footer>
+        <div class="escort-banner">
+            <a href="/escorts.html">
+                <span>💋</span>
+                <span>FIND YOUR PERFECT COMPANION TONIGHT</span>
+                <span>Book Now →</span>
+            </a>
+        </div>
+        <p>&copy; 2026 Adultlyf. All rights reserved.</p>
+    </footer>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -200,27 +234,74 @@
                 document.getElementById('video-title').textContent = decodeURIComponent(title);
             }
 
+            // Try embedding first, fall back to redirect if it fails
             if (embedUrl && embedUrl.trim() !== '') {
-                // Use embed URL if available
-                document.getElementById('video-player').src = decodeURIComponent(embedUrl);
+                // Try to embed the video
+                const embedFrame = document.createElement('iframe');
+                embedFrame.src = decodeURIComponent(embedUrl);
+                embedFrame.frameBorder = '0';
+                embedFrame.allowFullscreen = true;
+                embedFrame.sandbox = 'allow-same-origin allow-scripts allow-forms allow-presentation'; // Prevent navigation
+                embedFrame.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    border: 0;
+                    border-radius: var(--border-radius);
+                `;
+
+                // Add error handling
+                embedFrame.onerror = function() {
+                    // Embedding failed, show fallback
+                    showVideoFallback(videoUrl);
+                };
+
+                embedFrame.onload = function() {
+                    // Check if iframe loaded successfully by checking content
+                    try {
+                        const iframeDoc = embedFrame.contentDocument || embedFrame.contentWindow.document;
+                        if (iframeDoc && iframeDoc.body && iframeDoc.body.innerHTML.includes('404')) {
+                            // 404 detected, show fallback
+                            showVideoFallback(videoUrl);
+                        } else if (iframeDoc && iframeDoc.body && iframeDoc.body.innerHTML.trim() === '') {
+                            // Empty content might indicate blocking, show fallback after delay
+                            setTimeout(() => {
+                                if (!embedFrame.contentDocument || embedFrame.contentDocument.body.innerHTML.trim() === '') {
+                                    showVideoFallback(videoUrl);
+                                }
+                            }, 3000);
+                        }
+                    } catch (e) {
+                        // Cross-origin restriction, assume it's working
+                        console.log('Cross-origin iframe, assuming embed works');
+                    }
+                };
+
+                document.querySelector('.video-wrapper').innerHTML = '';
+                document.querySelector('.video-wrapper').appendChild(embedFrame);
             } else if (videoUrl && videoUrl.trim() !== '') {
-                // Fallback: redirect to the actual video page
-                // Adult sites often have complex players that can't be easily embedded
+                // No embed URL available, show fallback
+                showVideoFallback(videoUrl);
+            } else {
+                // Handle case where no URL is provided
+                document.querySelector('.video-wrapper').innerHTML = '<div class="video-fallback"><p>Error: No video URL provided.</p></div>';
+            }
+
+            function showVideoFallback(videoUrl) {
                 const decodedVideoUrl = decodeURIComponent(videoUrl);
                 const message = `
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 2rem;">
-                        <h2 style="color: #fff; margin-bottom: 1rem;">Video Player</h2>
-                        <p style="color: #ccc; margin-bottom: 2rem;">Click the button below to watch the video on the original site</p>
-                        <a href="${decodedVideoUrl}" target="_blank" style="background: #ff4444; color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 8px; font-size: 1.2rem; transition: background 0.3s;">
+                    <div class="video-fallback">
+                        <h2>Video Player</h2>
+                        <p>This video cannot be embedded. Click below to watch on the original site.</p>
+                        <a href="${decodedVideoUrl}" target="_blank" class="watch-button">
                             Watch Video
                         </a>
-                        <p style="color: #888; margin-top: 2rem; font-size: 0.9rem;">Opens in new tab for best viewing experience</p>
+                        <p class="note">Opens in new tab for best viewing experience</p>
                     </div>
                 `;
                 document.querySelector('.video-wrapper').innerHTML = message;
-            } else {
-                // Handle case where neither URL is provided
-                document.querySelector('.video-wrapper').innerHTML = '<p style="color: #fff; text-align: center; padding-top: 2rem;">Error: No video URL provided.</p>';
             }
 
             let allVideos = [];
@@ -271,10 +352,11 @@
             }
 
             // Search functionality - opens search results in new tab
+            const searchForm = document.getElementById('search-form');
             const searchInput = document.getElementById('search-input');
-            const searchButton = document.getElementById('search-button');
 
-            function performSearch() {
+            function performSearch(event) {
+                if (event) event.preventDefault();
                 const searchTerm = searchInput.value.trim();
                 if (searchTerm !== '') {
                     // Create a temporary link and click it to open in new tab
@@ -300,85 +382,49 @@
                 }
             }
 
-            searchButton.addEventListener('click', performSearch);
+            searchForm.addEventListener('submit', performSearch);
             searchInput.addEventListener('keyup', (event) => {
                 if (event.key === 'Enter') {
                     performSearch();
                 }
             });
 
-            // Add visual feedback
-            searchButton.addEventListener('click', function() {
-                this.style.backgroundColor = '#45a049';
-                setTimeout(() => {
-                    this.style.backgroundColor = '#4CAF50';
-                }, 200);
-            });
-
-            // Prevent double-tap and double-click redirects to source sites
+            // Prevent iframe clicks from redirecting the parent window
             const videoPlayer = document.getElementById('video-player');
-            let lastTap = 0;
-            let tapCount = 0;
 
-            // Prevent double-click on desktop
-            videoPlayer.addEventListener('dblclick', function(e) {
-                e.preventDefault();
+            // Prevent clicks on iframe from navigating away
+            videoPlayer.addEventListener('click', function(e) {
+                // Allow normal video controls but prevent navigation
                 e.stopPropagation();
-                return false;
             });
 
-            // Handle touch events - allow single taps, block double-taps
-            videoPlayer.addEventListener('touchstart', function(e) {
-                const currentTime = new Date().getTime();
-                const tapGap = currentTime - lastTap;
-
-                if (tapGap < 500 && tapGap > 0) {
-                    tapCount++;
-                } else {
-                    tapCount = 1;
-                }
-
-                lastTap = currentTime;
-
-                // If double-tap detected, prevent default behavior
-                if (tapCount >= 2) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    tapCount = 0; // Reset counter
-                    return false;
-                }
-            }, { passive: false });
-
-            // Prevent context menu
+            // Prevent context menu and right-click navigation
             videoPlayer.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 return false;
             });
 
-            // Additional prevention: override iframe's click/double-click behavior
+            // Prevent iframe from changing parent window location
             videoPlayer.addEventListener('load', function() {
                 try {
-                    // Try to inject CSS to prevent redirects in iframe content
-                    const iframeDoc = videoPlayer.contentDocument || videoPlayer.contentWindow.document;
-                    if (iframeDoc) {
-                        const style = iframeDoc.createElement('style');
-                        style.textContent = `
-                            * {
-                                -webkit-touch-callout: none !important;
-                                -webkit-user-select: none !important;
-                                -moz-user-select: none !important;
-                                -ms-user-select: none !important;
-                                user-select: none !important;
-                            }
-                            body {
-                                touch-action: manipulation !important;
-                            }
-                        `;
-                        iframeDoc.head.appendChild(style);
-                    }
+                    // Monitor for attempts to change window location
+                    const checkRedirect = setInterval(() => {
+                        // This is a basic check - if the iframe tries to redirect,
+                        // we can't prevent it from the parent, but we can detect and reload
+                        if (window.location.href !== originalLocation) {
+                            // Redirect detected, reload the page to stay on site
+                            window.location.reload();
+                        }
+                    }, 100);
+
+                    // Store original location
+                    const originalLocation = window.location.href;
+
+                    // Clear check after 10 seconds (video should be loaded by then)
+                    setTimeout(() => clearInterval(checkRedirect), 10000);
+
                 } catch (e) {
-                    // Cross-origin iframe, can't modify content directly
-                    console.log('Cannot modify iframe content due to cross-origin restrictions');
+                    console.log('Cannot monitor iframe redirects due to cross-origin restrictions');
                 }
             });
         });

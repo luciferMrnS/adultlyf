@@ -1,0 +1,29 @@
+From e6a924801a204ac1b79b8217c6b9bd16 Mon Sep 17 00:00:00 2001
+From: Gemini <gemini@google.com>
+Date: Mon, 12 Jan 2026 20:00:00 +0000
+Subject: [PATCH] feat(game): improve mobile responsiveness of memory game
+
+On smaller screens, the 'hard' difficulty of the memory game displayed
+too many columns, making the cards too small to be easily interactive.
+This change adjusts the grid layout to display a maximum of 4 columns
+on screens up to 480px wide, improving the user experience on mobile
+devices.
+---
+ game.html | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/game.html b/game.html
+index 5e4e5e4..d3d3d3d 100644
+--- a/game.html
++++ b/game.html
+@@ -402,7 +402,7 @@
+ 
+             if (screenWidth <= 480) {
+                 // Very small screens
+-                columns = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : 5;
++                columns = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : 4;
+             } else if (screenWidth <= 768) {
+                 // Tablets
+                 columns = difficulty === 'easy' ? 4 : difficulty === 'medium' ? 5 : 6;
+-- 
+2.39.2.windows.1

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escorts Coming Soon - Adultlyf</title>
+    <meta name="description" content="Our escort service is coming soon. Stay tuned for the best companion experiences.">
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="apple-touch-icon" href="/static/logo.svg">
+    <link rel="stylesheet" href="/static/main.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .coming-soon-container {
+            text-align: center;
+            max-width: 800px;
+            padding: 2rem;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin: 0;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(255, 107, 107, 0.5); }
+            to { text-shadow: 0 0 30px rgba(255, 107, 107, 0.8), 0 0 40px rgba(78, 205, 196, 0.5); }
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            margin: 1rem 0 2rem;
+            opacity: 0.9;
+            animation: fadeIn 2s ease-in 0.5s both;
+        }
+
+        .description {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+            animation: fadeIn 2s ease-in 1s both;
+        }
+
+        .countdown {
+            font-size: 2rem;
+            margin: 2rem 0;
+            animation: fadeIn 2s ease-in 1.5s both;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+            animation: fadeIn 2s ease-in 2s both;
+        }
+
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature h3 {
+            margin: 0 0 0.5rem;
+            color: #4ecdc4;
+        }
+
+        .notify-form {
+            max-width: 400px;
+            margin: 0 auto;
+            animation: fadeIn 2s ease-in 2.5s both;
+        }
+
+        .notify-form input {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 25px;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+
+        .notify-form button {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .notify-form button:hover {
+            transform: scale(1.05);
+        }
+
+        .back-link {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            color: #4ecdc4;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #ff6b6b;
+        }
+
+        /* Floating particles animation */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 6s linear infinite;
+        }
+
+        .particle:nth-child(odd) {
+            animation-duration: 8s;
+        }
+
+        .particle:nth-child(3n) {
+            animation-duration: 10s;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .coming-soon-container { padding: 1rem; }
+            .features { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">&larr; Back to Home</a>
+
+    <!-- Floating particles -->
+    <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+    <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 40%; animation-delay: 3s;"></div>
+    <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+    <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
+    <div class="particle" style="left: 70%; animation-delay: 6s;"></div>
+    <div class="particle" style="left: 80%; animation-delay: 7s;"></div>
+    <div class="particle" style="left: 90%; animation-delay: 8s;"></div>
+
+    <div class="coming-soon-container">
+        <div class="logo">🚀</div>
+        <h1>Escorts Coming Soon</h1>
+        <p class="subtitle">Exclusive Companion Services</p>
+        <p class="description">
+            We're working hard to bring you the most premium escort experience. Our curated selection of beautiful companions will be available soon. Stay tuned for an unparalleled journey of connection and excitement.
+        </p>
+
+        <div class="countdown">
+            Launching Soon...
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">💋</div>
+                <h3>Verified Companions</h3>
+                <p>All escorts are carefully vetted for safety, beauty, and personality.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <h3>Secure & Discreet</h3>
+                <p>Your privacy is our top priority with end-to-end encryption.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⭐</div>
+                <h3>Premium Experience</h3>
+                <p>Luxury companions for unforgettable moments and memories.</p>
+            </div>
+        </div>
+
+        <form class="notify-form">
+            <input type="email" placeholder="Enter your email to get notified" required>
+            <button type="submit">Notify Me When Launching</button>
+        </form>
+    </div>
+
+    <script>
+        // Simple form handling
+        document.querySelector('.notify-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you! We\'ll notify you when escorts launch.');
+            this.reset();
+        });
+    </script>
+</body>
+</html>

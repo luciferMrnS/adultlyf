@@ -103,6 +103,75 @@ body {
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
+/* Toggle Switch - Working version */
+.toggle-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2.5rem 0;
+}
+
+.toggle-switch {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.toggle-switch span {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 15px;
+    color: var(--text-secondary);
+    transition: var(--transition);
+}
+
+.toggle-switch input[type="checkbox"] {
+    height: 0;
+    width: 0;
+    visibility: hidden;
+}
+
+.toggle-switch label {
+    cursor: pointer;
+    text-indent: -9999px;
+    width: 60px;
+    height: 30px;
+    background: #555;
+    border-radius: 100px;
+    position: relative;
+    transition: var(--transition);
+}
+
+.toggle-switch label:after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 90px;
+    transition: 0.3s;
+}
+
+.toggle-switch input:checked + label {
+    background: var(--primary-gradient);
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+}
+
+.toggle-switch input:checked + label:after {
+    left: calc(100% - 3px);
+    transform: translateX(-100%);
+}
+
+/* Highlight "Yes" when selected */
+.toggle-switch input:checked + label + span {
+    color: #667eea;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+    transform: scale(1.1);
+}
+
 /* ===== HEADER ===== */
 header {
     background: linear-gradient(135deg, rgba(10, 10, 10, 0.95), rgba(20, 0, 20, 0.95));
