@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adultlyf - Meet A Girl, Watch Your Show, Stay Horny</title>
+    <meta name="description" content="Watch the best free adult videos online. We have a huge collection of HD porn videos, updated daily.">
+    <meta name="keywords" content="adult, porn, free porn, hd porn, adult videos, porn videos">
+    <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+    <link rel="apple-touch-icon" href="/static/logo.svg">
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
+    <header>
+        <a href="/" class="site-logo" style="position: absolute; left: 1rem; top: 10px;">
+            <img src="/static/logo.svg" alt="Adultlyf Logo" style="height: 80px; width: auto; vertical-align: middle; margin-right: 15px;">
+        </a>
+        <h1>
+            <span style="position:relative; display:inline-block;">
+                Adultlyf
+                <span class="curly-strike"></span>
+            </span>
+        </h1>
+        <div id="advert-container" class="advert-container"></div>
+        <nav style="position: absolute; top: 1rem; right: 1rem; text-align: center;">
+            <a href="escorts.html" class="escort-button">🚀 ESCORTS</a>
+            <div style="color: #ff6b6b; font-size: 1.2rem; font-weight: bold; margin-top: 0.5rem; text-shadow: 0 0 5px #ff6b6b;">schedule an escort under 5minutes</div>
+
+            <a href="/admin/escorts" style="display: none; color: #4CAF50; text-decoration: none; margin-top: 0.5rem; font-size: 1rem;">Admin Panel</a>
+        </nav>
+        <form id="search-form" class="search-form">
+            <input type="text" id="search-input" placeholder="Search for videos...">
+            <button type="submit">Search</button>
+        </form>
+
+        <div class="game-cta">
+            <a href="game.html" class="game-button">🎮 Play Naughty Memory Game</a>
+        </div>
+            <div class="escort-banner">
+            <a href="escorts.html">
+                <span>🚀</span>
+                <span>MEET YOUR DREAM ESCORT - SCHEDULE IN UNDER 5 MINUTES!</span>
+                <span>Click Here →</span>
+            </a>
+        </div>
+    </header>
+    <div class="container">
+        <div class="video-grid" id="video-grid">
+            <!-- Video items will be injected here -->
+        </div>
+        <div class="pagination" id="pagination">
+            <!-- Pagination controls will be injected here -->
+        </div>
+    </div>
+    <footer>
+        <div class="escort-banner">
+            <a href="escorts.html">
+                <span>💋</span>
+                <span>FIND YOUR PERFECT COMPANION TONIGHT</span>
+                <span>Book Now →</span>
+            </a>
+        </div>
+        <p>&copy; 2026 Adultlyf. All rights reserved.</p>
+    </footer>
+
+    <!-- Age Verification Modal -->
+    <div id="age-verification-overlay" class="age-verification-overlay">
+        <div class="age-verification-popup">
+            <img src="/static/logo.svg" alt="Adultlyf Logo" class="eggplant-logo">
+            <div class="age-verification-question">Are you 18+?</div>
+
+            <div class="toggle-container toggle-switch">
+                <span>No</span>
+                <input type="checkbox" id="age-toggle"/>
+                <label for="age-toggle">Toggle</label>
+                <span>Yes</span>
+            </div>
+            <div id="popupMessage" class="popup-message"></div>
+        </div>
+    </div>
+
+    <div class="not-eligible-message" id="age-rejection" style="display: none;">
+        <h3>🚫 Access Denied</h3>
+        <p>You are not eligible to proceed</p>
+    </div>
+
+    <!-- Name Entry Modal -->
+    <div id="name-modal-overlay" class="modal-overlay">
+        <div class="name-modal">
+            <h2>💬 Join the Group Chat</h2>
+            <p>Please enter your name to join the conversation</p>
+            <input type="text" id="username-input" class="name-input" placeholder="Enter your name" maxlength="20">
+            <div class="modal-buttons">
+                <button class="modal-button secondary" onclick="closeNameModal()">Cancel</button>
+                <button class="modal-button primary" onclick="joinChat()">Join Chat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Popup -->
+    <div id="chat-popup" class="chat-popup">
+        <button class="chat-close" onclick="closeChatPopup()">×</button>
+        <button class="chat-minimize" onclick="minimizeChatPopup()">−</button>
+        <div class="chat-popup-header" onclick="toggleChatPopup()">
+            💬 Chat with Others Online
+        </div>
+        <div class="chat-popup-body">
+            <p>Connect with people online right now!</p>
+            <div class="visitor-count" id="visitor-count">(Loading...)</div>
+            <button class="chat-button" onclick="startChat()">Start Chatting</button>
+        </div>
+    </div>
+
+    <script>
+        // Name Modal Functions
+        function openNameModal() {
+            const modalOverlay = document.getElementById('name-modal-overlay');
+            modalOverlay.classList.add('active');
+
+            // Focus on the input field
+            setTimeout(() => {
+                document.getElementById('username-input').focus();
+            }, 300);
+        }
+
+        function closeNameModal() {
+            const modalOverlay = document.getElementById('name-modal-overlay');
+            modalOverlay.classList.remove('active');
+        }
+
+        function joinChat() {
+            const usernameInput = document.getElementById('username-input');
+            const username = usernameInput.value.trim();
+
+            if (username) {
+                // Store the username in localStorage for the chat to use
+                localStorage.setItem('groupChatUsername', username);
+                // Redirect to group chat page
+                window.location.href = 'group_chat.html';
+            } else {
+                alert('Please enter your name to join the chat.');
+            }
+        }
+
+        // Chat Popup Functions
+        function closeChatPopup() {
+            const popup = document.getElementById('chat-popup');
+            popup.style.display = 'none';
+        }
+
+        function minimizeChatPopup() {
+            const popup = document.getElementById('chat-popup');
+            popup.classList.toggle('minimized');
+        }
+
+        function toggleChatPopup() {
+            const popup = document.getElementById('chat-popup');
+            popup.classList.toggle('minimized');
+        }
+
+        function startChat() {
+            // Show the name entry modal instead of direct navigation
+            openNameModal();
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Age Verification Logic
+            const ageOverlay = document.getElementById('age-verification-overlay');
+            const ageToggle = document.getElementById('age-toggle');
+            const popupMessage = document.getElementById('popupMessage');
+
+            const mainContent = document.querySelectorAll('header, .container, footer');
+
+            // Show modal on load
+            ageOverlay.style.display = 'flex';
+            mainContent.forEach(el => el.classList.add('blurred-content')); // Apply blur to background
+
+            ageToggle.addEventListener('change', () => {
+                if (ageToggle.checked) {
+                    // Yes selected - proceed to homepage with smooth transition
+                    ageOverlay.style.opacity = '0';
+                    ageOverlay.style.transition = 'opacity 0.5s ease';
+                    mainContent.forEach(el => {
+                        el.classList.remove('blurred-content');
+                        el.style.filter = 'blur(0px)';
+                        el.style.transition = 'filter 0.5s ease';
+                    });
+
+                    // Hide overlay completely after transition
+                    setTimeout(() => {
+                        ageOverlay.style.display = 'none';
+                    }, 500);
+                } else {
+                    // No selected - show rejection message
+                    popupMessage.textContent = 'You are not eligible to proceed.';
+                    popupMessage.style.display = 'block';
+
+                    // Add visual feedback for "No" selection
+                    const toggleLabel = ageToggle.nextElementSibling;
+                    toggleLabel.style.background = '#ff4444';
+                    toggleLabel.style.boxShadow = '0 0 10px rgba(255, 68, 68, 0.5)';
+
+                    // Reset after a short delay
+                    setTimeout(() => {
+                        if (!ageToggle.checked) {
+                            toggleLabel.style.background = 'grey';
+                            toggleLabel.style.boxShadow = 'none';
+                        }
+                    }, 1000);
+                }
+            });
+
+            let allVideos = [];
+            let filteredVideos = [];
+            let currentPage = 1;
+            const videosPerPage = 50;
+            const videoGrid = document.getElementById("video-grid");
+            const paginationContainer = document.getElementById("pagination");
+            const searchForm = document.getElementById("search-form");
+            const searchInput = document.getElementById("search-input");
+
+            // Get page from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            currentPage = parseInt(urlParams.get('page')) || 1;
+
+            fetch("videos.json")
+                .then(response => response.json())
+                .then(data => {
+                    allVideos = data;
+                    filteredVideos = [...allVideos];
+                    displayCurrentPage();
+                    updatePagination();
+                })
+                .catch(error => {
+                    console.error("Error fetching videos.json:", error);
+                    videoGrid.innerHTML = "<p>Could not load videos. Please run the scraper to generate the videos.json file.</p>";
+                });
+
+            function displayCurrentPage() {
+                videoGrid.innerHTML = "";
+                const startIndex = (currentPage - 1) * videosPerPage;
+                const endIndex = startIndex + videosPerPage;
+                const videosToShow = filteredVideos.slice(startIndex, endIndex);
+
+                if (videosToShow.length === 0) {
+                    if (filteredVideos.length === 0) {
+                        videoGrid.innerHTML = "<p>No videos found.</p>";
+                    } else {
+                        // If we're on a page that doesn't exist, go to first page
+                        currentPage = 1;
+                        updateURL();
+                        displayCurrentPage();
+                    }
+                    return;
+                }
+
+                videosToShow.forEach(video => {
+                    const videoItem = document.createElement("div");
+                    videoItem.classList.add("video-item");
+                    videoItem.dataset.embedUrl = video.embed_url;
+
+                    const thumbnail = document.createElement("img");
+                    thumbnail.src = video.thumbnail;
+                    thumbnail.alt = video.title;
+                    thumbnail.loading = "lazy";
+
+                    const title = document.createElement("div");
+                    title.classList.add("video-item-title");
+                    title.textContent = video.title;
+
+                    videoItem.appendChild(thumbnail);
+                    videoItem.appendChild(title);
+                    videoGrid.appendChild(videoItem);
+
+                    // Add click listener to open player in new tab
+                    videoItem.addEventListener("click", () => {
+                        const params = new URLSearchParams({
+                            embed_url: encodeURIComponent(video.embed_url),
+                            video_url: encodeURIComponent(video.video_url),
+                            title: encodeURIComponent(video.title)
+                        });
+                        window.open(`player.html?${params.toString()}`, '_blank');
+                    });
+                });
+            }
+
+            function updatePagination() {
+                paginationContainer.innerHTML = "";
+                const totalPages = Math.ceil(filteredVideos.length / videosPerPage);
+
+                if (totalPages <= 1) {
+                    return; // Don't show pagination for single page
+                }
+
+                // Previous button
+                const prevButton = document.createElement("button");
+                prevButton.textContent = "«";
+                prevButton.disabled = currentPage === 1;
+                prevButton.addEventListener("click", () => goToPage(currentPage - 1));
+                paginationContainer.appendChild(prevButton);
+
+                // Page numbers
+                const maxVisiblePages = 7;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+                // Adjust start page if we're near the end
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+
+                // First page + ellipsis if needed
+                if (startPage > 1) {
+                    const firstButton = document.createElement("button");
+                    firstButton.textContent = "1";
+                    firstButton.addEventListener("click", () => goToPage(1));
+                    paginationContainer.appendChild(firstButton);
+
+                    if (startPage > 2) {
+                        const ellipsis = document.createElement("span");
+                        ellipsis.textContent = "...";
+                        ellipsis.style.margin = "0 0.5rem";
+                        paginationContainer.appendChild(ellipsis);
+                    }
+                }
+
+                // Page number buttons
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageButton = document.createElement("button");
+                    pageButton.textContent = i;
+                    pageButton.classList.toggle("active", i === currentPage);
+                    pageButton.addEventListener("click", () => goToPage(i));
+                    paginationContainer.appendChild(pageButton);
+                }
+
+                // Last page + ellipsis if needed
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        const ellipsis = document.createElement("span");
+                        ellipsis.textContent = "...";
+                        ellipsis.style.margin = "0 0.5rem";
+                        paginationContainer.appendChild(ellipsis);
+                    }
+
+                    const lastButton = document.createElement("button");
+                    lastButton.textContent = totalPages;
+                    lastButton.addEventListener("click", () => goToPage(totalPages));
+                    paginationContainer.appendChild(lastButton);
+                }
+
+                // Next button
+                const nextButton = document.createElement("button");
+                nextButton.textContent = "»";
+                nextButton.disabled = currentPage === totalPages;
+                nextButton.addEventListener("click", () => goToPage(currentPage + 1));
+                paginationContainer.appendChild(nextButton);
+
+                // Info text
+                const startItem = (currentPage - 1) * videosPerPage + 1;
+                const endItem = Math.min(currentPage * videosPerPage, filteredVideos.length);
+                const infoDiv = document.createElement("div");
+                infoDiv.className = "pagination-info";
+                infoDiv.textContent = `Showing ${startItem}-${endItem} of ${filteredVideos.length} videos`;
+                paginationContainer.appendChild(infoDiv);
+            }
+
+            function goToPage(page) {
+                const totalPages = Math.ceil(filteredVideos.length / videosPerPage);
+                if (page >= 1 && page <= totalPages) {
+                    currentPage = page;
+                    updateURL();
+                    displayCurrentPage();
+                    updatePagination();
+                    // Scroll to top of video grid
+                    videoGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            function updateURL() {
+                const url = new URL(window.location);
+                if (currentPage === 1) {
+                    url.searchParams.delete('page');
+                } else {
+                    url.searchParams.set('page', currentPage);
+                }
+                window.history.replaceState({}, '', url);
+            }
+
+            function filterVideos() {
+                const searchTerm = searchInput.value.toLowerCase();
+                filteredVideos = allVideos.filter(video => {
+                    return video.title.toLowerCase().includes(searchTerm);
+                });
+                currentPage = 1; // Reset to first page when filtering
+                updateURL();
+                displayCurrentPage();
+                updatePagination();
+            }
+
+            searchForm.addEventListener("submit", function(event) {
+                event.preventDefault();
+                const searchTerm = searchInput.value.trim();
+                if (searchTerm) {
+                    window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
+                }
+            });
+
+            searchInput.addEventListener("keyup", filterVideos);
+
+            // Advert cycling
+            let adverts = [];
+            let currentIndex = 0;
+            const advertContainer = document.getElementById('advert-container');
+
+            function showNextAdvert() {
+                if (currentIndex >= adverts.length) {
+                    advertContainer.innerHTML = '';
+                    setTimeout(() => {
+                        currentIndex = 0;
+                        showNextAdvert();
+                    }, 60000); // pause 1 minute after all adverts
+                    return;
+                }
+
+                const advertDiv = document.createElement('div');
+                advertDiv.classList.add('advert-text');
+                advertDiv.textContent = adverts[currentIndex];
+                advertContainer.innerHTML = '';
+                advertContainer.appendChild(advertDiv);
+
+                currentIndex++;
+                setTimeout(showNextAdvert, 15000); // 15s for each advert (speed x1.5)
+            }
+
+            fetch('adverts.json')
+                .then(response => response.json())
+                .then(data => {
+                    adverts = data;
+                    showNextAdvert();
+                })
+                .catch(error => {
+                    console.error('Error fetching adverts.json:', error);
+                });
+
+            function updateVisitorCount() {
+                const visitorCountElement = document.getElementById('visitor-count');
+                // Generate a random visitor count between 50-200 for demonstration
+                // In a real implementation, this would come from server-side analytics
+                const visitorCount = Math.floor(Math.random() * 151) + 50;
+                visitorCountElement.textContent = `(${visitorCount} online)`;
+            }
+
+            // Initialize chat popup and visitor count
+            setTimeout(() => {
+                updateVisitorCount();
+                // Update visitor count every 30 seconds
+                setInterval(updateVisitorCount, 30000);
+            }, 2000);
+
+            // Add event listener for Enter key on name input
+            const usernameInput = document.getElementById('username-input');
+            if (usernameInput) {
+                usernameInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        joinChat();
+                    }
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>
