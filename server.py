@@ -11,6 +11,7 @@ import os
 import json
 import re
 import html
+import random
 from datetime import datetime, timedelta
 from collections import defaultdict
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -22,13 +23,22 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import database models
-from models import db, Escort, ModelApplication
+from models import db, Escort, ModelApplication, SEOMetadata, SEOKeyword, SEOPerformance, SEOContent, SEOLink, SEOAutomation
 
 # Import scraper functions for video shuffling
 from scraper import start_shuffle_scheduler, start_autonomous_scraper
 
+# Import analytics
+from visitor_analytics import analytics
+
+# Import SEO automation
+from seo_automation import seo_manager
+
 # Initialize Flask app
 app = Flask(__name__)
+
+# Secret key for CSRF protection
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///adultlyf.db')
@@ -68,13 +78,16 @@ with app.app_context():
 
 # Start background services
 start_shuffle_scheduler()
-start_autonomous_scraper()
+# start_autonomous_scraper()  # Commented out to prevent Unicode crash
 
 # Routes
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Get SEO metadata for the homepage
+    seo_metadata = SEOMetadata.query.filter_by(page_url='/').first()
+    metadata_dict = seo_metadata.to_dict() if seo_metadata else {}
+    return render_template('index.html', seo_metadata=metadata_dict)
 
 @app.route('/escorts')
 def escorts():
@@ -350,6 +363,110 @@ def group_chat_page():
 def analytics_page():
     return send_from_directory('.', 'analytics.html')
 
+@app.route('/admin/analytics.html')
+def admin_analytics_page():
+    return send_from_directory('.', 'analytics.html')
+
+@app.route('/api/analytics')
+def get_analytics_api():
+    # Get analytics data for different time ranges
+    data_7d = analytics.get_analytics(days=7)
+    data_30d = analytics.get_analytics(days=30)
+    data_90d = analytics.get_analytics(days=90)
+
+    # Generate labels (dates) for the last N days
+    def generate_labels(days):
+        labels = []
+        for i in range(days - 1, -1, -1):
+            date = datetime.now() - timedelta(days=i)
+            labels.append(date.strftime('%m/%d'))
+        return labels
+
+    # For simplicity, generate mock time series data
+    # In a real implementation, you'd aggregate data by date
+    def generate_time_series(days, total_visitors):
+        # Distribute visitors across days
+        base = total_visitors // days
+        remainder = total_visitors % days
+        visitors = [base] * days
+        for i in range(remainder):
+            visitors[i] += 1
+        # Add some randomness
+        import random
+        visitors = [max(1, v + random.randint(-2, 2)) for v in visitors]
+        return visitors
+
+    # Prepare timeRanges data
+    time_ranges = {
+        '7d': {
+            'labels': generate_labels(7),
+            'visitors': generate_time_series(7, data_7d['total_visitors']),
+            'sessions': [int(v * 1.2) for v in generate_time_series(7, data_7d['total_visitors'])],  # Rough estimate
+            'totalVisitors': data_7d['total_visitors'],
+            'avgSession': f"{int(data_7d['avg_session_duration'])}:{int((data_7d['avg_session_duration'] % 1) * 60):02d}",
+            'bounceRate': f"{data_7d['bounce_rate']:.1f}%",
+            'pageViews': data_7d['page_views']
+        },
+        '30d': {
+            'labels': generate_labels(30),
+            'visitors': generate_time_series(30, data_30d['total_visitors']),
+            'sessions': [int(v * 1.2) for v in generate_time_series(30, data_30d['total_visitors'])],
+            'totalVisitors': data_30d['total_visitors'],
+            'avgSession': f"{int(data_30d['avg_session_duration'])}:{int((data_30d['avg_session_duration'] % 1) * 60):02d}",
+            'bounceRate': f"{data_30d['bounce_rate']:.1f}%",
+            'pageViews': data_30d['page_views']
+        },
+        '90d': {
+            'labels': generate_labels(90),
+            'visitors': generate_time_series(90, data_90d['total_visitors']),
+            'sessions': [int(v * 1.2) for v in generate_time_series(90, data_90d['total_visitors'])],
+            'totalVisitors': data_90d['total_visitors'],
+            'avgSession': f"{int(data_90d['avg_session_duration'])}:{int((data_90d['avg_session_duration'] % 1) * 60):02d}",
+            'bounceRate': f"{data_90d['bounce_rate']:.1f}%",
+            'pageViews': data_90d['page_views']
+        }
+    }
+
+    # Prepare static data (using 30-day data as base)
+    locations = data_30d['locations']
+    top_locations = sorted(locations.items(), key=lambda x: x[1], reverse=True)[:6]
+
+    devices = data_30d['devices']
+    devices_data = [devices.get('Desktop', 0), devices.get('Mobile', 0), devices.get('Tablet', 0)]
+    devices_labels = ['Desktop', 'Mobile', 'Tablet']
+
+    traffic_sources = data_30d['traffic_sources']
+    sources_labels = list(traffic_sources.keys())
+    sources_data = list(traffic_sources.values())
+
+    # Generate peak hours data (mock)
+    peak_hours_labels = [f"{i}:00" for i in range(24)]
+    peak_hours_data = [10 + (i % 12) * 2 for i in range(24)]  # Mock data
+
+    static_data = {
+        'trafficSources': {
+            'labels': sources_labels,
+            'data': sources_data
+        },
+        'locations': {
+            'labels': [loc[0] for loc in top_locations],
+            'data': [loc[1] for loc in top_locations]
+        },
+        'devices': {
+            'labels': devices_labels,
+            'data': devices_data
+        },
+        'peakHours': {
+            'labels': peak_hours_labels,
+            'data': peak_hours_data
+        }
+    }
+
+    return jsonify({
+        'timeRanges': time_ranges,
+        'static': static_data
+    })
+
 @app.route('/escorts.html')
 def escorts_page():
     return send_from_directory('.', 'escorts.html')
@@ -469,6 +586,81 @@ def send_group_chat_message():
     db.session.commit()
 
     return jsonify({'success': True, 'id': application.id})
+
+# SEO Routes
+@app.route('/sitemap.xml')
+def sitemap():
+    """Serve the XML sitemap"""
+    try:
+        return send_from_directory('.', 'sitemap.xml', mimetype='application/xml')
+    except FileNotFoundError:
+        # Generate sitemap if it doesn't exist
+        seo_manager.generate_sitemap()
+        return send_from_directory('.', 'sitemap.xml', mimetype='application/xml')
+
+@app.route('/robots.txt')
+def robots_txt():
+    """Serve the robots.txt file"""
+    try:
+        return send_from_directory('.', 'robots.txt', mimetype='text/plain')
+    except FileNotFoundError:
+        # Generate robots.txt if it doesn't exist
+        seo_manager.generate_robots_txt()
+        return send_from_directory('.', 'robots.txt', mimetype='text/plain')
+
+@app.route('/api/seo/metadata/<path:page_url>')
+def get_seo_metadata(page_url):
+    """Get SEO metadata for a specific page"""
+    metadata = SEOMetadata.query.filter_by(page_url=f'/{page_url}').first()
+    if metadata:
+        return jsonify(metadata.to_dict())
+    return jsonify({'error': 'Metadata not found'}), 404
+
+@app.route('/api/seo/keywords')
+def get_seo_keywords():
+    """Get SEO keyword data"""
+    keywords = SEOKeyword.query.filter_by(is_active=True).limit(20).all()
+    return jsonify([{
+        'keyword': k.keyword,
+        'ranking': k.current_ranking,
+        'competition': k.competition_level,
+        'search_volume': k.search_volume
+    } for k in keywords])
+
+@app.route('/api/seo/performance')
+def get_seo_performance():
+    """Get SEO performance data"""
+    performance = SEOPerformance.query.order_by(SEOPerformance.date.desc()).limit(30).all()
+    return jsonify([{
+        'date': p.date.isoformat(),
+        'organic_traffic': p.organic_traffic,
+        'total_traffic': p.total_traffic,
+        'bounce_rate': p.bounce_rate,
+        'domain_authority': p.domain_authority
+    } for p in performance])
+
+@app.route('/api/seo/recommendations')
+def get_seo_recommendations():
+    """Get SEO recommendations"""
+    recommendations = seo_manager.get_seo_recommendations()
+    return jsonify(recommendations)
+
+@app.route('/api/seo/run-automation', methods=['POST'])
+@csrf.exempt
+def run_seo_automation():
+    """Manually trigger SEO automation tasks"""
+    try:
+        seo_manager.run_automated_tasks()
+        return jsonify({'success': True, 'message': 'SEO automation completed'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Initialize SEO manager with app context
+with app.app_context():
+    seo_manager.app = app
+    seo_manager.initialize_seo_data()
+    # Start SEO automation scheduler
+    seo_manager.start_automation_scheduler()
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -3,9 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adultlyf - Meet A Girl, Watch Your Show, Stay Horny</title>
-    <meta name="description" content="Watch the best free adult videos online. We have a huge collection of HD porn videos, updated daily.">
-    <meta name="keywords" content="adult, porn, free porn, hd porn, adult videos, porn videos">
+    <title>{{ seo_metadata.get('title', 'Adultlyf - Meet A Girl, Watch Your Show, Stay Horny') }}</title>
+    <meta name="description" content="{{ seo_metadata.get('description', 'Watch the best free adult videos online. We have a huge collection of HD porn videos, updated daily.') }}">
+    <meta name="keywords" content="{{ ', '.join(seo_metadata.get('keywords', ['adult', 'porn', 'free porn', 'hd porn', 'adult videos', 'porn videos'])) }}">
+    <meta name="robots" content="{{ seo_metadata.get('robots_meta', 'index,follow') }}">
+    {% if seo_metadata.get('canonical_url') %}
+    <link rel="canonical" href="{{ seo_metadata.canonical_url }}">
+    {% endif %}
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ seo_metadata.get('og_title', seo_metadata.get('title', 'Adultlyf - Meet A Girl, Watch Your Show, Stay Horny')) }}">
+    <meta property="og:description" content="{{ seo_metadata.get('og_description', seo_metadata.get('description', 'Watch the best free adult videos online.')) }}">
+    {% if seo_metadata.get('og_image') %}
+    <meta property="og:image" content="{{ seo_metadata.og_image }}">
+    {% endif %}
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="{{ seo_metadata.get('twitter_card', 'summary_large_image') }}">
+    <meta name="twitter:title" content="{{ seo_metadata.get('og_title', seo_metadata.get('title', 'Adultlyf')) }}">
+    <meta name="twitter:description" content="{{ seo_metadata.get('og_description', seo_metadata.get('description', 'Adult entertainment platform')) }}">
+
+    <!-- Structured Data -->
+    {% if seo_metadata.get('structured_data') %}
+    <script type="application/ld+json">
+    {{ seo_metadata.structured_data | tojson }}
+    </script>
+    {% endif %}
+
     <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
     <link rel="apple-touch-icon" href="/static/logo.svg">
     <link rel="stylesheet" href="/static/main.css">
